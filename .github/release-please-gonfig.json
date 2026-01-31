@@ -1,0 +1,17 @@
+{
+  "packages": {
+    "backend": {
+      "path": "backend",
+      "release-type": "dotnet",
+      "version-file": "manifest.json",
+      "bump-minor-pre-major": true
+    },
+    "frontend": {
+      "path": "frontend",
+      "release-type": "node",
+      "version-file": "manifest.json"
+    }
+  },
+  "bump-patch-for-minor-pre-major": true,
+  "changelog-path": "CHANGELOG.md"
+}

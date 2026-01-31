@@ -1,0 +1,10 @@
+{
+  "packages": {
+    "backend": {
+      "version": "1.0.0"
+    },
+    "frontend": {
+      "version": "1.0.0"
+    }
+  }
+}

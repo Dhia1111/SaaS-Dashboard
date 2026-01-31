@@ -1,0 +1,7 @@
+version: '3'
+tasks:
+  trigger-workflow:
+    desc: Trigger workflow using act
+    dir: ../../..
+    cmds:
+      - act workflow_dispatch -W .github/workflows/test.yaml -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest --pull=false 
