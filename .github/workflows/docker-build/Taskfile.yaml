@@ -1,0 +1,9 @@
+version: '3'
+tasks:
+  trigger-workflow:
+    desc: Trigger Docker build workflow locally with a version
+    dir: ../../..
+    vars:
+      VERSION: "v1.0.0"  # default version, can be overridden
+    cmds:
+      -  act workflow_dispatch -W .github/workflows/docker-build.yaml  --secret-file .secrets --eventpath event.json -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest --pull=false
