@@ -1,0 +1,84 @@
+############################
+# OS / Editor noise
+############################
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+.secrets
+event.json
+
+############################
+# Node / React / Vite
+############################
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+############################
+# .NET / ASP.NET Core
+############################
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.db
+*.sqlite
+*.pdb
+*.dll
+*.exe
+appsettings.json
+appsettings.Development.json
+############################
+# Docker / Containers
+############################
+docker-compose.override.yml
+.env
+.env.*
+*.local
+
+############################
+# Database (CRITICAL)
+############################
+# Bind mounts / runtime data
+db/db_data/
+**/db_data/
+pgdata/
+**/pgdata/
+
+# Dumps & backups
+*.dump
+*.sql.gz
+*.bak
+
+############################
+# Test / Coverage
+############################
+coverage/
+TestResults/
+
+############################
+# Misc
+############################
+*.tmp
+*.temp
+
+############################
+# secrets
+############################
+secrets.json
+secrets.Development.json
+secrets/*.json
+secrets/**/*.json
+secrets/*.yaml
+id_rsa
+id_rsa.pub
