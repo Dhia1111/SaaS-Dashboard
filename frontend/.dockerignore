@@ -1,0 +1,106 @@
+# .dockerignore for Vite/React Application
+frontend/
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build outputs
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor and IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Coverage directory
+coverage/
+.nyc_output
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Optional brew lock file
+*.lock
+
+# Optional next.js build
+.next
+
+# Optional storybook build
+storybook-static
+
+# Optional cypress
+cypress/videos/
+cypress/screenshots/
+
+# Optional local .env
+.env.local
+
+# Cache directories
+.cache/
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+
+# Build results
+build/
+out/
+.next/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Development only
+src/test/
+src/__tests__/
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+__mocks__/
+
+# Optional: Keep if you want to build inside container
+# !package.json
+# !package-lock.json
+# !yarn.lock
