@@ -1,0 +1,19 @@
+name: Mark stale issues and PRs
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # every Sunday
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 30       # mark as stale if no activity for 30 days
+          days-before-close: 7        # close 7 days after marking stale
+          stale-issue-message: "This issue has been automatically marked as stale because it has not had recent activity."
+          stale-pr-message: "This PR has been automatically marked as stale because it has not had recent activity."
+          exempt-labels: 'pinned,important'

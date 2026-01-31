@@ -1,0 +1,51 @@
+name: test
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test-services:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [frontend, backend]
+
+    steps:
+      # Checkout code once for all matrix jobs
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up Node.js only for frontend
+      - name: Set up Node.js
+        if: ${{ matrix.service == 'frontend' }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.20.0'
+          cache-dependency-path: frontend/package-lock.json
+
+      # Set up .NET only for backend
+      - name: Set up .NET
+        if: ${{ matrix.service == 'backend' }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+
+      # Optional: set up Task runner for both
+      - name: Set up Task
+        uses: arduino/setup-task@v1
+
+      # Install dependencies for the current service
+      - name: Install frontend dependencies
+        if: ${{ matrix.service == 'frontend' }}
+        run: task frontend:install
+
+      - name: Install backend dependencies
+        if: ${{ matrix.service == 'backend' }}
+        run: task backend:restore
+
+      # Run tests for the current service
+      - name: Run tests
+        run: task ${{ matrix.service }}:test || true

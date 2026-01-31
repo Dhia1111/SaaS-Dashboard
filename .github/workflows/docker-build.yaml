@@ -1,0 +1,70 @@
+name: Build and Push Docker Images
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+
+jobs:
+  docker:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine version
+        id: version
+        run: |
+          # First, fetch any tags that might have been created
+          git fetch --tags
+          
+          # Try to get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -n "$LATEST_TAG" ]; then
+            # If a tag exists, use it (this is the actual release)
+            echo "VERSION=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "BACKEND_VERSION=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "FRONTEND_VERSION=$LATEST_TAG" >> $GITHUB_OUTPUT
+          else
+            # Fallback to manifest.json (for testing)
+            BACKEND_VERSION=$(jq -r '.packages.backend.version' manifest.json)
+            FRONTEND_VERSION=$(jq -r '.packages.frontend.version' manifest.json)
+            echo "VERSION=$BACKEND_VERSION" >> $GITHUB_OUTPUT
+            echo "BACKEND_VERSION=$BACKEND_VERSION" >> $GITHUB_OUTPUT
+            echo "FRONTEND_VERSION=$FRONTEND_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/saas-backend:${{ steps.version.outputs.BACKEND_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/saas-backend:${{ github.sha }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/saas-frontend:${{ steps.version.outputs.FRONTEND_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/saas-frontend:${{ github.sha }}

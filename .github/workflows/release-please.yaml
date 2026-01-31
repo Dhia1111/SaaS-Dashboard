@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]       # Trigger when PR is closed
+  push:
+    branches:
+      - main             # Trigger when commits land on main
+  workflow_dispatch:      # Optional manual trigger
+
+permissions:
+  contents: write         # Needed for Release-Please to push tags and commits
+  pull-requests: write    # Needed if Release-Please creates or updates PRs
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # Only run if PR was merged OR it's a push event
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v4
+
+      # Run Release-Please
+      - name: Release-Please
+        uses: google-github-actions/release-please-action@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/release-please-config.json
+          manifest-path: manifest.json
+          target-branch: main

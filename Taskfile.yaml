@@ -1,0 +1,114 @@
+version: "3"
+
+vars:
+  FRONTEND_DIR: frontend
+  BACKEND_DIR: backend
+  DOTNET_PROJECT: backend/APIs/APIs.sln
+
+tasks:
+
+  # ------------------------
+  # DEFAULT
+  # ------------------------
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  # ------------------------
+  # FRONTEND (Vite + React + pnpm)
+  # ------------------------
+  frontend:install:
+    desc: Install frontend dependencies (npm)
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm install
+
+  frontend:dev:
+    desc: Run frontend dev server
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run dev
+
+  frontend:build:
+    desc: Build frontend for production
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run build
+
+  frontend:lint:
+    desc: Lint frontend
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run lint
+
+  frontend:test:
+    desc: Run frontend tests
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm test
+
+  # ------------------------
+  # BACKEND (ASP.NET Core)
+  # ------------------------
+  backend:restore:
+    desc: Restore backend dependencies
+    cmds:
+      - dotnet restore {{.DOTNET_PROJECT}}
+
+  backend:build:
+    desc: Build backend
+    cmds:
+      - dotnet build {{.DOTNET_PROJECT}} -c Release 
+
+  backend:run:
+    desc: Run backend locally
+    cmds:
+      - dotnet run --project {{.DOTNET_PROJECT}}
+
+  backend:test:
+    desc: Run backend tests
+    cmds:
+      - dotnet test {{.DOTNET_PROJECT}} -c Release 
+
+  backend:publish:
+    desc: Publish backend
+    cmds:
+      - dotnet publish {{.DOTNET_PROJECT}} -c Release -o out/backend
+
+  # ------------------------
+  # FULL STACK
+  # ------------------------
+  install:
+    desc: Install all dependencies (frontend + backend)
+    cmds:
+      - task frontend:install
+      - task backend:restore
+
+  build:
+    desc: Build frontend and backend
+    cmds:
+      - task frontend:build
+      - task backend:build
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task frontend:test
+      - task backend:test
+
+  lint:
+    desc: Run all linters
+    cmds:
+      - task frontend:lint
+
+  # ------------------------
+  # CI
+  # ------------------------
+  ci:
+    desc: CI pipeline entry point
+    cmds:
+      - task install
+      - task lint
+      - task test
+      - task build
