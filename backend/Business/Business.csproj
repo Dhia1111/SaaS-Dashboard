@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connection\Connection.csproj" />
+    <ProjectReference Include="..\ExternalAPI\ExternalAPI.csproj" />
   </ItemGroup>
 
 </Project>
