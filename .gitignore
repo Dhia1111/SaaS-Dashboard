@@ -1,5 +1,7 @@
 ############################
 # Visual Studio
+./vs
+./vs/
 *.vs/*
 .vs/*
 *.user
@@ -91,5 +93,4 @@ secrets.Development.json
 secrets/*.json
 secrets/**/*.json
 secrets/*.yaml
-id_rsa
-id_rsa.pub
+
