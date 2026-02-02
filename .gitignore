@@ -1,10 +1,7 @@
 ############################
 # Visual Studio
-./vs
-./vs/
-*.vs/*
-*/.vs/*
-.vs/*
+.vs/
+**/.vs/
 *.user
 *.suo
 *.userosscache
