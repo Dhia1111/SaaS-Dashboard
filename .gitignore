@@ -3,6 +3,7 @@
 ./vs
 ./vs/
 *.vs/*
+*/.vs/*
 .vs/*
 *.user
 *.suo
