@@ -1,4 +1,11 @@
 ############################
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+############################
 # OS / Editor noise
 ############################
 .DS_Store
@@ -9,6 +16,8 @@ Thumbs.db
 .idea/
 .secrets
 event.json
+# Visual Studio
+.vs/
 
 ############################
 # Node / React / Vite
