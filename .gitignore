@@ -1,6 +1,7 @@
 ############################
 # Visual Studio
-.vs/
+*.vs/*
+.vs/*
 *.user
 *.suo
 *.userosscache
@@ -17,7 +18,6 @@ Thumbs.db
 .secrets
 event.json
 # Visual Studio
-.vs/
 
 ############################
 # Node / React / Vite
