@@ -49,6 +49,7 @@ obj/
 *.exe
 appsettings.json
 appsettings.Development.json
+ConnectionDependencyInjection.cs
 ############################
 # Docker / Containers
 ############################
