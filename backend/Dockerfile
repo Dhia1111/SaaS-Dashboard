@@ -7,6 +7,8 @@ COPY ["APIs/APIs.sln", "APIs/"]
 COPY ["APIs/APIs.csproj", "APIs/"]
 COPY ["Business/Business.csproj", "Business/"]
 COPY ["Connection/Connection.csproj", "Connection/"]
+COPY ["ExternalAPI/ExternalAPI.csproj", "ExternalAPI/"]
+
 
 # Restore NuGet packages
 RUN dotnet restore "APIs/APIs.sln"
