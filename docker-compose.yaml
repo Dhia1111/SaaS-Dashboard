@@ -8,14 +8,14 @@ services:
     container_name: my_postgres
     restart: always
     environment:
-      POSTGRES_USER: myuser
+      POSTGRES_USER: d1111
       POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_DB: Saas-Dashboard
     # Bind mount for local folder ./db_data
     volumes:
-      - ./db_data:/var/lib/postgresql/data
+      - ./db/db_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5431:5432"
 
   backend:
     build:
@@ -29,9 +29,9 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_USER: myuser
+      DB_USER: d1111
       DB_PASSWORD: mypassword
-      DB_NAME: mydb
+      DB_NAME: Saas-Dashboard
 
   frontend:
     build:
