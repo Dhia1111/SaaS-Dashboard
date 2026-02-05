@@ -21,7 +21,7 @@ namespace Connection.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Connection.models.clsCustomer", b =>
+            modelBuilder.Entity("Connection.models.clsCustomerRepository", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
