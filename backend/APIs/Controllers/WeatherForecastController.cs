@@ -12,10 +12,12 @@ namespace APIs.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ICustomerService _customerService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger,ICustomerService customerService)
         {
             _logger = logger;
+            _customerService = customerService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
@@ -28,6 +30,18 @@ namespace APIs.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+
+
         }
-    }
+
+
+        [HttpGet("GetCustomres")]
+        public IEnumerable<DTOCustomer> GetCustomers()
+        {
+
+            return _customerService.GetAllCustomers();
+
+        }
+
+        }
 }
