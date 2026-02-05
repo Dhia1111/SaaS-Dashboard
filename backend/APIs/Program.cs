@@ -1,8 +1,26 @@
+using Business;
+using Connection;
+using Connection.Data;
+using ExternalAPI;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
+string? st = builder.Configuration["ConnectionSetting:DefaultConnection"];
 // Add services to the container.
+builder.Services.AddBusinessDependencies();
+builder.Services.AddConnectionDependencies();
+builder.Services.AddExternalAPIDependencies();
+
+builder.Services.AddDbContextPool<SaasDashboardContext>(options =>
+
+options.UseNpgsql(
+    st
+));
+
 
 builder.Services.AddControllers();
+
 
 builder.Services.AddCors(options =>
 {
@@ -16,7 +34,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

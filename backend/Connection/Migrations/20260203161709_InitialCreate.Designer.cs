@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Connection.Migrations
 {
     [DbContext(typeof(SaasDashboardContext))]
-    [Migration("20260202195754_InitialCreateWithCustomerTable")]
-    partial class InitialCreateWithCustomerTable
+    [Migration("20260203161709_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace Connection.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Connection.models.clsCustomer", b =>
+            modelBuilder.Entity("Connection.models.clsCustomerRepository", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
