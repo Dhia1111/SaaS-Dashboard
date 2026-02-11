@@ -11,7 +11,8 @@ namespace Connection.Data
 {
     public class SaasDashboardContext:DbContext
     {
-        public virtual DbSet<clsCustomerRepository> Customers { get; set; } = null!;
+        public virtual DbSet<Person> Persons { get; set; } = null!;
+        public virtual DbSet<User> Users { get; set; } = null!;
 
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options):base(options) {
 

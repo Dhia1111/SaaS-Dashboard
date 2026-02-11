@@ -3,24 +3,27 @@ using Connection;
 using Connection.Data;
 using ExternalAPI;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string? st = builder.Configuration["ConnectionSetting:DefaultConnection"];
-// Add services to the container.
+var connString = builder.Configuration["DefaultConnection"];
+if (connString == null)
+{
+    throw new Exception("Connection string does not exist");
+}
+builder.Services.AddDbContextPool<SaasDashboardContext>(options =>
+{
+    options.UseNpgsql(connString);
+});
+builder.Services.AddControllers();
+
 builder.Services.AddBusinessDependencies();
 builder.Services.AddConnectionDependencies();
 builder.Services.AddExternalAPIDependencies();
 
-builder.Services.AddDbContextPool<SaasDashboardContext>(options =>
-
-options.UseNpgsql(
-    st
-));
-
-
-builder.Services.AddControllers();
-
+=======
 
 builder.Services.AddCors(options =>
 {

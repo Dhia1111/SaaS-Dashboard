@@ -8,7 +8,8 @@ namespace Business
     {
         public static IServiceCollection AddBusinessDependencies(this IServiceCollection services)
         {
-   services.AddScoped<ICustomerService, clsCustomer>();
+            services.AddScoped<IPersonService, clsPersonService>();
+            services.AddScoped<IUserService, clsUserService>();
 
             // business rules, domain services, validators, etc.
 
