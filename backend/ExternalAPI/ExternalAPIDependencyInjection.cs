@@ -10,7 +10,7 @@ namespace ExternalAPI
 
     public static class ExternalAPIDependencyInjection
     {
-        public static IServiceCollection AddExternalAPI(this IServiceCollection services)
+        public static IServiceCollection AddExternalAPIDependencies(this IServiceCollection services)
         {
 //            services.AddScoped<Ic, clsCustomer>();
 

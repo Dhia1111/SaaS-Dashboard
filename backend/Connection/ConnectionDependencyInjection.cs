@@ -13,7 +13,8 @@ namespace Connection
     {
         public static IServiceCollection AddConnectionDependencies(this IServiceCollection services)
         {
-          // services.AddScoped<ICustomerRepo, clsCustomerRepository>();
+            services.AddScoped<IPersonRepository, clsPersonRepo>();
+            services.AddScoped<IUserRepo, clsUserRepo>();
 
             return services;
         }
