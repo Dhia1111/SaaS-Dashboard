@@ -3,6 +3,7 @@ using Connection;
 using Connection.Data;
 using ExternalAPI;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Services.AddBusinessDependencies();
 builder.Services.AddConnectionDependencies();
 builder.Services.AddExternalAPIDependencies();
 
+=======
 
 builder.Services.AddCors(options =>
 {
@@ -35,7 +37,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
