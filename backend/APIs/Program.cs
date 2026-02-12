@@ -3,8 +3,6 @@ using Connection;
 using Connection.Data;
 using ExternalAPI;
 using Microsoft.EntityFrameworkCore;
-<<<<<<< HEAD
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +21,6 @@ builder.Services.AddBusinessDependencies();
 builder.Services.AddConnectionDependencies();
 builder.Services.AddExternalAPIDependencies();
 
-=======
 
 builder.Services.AddCors(options =>
 {
