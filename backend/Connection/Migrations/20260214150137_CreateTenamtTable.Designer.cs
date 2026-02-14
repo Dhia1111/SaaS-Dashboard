@@ -3,6 +3,7 @@ using System;
 using Connection.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Connection.Migrations
 {
     [DbContext(typeof(SaasDashboardContext))]
-    partial class SaasDashboardContextModelSnapshot : ModelSnapshot
+    [Migration("20260214150137_CreateTenamtTable")]
+    partial class CreateTenamtTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,37 +58,6 @@ namespace Connection.Migrations
                     b.ToTable("Persons");
                 });
 
-            modelBuilder.Entity("Connection.models.Tenant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DataKey")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("PersonID")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonID");
-
-                    b.ToTable("Tenants");
-                });
-
             modelBuilder.Entity("Connection.models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -118,17 +90,6 @@ namespace Connection.Migrations
                     b.HasIndex("PersonID");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Connection.models.Tenant", b =>
-                {
-                    b.HasOne("Connection.models.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Connection.models.User", b =>

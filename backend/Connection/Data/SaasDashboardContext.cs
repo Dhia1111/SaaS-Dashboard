@@ -14,7 +14,10 @@ namespace Connection.Data
         public virtual DbSet<Person> Persons { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
+        public virtual DbSet<Tenant>Tenants { get; set; } = null!;
+
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options):base(options) {
+
 
     }
 
