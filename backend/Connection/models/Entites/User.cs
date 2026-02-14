@@ -12,7 +12,9 @@ namespace Connection.models
             public int Id { get; set; } // PK, identity(1,1)
             [Required]
             public int DataKey { get; set; } // required
-            public int PersonID { get; set; } // required
+            [Required]
+            public int PersonID { get; set; } // required public Person Person { get; set; } = null!;
+            public Person Person { get; set; }=null!;
             public string PasswordHash { get; set; } = null!;
             public int Role { get; set; }
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
