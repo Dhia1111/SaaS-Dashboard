@@ -10,6 +10,7 @@ namespace Connection
         {
             services.AddScoped<IPersonRepository, clsPersonRepo>();
             services.AddScoped<IUserRepo, clsUserRepo>();
+            services.AddScoped<ITenantRepo, clsTenantRepo>();
             return services;
         }
     }

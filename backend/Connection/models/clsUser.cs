@@ -14,87 +14,89 @@ namespace Connection.models
         public int Id { get; set; }
         public int DataKey { get; set; }
         public int PersonID { get; set; }
+        public DtoPerson Person { get; set; } = null!;
         public int Role { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public string CreatedAt { get; set; } = null!;
+        public string? UpdatedAt { get; set; }=null!;
     }
 
-    public interface IUserRepo
+    public interface IUserRepo:IGenericRepo<User>
     {
-        Task<IReadOnlyList<User>> GetAllAsync(int dataKey);
-        Task<User?> GetByIdAsync(int id);
         Task<User?> GetByPersonIdAsync(int personId);
         Task<User?> GetByEmailAsync(string email); // via Person
-        Task<bool> AddAsync(User user);
-        Task<bool> UpdateAsync(User user);
-        Task<bool> DeleteAsync(User user);
+        
     }
 
-    public class clsUserRepo : IUserRepo
+
+    public class clsUserRepo : GenericRepo<User>, IUserRepo
     {
-        private readonly SaasDashboardContext _context;
-        private readonly ILogger<clsUserRepo> _logger;
 
         public clsUserRepo(SaasDashboardContext context, ILogger<clsUserRepo> logger)
+            : base(context, logger) { 
+          
+        }
+        
+
+        public override async Task<IReadOnlyList<User>> GetAllAsync(int dataKey)
         {
-            _context = context;
-            _logger = logger;
+            try
+            {
+                return await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Person) // include related Person entity
+                    .Where(u => u.DataKey == dataKey)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all Users for DataKey {DataKey}", dataKey);
+                throw;
+            }
         }
 
-        public async Task<IReadOnlyList<User>> GetAllAsync(int dataKey)
-        {
-            return await _context.Users
-                .AsNoTracking()
-                .Where(u => u.DataKey == dataKey)
-                .ToListAsync();
-        }
-
-        public async Task<User?> GetByIdAsync(int id)
-        {
-            return await _context.Users.FindAsync(id);
-        }
-
+      
         public async Task<User?> GetByPersonIdAsync(int personId)
         {
-            return await _context.Users
-                .AsNoTracking()
-                .SingleOrDefaultAsync(u => u.PersonID == personId);
+            try
+            {
+                return await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Person)
+                    .SingleOrDefaultAsync(u => u.PersonID == personId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching User by PersonId {PersonId}", personId);
+                throw;
+            }
         }
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            var person = await _context.Persons
-                .AsNoTracking()
-                .SingleOrDefaultAsync(p => p.Email == email);
+            try
+            {
+                var person = await _context.Persons
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(p => p.Email == email);
 
-            if (person == null) return null;
+                if (person == null) return null;
 
-            return await _context.Users
-                .AsNoTracking()
-                .SingleOrDefaultAsync(u => u.PersonID == person.Id);
+                return await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Person)
+                    .SingleOrDefaultAsync(u => u.PersonID == person.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching User by Email {Email}", email);
+                throw;
+            }
         }
 
-        public async Task<bool> AddAsync(User user)
-        {
-            _context.Users.Add(user);
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
-
-        public async Task<bool> UpdateAsync(User user)
-        {
-            _context.Users.Update(user);
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
-
-        public async Task<bool> DeleteAsync(User user)
-        {
-            _context.Users.Remove(user);
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
+      
     }
-}
 
+
+
+}
 
