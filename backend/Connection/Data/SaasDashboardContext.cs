@@ -1,4 +1,5 @@
 ﻿using Connection.models;
+using Connection.models.Entites;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,14 @@ namespace Connection.Data
         public virtual DbSet<User> Users { get; set; } = null!;
 
         public virtual DbSet<Tenant>Tenants { get; set; } = null!;
+        public virtual DbSet<PlatformPlan> PlatformPlans { get; set; } = null!;
+        public virtual DbSet<PlatformPayment> PlatformPayments { get; set; } = null!;
+        public virtual DbSet<PlatformSubscription> PlatformSubscriptions { get; set; } = null!;
+        public virtual DbSet<TenantPlan> TenantPlans { get; set; } = null!;
+        public virtual DbSet<UserPayment> UserPayments { get; set; } = null!;
+        public virtual DbSet<UserSubscription> UserSubscriptions { get; set; } = null!;
+
+
 
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options):base(options) {
 
