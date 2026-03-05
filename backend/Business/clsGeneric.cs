@@ -12,7 +12,7 @@ namespace Business
     {
         Task<IReadOnlyList<TDto>> GetAllAsync(int dataKey);
         Task<TDto> GetByIdAsync(int id);
-        Task<bool> AddAsync(TDto dto);
+        Task<int> AddAsync(TDto dto);
         Task<bool> UpdateAsync(TDto dto);
         Task<bool> DeleteAsync(int id);
     }
@@ -46,10 +46,11 @@ namespace Business
             return ToDto(entity);
         }
 
-        public virtual async Task<bool> AddAsync(TDto dto)
+        public virtual async Task<int> AddAsync(TDto dto)
         {
             var entity = FromDto(dto); // mapping may parse strings -> DateTime
             return await _repo.AddAsync(entity);
+           
         }
 
         public virtual async Task<bool> UpdateAsync(TDto dto)

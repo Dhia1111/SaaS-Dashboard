@@ -47,7 +47,7 @@ namespace Business
                     Phone = user.Person.Phone,
                     FirstName = user.Person.FirstName,
                     LastName = user.Person.LastName,
-                    Address = user.Person.Adress
+                    Address = user.Person.Address
                 } : null!,
                 Role = user.Role,
                 CreatedAt = user.CreatedAt.ToLongDateString(),
