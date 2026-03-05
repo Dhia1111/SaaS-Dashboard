@@ -16,7 +16,7 @@ namespace Connection.models
     }
     public interface IGenericWriteRepo<T> where T : class
     {
-        Task<bool> AddAsync(T entity);
+        Task<int> AddAsync(T entity);
         Task<bool> UpdateAsync(T entity);
         Task<bool> DeleteAsync(T entity);
     }
@@ -64,18 +64,20 @@ namespace Connection.models
             }
         }
 
-        public async Task<bool> AddAsync(T entity)
+        public async Task<int> AddAsync(T entity)
         {
             try
             {
-                _context.Set<T>().Add(entity);
-                var result = await _context.SaveChangesAsync();
-                return result > 0;
+                await _context.Set<T>().AddAsync(entity);
+                await _context.SaveChangesAsync();
+                var idProperty = _context.Entry(entity).Property("Id").CurrentValue;
+
+                return (int)idProperty;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding {Entity}", typeof(T).Name);
-                return false;
+                return 0; // Or throw a custom exception
             }
         }
 
