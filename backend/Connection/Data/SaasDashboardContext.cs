@@ -27,8 +27,8 @@ namespace Connection.Data
 
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options):base(options) {
 
-
-    }
-
+          
+        }
+      
     }
 }
