@@ -12,12 +12,12 @@ namespace Connection.models
     public class DtoTenant
     {
         public int Id { get; set; }
-        public int DataKey { get; set; }
         public string UniqueIdentifier { get; set; } = null!;
         public string CompanyName { get; set; } = null!;
         public string? Description { get; set; }
         public bool IsActive { get; set; }
         public string CreatedAt { get; set; }=null!;
+        public string PasswordHash { get; set; } = null!;
 
         public int PersonId { get; set; }
         public DtoPerson Person { get; set; } = null!;
