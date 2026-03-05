@@ -15,8 +15,13 @@ namespace Connection.models
         public string Email { get; set; } = null!;
         public string FirstName { get; set; } = null!;
         public string? LastName { get; set; }= null!;
-        public string? Adress { get; set; } 
+        public string? Address { get; set; } 
         public string? Phone { get; set; }
+        public int EmailConfermationDigit { get; set; }
+        [Required]
+        public bool IsEmailVeryfied {  get; set; }
+        
+
 
 
 

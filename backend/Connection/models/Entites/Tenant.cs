@@ -6,14 +6,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Connection.models
 { 
 
-    public class Tenant : IEntity
+    public class Tenant 
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; } // PK Identity(1,1)
-
-        [Required]
-        public int DataKey { get; set; } // internal partition / shard key
+        public int Id { get; set; } // PK Identity(1,1) == DataKey
 
         [Required]
         [MaxLength(100)]
@@ -28,6 +25,9 @@ namespace Connection.models
 
         [Required]
         public bool IsActive { get; set; } = true;
+
+        [Required]
+        public string PasswordHash { get; set; } = null!;
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

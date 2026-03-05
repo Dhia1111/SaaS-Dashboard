@@ -20,8 +20,7 @@ namespace Connection.models
         public int TenantId { get; set; }
         [Required]
 
-        [Required]
-        public int PlatformPlanId {  get; set; }
+         public int PlatformPlanId {  get; set; }
         public int DataKey { get; set; }
 
         [Required]
