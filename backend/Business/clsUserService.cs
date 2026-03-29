@@ -73,8 +73,8 @@ namespace Business
                 DataKey = dto.DataKey,
                 PersonID = dto.PersonID,
                 Role = dto.Role,
-                CreatedAt = DateTime.Parse(dto.CreatedAt) ,
-                UpdatedAt = dto.UpdatedAt!=null?DateTime.Parse(dto.UpdatedAt):null,
+                CreatedAt = DateTime.Parse(dto.CreatedAt).ToUniversalTime() ,
+                UpdatedAt = dto.UpdatedAt!=null?DateTime.Parse(dto.UpdatedAt).ToUniversalTime():null,
             };
         }
 
@@ -85,7 +85,7 @@ namespace Business
         }
 
         // Override Add/Update if you want special checks
-        public override async Task<bool> AddAsync(DtoUser dto)
+        public override async Task<int> AddAsync(DtoUser dto)
         {
             // explicit mapping will validate existence of Person
             var user = FromDto(dto);

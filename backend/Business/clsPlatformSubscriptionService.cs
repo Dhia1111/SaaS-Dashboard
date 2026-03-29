@@ -78,8 +78,8 @@ namespace Business
                 PlatformPlanId = dto.PlatformPlanId,
                 Status = dto.Status,
                 StripeSubscriptionId = dto.StripeSubscriptionId,
-                StartedAt = startedAt,
-                EndsAt = endsAt
+                StartedAt = startedAt.ToUniversalTime(),
+                EndsAt = endsAt?.ToUniversalTime()
             };
         }
 

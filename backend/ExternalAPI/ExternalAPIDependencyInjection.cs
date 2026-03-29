@@ -3,8 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Mail;
-using System.Numerics;
-
+ 
 
 namespace ExternalAPI
 {

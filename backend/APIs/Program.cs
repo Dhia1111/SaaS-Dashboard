@@ -1,7 +1,11 @@
+using APIs.AssetHandler;
+using APIs.Hashing;
+using APIs.Responses;
 using Business;
 using Connection;
 using Connection.Data;
 using ExternalAPI;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,10 +20,10 @@ builder.Services.AddDbContextPool<SaasDashboardContext>(options =>
     options.UseNpgsql(connString);
 });
 builder.Services.AddControllers();
-
-builder.Services.AddBusinessDependencies();
+builder.Services.AddAPIDependencies();
 builder.Services.AddConnectionDependencies();
 builder.Services.AddExternalAPIDependencies();
+builder.Services.AddBusinessDependencies();
 
 
 builder.Services.AddCors(options =>
@@ -46,13 +50,36 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            var logger = context.RequestServices
+                .GetRequiredService<ILogger<Program>>();
 
+            var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+            var exception = exceptionFeature?.Error;
+
+            if (exception != null)
+            {
+                logger.LogCritical(exception, "Unhandled exception occurred");
+            }
+
+            context.Response.StatusCode = 500;
+
+            await context.Response.WriteAsJsonAsync(
+                ApiResult<object>.Fail(
+                    "SERVER_ERROR",
+                    "Unexpected server error"
+                ));
+        });
+    });
+
+}
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.UseCors("AllowReactApp");
-
 app.MapControllers();
-
 app.Run();

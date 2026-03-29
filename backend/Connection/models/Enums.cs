@@ -20,5 +20,11 @@ namespace Connection.models
         Monthly = 1,
         Yearly = 2
     }
+    public enum Roles { 
+       
+        Admine,
+        UnverfidAdmine 
+     
+      }
 
 }

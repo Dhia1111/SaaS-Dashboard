@@ -22,6 +22,7 @@ namespace Connection.Data
         public virtual DbSet<TenantPlan> TenantPlans { get; set; } = null!;
         public virtual DbSet<UserPayment> UserPayments { get; set; } = null!;
         public virtual DbSet<UserSubscription> UserSubscriptions { get; set; } = null!;
+        public virtual DbSet<TenantSession> Sessions { get; set; } = null!;
 
 
 

@@ -14,7 +14,7 @@ namespace Business
         Task<TDto> GetByIdAsync(int id);
         Task<int> AddAsync(TDto dto);
         Task<bool> UpdateAsync(TDto dto);
-        Task<bool> DeleteAsync(int id);
+      public  Task<bool> DeleteAsync(int id);
     }
     public abstract class GenericService<TDto, TEntity> : IGenericService<TDto>
         where TEntity : class

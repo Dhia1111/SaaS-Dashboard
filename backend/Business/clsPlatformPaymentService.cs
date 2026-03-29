@@ -45,7 +45,7 @@ namespace Business
                 Amount = dto.Amount,
                 Status = dto.Status,
                 StripePaymentIntentId = dto.StripePaymentIntentId,
-                PaidAt = DateTime.TryParse(dto.PaymentDate, out var paid) ? paid : throw new Exception("Invalid PaidAt string")
+                PaidAt = DateTime.TryParse(dto.PaymentDate, out var paid) ? paid.ToUniversalTime() : throw new Exception("Invalid PaidAt string")
             };
         }
     }

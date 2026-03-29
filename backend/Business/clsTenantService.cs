@@ -1,31 +1,38 @@
 ﻿// Business/clsTenantService.cs
 using Connection.models;
+using ExternalAPI;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Business
 {
     public interface ITenantService : IGenericService<DtoTenant>
     {
-        Task<DtoTenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
 
+        public Task<DtoTenant?> GetByEmailAsync(string email);
+
+        Task<DtoTenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
     }
 
     public class clsTenantService : GenericService<DtoTenant, Tenant>, ITenantService
     {
         private readonly ITenantRepo _tenantRepo;
         private readonly IPersonService _personService;
-        private readonly ILogger<clsTenantService> _typedLogger;
+        private readonly IEmailExternalService _emailExternalService;
 
-        public clsTenantService(ITenantRepo tenantRepo, ILogger<clsTenantService> logger, IPersonService personService)
+
+        public clsTenantService(ITenantRepo tenantRepo, ILogger<clsTenantService> logger, 
+            IPersonService personService,  IEmailExternalService emailExternalService)
             : base(tenantRepo, logger)
         {
             _tenantRepo = tenantRepo;
-            _typedLogger = logger;
             _personService = personService;
+            _emailExternalService = emailExternalService;
         }
 
         protected override DtoTenant ToDto(Tenant entity)
@@ -36,8 +43,11 @@ namespace Business
                 UniqueIdentifier = entity.UniqueIdentifier,
                 CompanyName = entity.CompanyName,
                 Description = entity.Description,
+                PasswordHash=entity.PasswordHash,
                 IsActive = entity.IsActive,
                 CreatedAt = entity.CreatedAt.ToLongDateString(),
+                UpdatedAt = entity.UpdatedAt?.ToLongDateString(),
+                Role=entity.Role,
                 PersonId = entity.PersonId,
                 Person = entity.Person != null ? new DtoPerson
                 {
@@ -59,9 +69,11 @@ namespace Business
                 UniqueIdentifier = dto.UniqueIdentifier,
                 CompanyName = dto.CompanyName,
                 Description = dto.Description,
+                PasswordHash=dto.PasswordHash,
                 PersonId = dto.PersonId,
                 IsActive = dto.IsActive,
-                CreatedAt = dto.CreatedAt == null ? throw new Exception("error(Parsing): the DTo value Is null ") : DateTime.TryParse(dto.CreatedAt, out DateTime result) == false ? throw new Exception("invaild string value DateTime") : result
+                Role=dto.Role,
+                CreatedAt = dto.CreatedAt == null ? throw new Exception("error(Parsing): the DTo value Is null ") : DateTime.TryParse(dto.CreatedAt, out DateTime result) == false ? throw new Exception("invaild string value DateTime") : result.ToUniversalTime()
             };
         }
 
@@ -91,7 +103,13 @@ namespace Business
             Result= await base.UpdateAsync(tenant);
             return Result;
         }
-    
+
+        public async Task<DtoTenant?> GetByEmailAsync(string email)
+        {
+            Tenant? t=  await _tenantRepo.GetByEmailAsync(email);
+            if(t != null) return this.ToDto(t);
+            return null;
+        }
 
     }
 }

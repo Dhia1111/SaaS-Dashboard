@@ -1,12 +1,8 @@
 ﻿ using Microsoft.AspNetCore.Hosting;
-using System.IO;
+using Business;
 namespace APIs.AssetHandler
 {
-    public interface IEmailTemplateHandler
-    {
-        Task<string> CreateTemplate(string code);
-    }
-
+  
     public class EmailTemplateHandler : IEmailTemplateHandler
     {
         private readonly IWebHostEnvironment _env;

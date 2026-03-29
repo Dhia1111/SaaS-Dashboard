@@ -33,9 +33,11 @@ namespace Connection.models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+        public int Role { get; set; }
         // 🔑 OWNER
         [Required]
         public int PersonId { get; set; }
+
 
         [ForeignKey(nameof(PersonId))]
         public Person Person { get; set; } = null!;

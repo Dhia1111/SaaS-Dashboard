@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-
+using Business.EndToEndService;
 
 namespace Business
 {
@@ -10,6 +10,8 @@ namespace Business
         {
             services.AddScoped<IPersonService, clsPersonService>();
             services.AddScoped<IUserService, clsUserService>();
+            services.AddScoped<ITentantAuthService,TenantAuthService>();
+            services.AddScoped<ITenantService, clsTenantService>();
 
             // business rules, domain services, validators, etc.
 

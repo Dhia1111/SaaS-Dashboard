@@ -74,7 +74,7 @@ namespace Business
                 Currency = dto.Currency,
                 Status = dto.Status,
                 StripePaymentIntentId = dto.StripePaymentIntentId,
-                PaidAt = paidAt
+                PaidAt = paidAt.ToUniversalTime()
             };
         }
 
