@@ -18,13 +18,27 @@ namespace Connection.models
         public bool IsActive { get; set; }
         public string CreatedAt { get; set; }=null!;
         public string PasswordHash { get; set; } = null!;
-
+        public string? UpdatedAt { get; set; }
         public int PersonId { get; set; }
+        public int Role {  get; set; }
         public DtoPerson Person { get; set; } = null!;
+
+        public DtoTenant() { }
+        public DtoTenant( string uniqueIdentifier, string companyName, string? description, bool isActive, string createdAt, string passwordHash, int personId, DtoPerson person)
+        {
+            UniqueIdentifier = uniqueIdentifier;
+            CompanyName = companyName;
+            Description = description;
+            IsActive = isActive;
+            CreatedAt = createdAt;
+            PasswordHash = passwordHash;
+            PersonId = personId;
+            Person = person;
+        }
     }
     public interface ITenantRepo:IGenericRepo<Tenant>
     {
-      
+        public  Task<Tenant?> GetByEmailAsync(string email);
         Task<Tenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
  
     }
@@ -62,6 +76,28 @@ namespace Connection.models
                     this._logger.LogError(ex.Message, this);
                     throw new Exception(ex.Message);
                 }
+            }
+        }
+
+        public async Task<Tenant?> GetByEmailAsync(string email)
+        {
+            try
+            {
+                var person = await _context.Persons
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(p => p.Email == email);
+
+                if (person == null) return null;
+
+                return await _context.Tenants
+                    .AsNoTracking()
+                    .Include(u => u.Person)
+                    .SingleOrDefaultAsync(u => u.PersonId == person.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching User by Email {Email}", email);
+                throw;
             }
         }
 

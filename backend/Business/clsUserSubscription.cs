@@ -49,8 +49,8 @@ namespace Business
                 SubscriptionTypeId = dto.SubscriptionTypeId,
                 Status = dto.Status,
                 StripeSubscriptionId = dto.StripeSubscriptionId,
-                StartedAt = DateTime.TryParse(dto.StartDate, out var start) ? start : throw new Exception("Invalid StartedAt string"),
-                EndsAt = string.IsNullOrWhiteSpace(dto.EndDate) ? null : DateTime.TryParse(dto.EndDate, out var end) ? end : throw new Exception("Invalid EndsAt string")
+                StartedAt = DateTime.TryParse(dto.StartDate, out var start) ? start.ToUniversalTime() : throw new Exception("Invalid StartedAt string"),
+                EndsAt = string.IsNullOrWhiteSpace(dto.EndDate) ? null : DateTime.TryParse(dto.EndDate, out var end) ? end.ToUniversalTime() : throw new Exception("Invalid EndsAt string")
             };
         }
     }

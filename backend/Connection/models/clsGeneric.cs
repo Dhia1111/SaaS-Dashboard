@@ -44,7 +44,7 @@ namespace Connection.models
                 var dbSet = _context.Set<T>();
                 return await dbSet.AsNoTracking().ToListAsync(); // You can add filters via expression
             }
-            catch (Exception ex)
+            catch (Exception  ex)
             {
                 _logger.LogError(ex, "Error fetching all {Entity}", typeof(T).Name);
                 throw;
@@ -68,6 +68,7 @@ namespace Connection.models
         {
             try
             {
+                
                 await _context.Set<T>().AddAsync(entity);
                 await _context.SaveChangesAsync();
                 var idProperty = _context.Entry(entity).Property("Id").CurrentValue;
@@ -77,7 +78,8 @@ namespace Connection.models
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding {Entity}", typeof(T).Name);
-                return 0; // Or throw a custom exception
+                throw;
+
             }
         }
 

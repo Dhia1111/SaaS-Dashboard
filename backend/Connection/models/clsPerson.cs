@@ -10,10 +10,12 @@ public class DtoPerson
     public int DataKey { get; set; }
     public string Email { get; set; } = null!;
     public string? Phone { get; set; }
-    public string FirstName { get; set; } = null!;
+    public string? FirstName { get; set; } 
     public string? LastName { get; set; }
     public string? Address { get; set; }
-    public int EmailConfermationDigit { get; set; }
+    public string tokenHash { get; set; } = null!;
+    public string EmailVerificationCodeExpiry { get; set; } = null!;
+
     [Required]
     public bool IsEmailVeryfied { get; set; }
 
@@ -23,7 +25,6 @@ public class DtoPerson
 
 public interface IPersonRepository:IGenericRepo<Person>
 {
-    Task<IReadOnlyList<Person>> GetAllAsync();
 
 
     Task<Person?> GetByEmailAsync(string email);
@@ -35,7 +36,7 @@ public interface IPersonRepository:IGenericRepo<Person>
 
  
 
-public class clsPersonRepo : GenericRepo<Person>
+public class clsPersonRepo : GenericRepo<Person>,IPersonRepository
 {
 
     public clsPersonRepo(SaasDashboardContext context, ILogger<clsPersonRepo> logger):base(context,logger)
@@ -43,8 +44,8 @@ public class clsPersonRepo : GenericRepo<Person>
       
     }
 
-   
- 
+
+
     public async Task<Person?> GetByEmailAsync(string email)
     {
         try

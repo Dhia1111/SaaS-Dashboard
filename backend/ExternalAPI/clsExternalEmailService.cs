@@ -6,6 +6,13 @@ using System.Net.Mail;
 
 namespace ExternalAPI
 {
+    public sealed class EmailServiceUnavailableException : Exception
+    {
+        public EmailServiceUnavailableException(Exception innerException)
+            : base("Email service is unavailable.", innerException)
+        {
+        }
+    }
     public class EmailSettings
     {
         public string Host { get; set; } = string.Empty;
@@ -105,17 +112,18 @@ namespace ExternalAPI
 
     public class DtoEmail
     {
-        public string From { get; set; } = null!;
         public string Subject { get; set; } = null!;
+        public string From { get; set; } = null!;
         public string To { get; set; } = null!;
-        public string Body { get; set; } = null!;
         public bool IsBodyAnHtml { get; set; }
+
+        public string Body { get; set; } = null!;
     }
 
     public interface IEmailExternalService
     {
 
-        public Task SendEmailUsingSmtp(DtoEmail Dto);
+        public Task SendEmail(DtoEmail Dto);
 
     }
 
@@ -129,7 +137,7 @@ namespace ExternalAPI
             _smptClient = smptClient;
         }
 
-        public async Task SendEmailUsingSmtp(DtoEmail dto)
+        public async Task SendEmail(DtoEmail dto)
         {
             var mailMessage = new MailMessage
             {
@@ -148,7 +156,7 @@ namespace ExternalAPI
             catch (SmtpException ex)
             {
                 _logger.LogError(ex, "SMTP error while sending email to {To}", dto.To);
-                throw; // preserve truth
+                throw;                             // preserve truth
             }
             catch (Exception ex)
             {

@@ -47,6 +47,7 @@ obj/
 *.pdb
 *.dll
 *.exe
+test.cs
 appsettings.json
 appsettings.Development.json
 ############################

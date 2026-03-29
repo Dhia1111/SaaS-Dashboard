@@ -10,8 +10,7 @@ namespace Business
     {
         public interface IPersonService:IGenericService<DtoPerson>
         {
-            Task<IReadOnlyList<DtoPerson>> GetAllAsync();
-
+ 
 
             Task<DtoPerson> GetByEmailAsync(string Email);
 
@@ -28,18 +27,11 @@ namespace Business
             private readonly IPersonRepository _repository;
             private readonly ILogger<clsPersonService> _logger;
 
-            public clsPersonService(IPersonRepository repository,ILogger<clsPersonService> logger):base(repository,logger)
+         public clsPersonService(IPersonRepository repository,ILogger<clsPersonService> logger):base(repository,logger)
             {
                 _repository = repository;
                 _logger = logger;
             }
-
-            public async Task<IReadOnlyList<DtoPerson>> GetAllAsync()
-            {
-                var people = await _repository.GetAllAsync();
-                return people.Select(ToDto).ToList();
-            }
-
          public async Task<DtoPerson> GetByEmailAsync(string Email)
         {
             var person = await _repository.GetByEmailAsync(Email);
@@ -71,7 +63,8 @@ namespace Business
                     LastName = person.LastName,
                     Address=person.Address,
                     IsEmailVeryfied = person.IsEmailVeryfied,
-                    EmailConfermationDigit = person.EmailConfermationDigit,
+                    tokenHash = person.SecureCode,
+                    EmailVerificationCodeExpiry=person.EmailVerificationCodeExpiry.ToLongTimeString(),
 
                 };
             }
@@ -87,8 +80,11 @@ namespace Business
                 LastName = person.LastName,
                 Address = person.Address,
                 IsEmailVeryfied = person.IsEmailVeryfied,
-                EmailConfermationDigit= person.EmailConfermationDigit,
-            };
+                SecureCode = person.tokenHash,
+                EmailVerificationCodeExpiry = DateTime.TryParse(person.EmailVerificationCodeExpiry, out DateTime date)? date.ToUniversalTime() : DateTime.UtcNow.AddMinutes(12),
+
+                
+            }; 
         }
     }
     }
