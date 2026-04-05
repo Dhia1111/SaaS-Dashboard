@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Connection.models.Entites
 {
-    public class TenantSession
+    public class TenantSession:IEntity
     {
-        
-            public int SessionId { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
             public int TenantId { get; set; }
+           [Required]
+            public int  DataKey {  get; set; }
 
             [Required]
             public string CurrentRefreshTokenHash { get; set; } = null!;

@@ -47,19 +47,18 @@ namespace Connection.models
             {
             }
 
-            public override async Task<IReadOnlyList<UserPayment>> GetAllAsync(int dataKey)
+            public override async Task<IReadOnlyList<UserPayment>> GetAllAsync()
             {
                 try
                 {
                     return await _context.UserPayments
                         .AsNoTracking()
-                        .Where(p => p.DataKey == dataKey)
                         .ToListAsync();
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex,
-                        "Error fetching UserPayments for DataKey {DataKey}", dataKey);
+                        "Error fetching UserPayments ");
                     throw;
                 }
             }

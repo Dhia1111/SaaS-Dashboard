@@ -10,7 +10,7 @@ namespace Business
 {
     public interface IGenericService<TDto>
     {
-        Task<IReadOnlyList<TDto>> GetAllAsync(int dataKey);
+        Task<IReadOnlyList<TDto>> GetAllAsync();
         Task<TDto> GetByIdAsync(int id);
         Task<int> AddAsync(TDto dto);
         Task<bool> UpdateAsync(TDto dto);
@@ -32,9 +32,9 @@ namespace Business
         protected abstract TDto ToDto(TEntity entity);
         protected abstract TEntity FromDto(TDto dto);
 
-        public virtual async Task<IReadOnlyList<TDto>> GetAllAsync(int dataKey)
+        public virtual async Task<IReadOnlyList<TDto>> GetAllAsync()
         {
-            var list = await _repo.GetAllAsync(dataKey); // List<TEntity>
+            var list = await _repo.GetAllAsync(); // List<TEntity>
             return list.Select(ToDto).ToList();
         }
 

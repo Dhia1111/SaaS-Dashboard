@@ -1,13 +1,7 @@
 ﻿// Business/clsTenantService.cs
 using Connection.models;
-using ExternalAPI;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Threading.Tasks;
+
 
 namespace Business
 {
@@ -17,22 +11,21 @@ namespace Business
         public Task<DtoTenant?> GetByEmailAsync(string email);
 
         Task<DtoTenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
+        Task<DtoTenant?> GetByPersonHashSecureCodeAsync(string secureCode);
     }
 
     public class clsTenantService : GenericService<DtoTenant, Tenant>, ITenantService
     {
         private readonly ITenantRepo _tenantRepo;
         private readonly IPersonService _personService;
-        private readonly IEmailExternalService _emailExternalService;
 
 
         public clsTenantService(ITenantRepo tenantRepo, ILogger<clsTenantService> logger, 
-            IPersonService personService,  IEmailExternalService emailExternalService)
+            IPersonService personService)
             : base(tenantRepo, logger)
         {
             _tenantRepo = tenantRepo;
             _personService = personService;
-            _emailExternalService = emailExternalService;
         }
 
         protected override DtoTenant ToDto(Tenant entity)
@@ -82,6 +75,16 @@ namespace Business
             var tenant = await _tenantRepo.GetByUniqueIdentifierWithPersonAsync(uniqueIdentifier);
             return tenant != null ? ToDto(tenant) : null;
         }
+        public async Task<DtoTenant?> GetByPersonHashSecureCodeAsync(string secureCode)
+        {
+            var person = await _personService.FindBySecureCodeAsync(secureCode);
+            if (person == null) return null;    
+            var tenant = await _tenantRepo.GetByEmailAsync(person.Email);
+            if (tenant == null) return null;
+            DtoTenant dtoTenant = ToDto(tenant);
+            dtoTenant.Person = person; // attach person to tenant for complete DTO
+            return dtoTenant;
+        }
 
         public override async Task<int> AddAsync(DtoTenant tenant)
         {
@@ -111,5 +114,6 @@ namespace Business
             return null;
         }
 
+        
     }
 }

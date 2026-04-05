@@ -1,6 +1,5 @@
 ﻿using Connection.models;
 using Connection.models.Entites;
-using ExternalAPI;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
@@ -15,6 +14,9 @@ public class DtoSignUp
     [Required]
     [MinLength(8)]
     public string Password { get; set; }
+
+    [Required]
+    public string CompanyName {  get; set; }
 }
 public class DtoLogIn
 {
@@ -37,9 +39,12 @@ namespace Business.EndToEndService
     public interface ITentantAuthService
     {
 
-        public Task<DtoTokens?> SignUpAsync(DtoSignUp Request, string Ip);
+        public Task SignUpAsync(DtoSignUp Request);
         public Task<DtoTokens?> LogInAsync(DtoLogIn request, string Ip);
         public Task<DtoTokens?> RefreshTokens(string Ip, DtoTokens tokens);
+        public Task<DtoTokens?> VerifyEmailAsync(string Ip,string Code);
+        Task LogOut(string token, string Ip);
+
     }
     public class TenantAuthService : ITentantAuthService
     {
@@ -51,15 +56,15 @@ namespace Business.EndToEndService
         private readonly IEmailSettingsFactory _emailSettingsFactory;
         private readonly ILogger<TenantAuthService> _logger;
         private readonly IPasswordHashService _passwordHashService;
-        private readonly IEmailExternalService _emailExternalService;
+        private readonly IEmailService _EmailService;
         public TenantAuthService(ITenantService tenant, IEmailTemplateHandler emailTemplateHandler,
             ILogger<TenantAuthService> logger,
             IEmailSettingsFactory emailSettingsFactory,
             IPasswordHashService passwordHash,
-            IEmailExternalService emailExternalService,
             ITokenHandler tokenHandler,
             IJwtService jwtService,
-            ITenantSessionService tenantSession
+            ITenantSessionService tenantSession,
+            IEmailService emailService
             )
         {
             _tenantSessionService = tenantSession;
@@ -70,19 +75,19 @@ namespace Business.EndToEndService
             _emailSettingsFactory = emailSettingsFactory;
             _logger = logger;
             _passwordHashService = passwordHash;
-            _emailExternalService = emailExternalService;
+            _EmailService = emailService;
         }
 
-        public async Task<DtoTokens?> SignUpAsync(DtoSignUp request, string Ip)
+        public async Task SignUpAsync(DtoSignUp request)
         {
 
             var existing = await _tenantService.GetByEmailAsync(request.Email);
-            if (existing != null) return null;
+            if (existing != null) return;
 
             var token = Guid.NewGuid().ToString("N");
             var tokenHash = _passwordHashService.Hash(token);
 
-            DtoTenant tenant = new DtoTenant("", "", "", false, DateTime.UtcNow.ToLongDateString(), "", 0, new DtoPerson());
+            DtoTenant tenant = new DtoTenant("",request.CompanyName, "", false, DateTime.UtcNow.ToLongDateString(), "", 0, new DtoPerson());
             tenant.CreatedAt = DateTime.UtcNow.ToLongDateString();
             tenant.PasswordHash = _passwordHashService.Hash(request.Password);
             tenant.Person = new DtoPerson
@@ -93,10 +98,6 @@ namespace Business.EndToEndService
                 tokenHash = tokenHash,
 
             };
-
-
-            await _tenantService.AddAsync(tenant);
-
             var EmailSetting = _emailSettingsFactory.CreateSettings();
             string HtmlTemplate = await _emailTemplateHandler.CreateTemplate(tokenHash);
             var Email = new DtoEmail()
@@ -107,35 +108,43 @@ namespace Business.EndToEndService
                 IsBodyAnHtml = true,
                 Body = HtmlTemplate,
             };
-            try
-            {
-                await _emailExternalService.SendEmail(Email);
-            }
-            catch
-            {
-                _logger.LogWarning("Verification email failed, will retry later");
-                throw;
-            }
+            //  regester ever think about the email 
+            // to be send by the email background service and not the auth service because the auth service is responsible for the domain logic 
+            // of the tenant and not the side effect of sending email
+            await _EmailService.AddAsync(Email);
+            await _tenantService.AddAsync(tenant);
+
+            // I should not mix side effects with the domine logic because it leads to confusion and 
+            // limit the scalability
+            /* 
+            var EmailSetting = _emailSettingsFactory.CreateSettings();
+             string HtmlTemplate = await _emailTemplateHandler.CreateTemplate(tokenHash);
+             var Email = new DtoEmail()
+             {
+                 Subject = "Verify your Email",
+                 From = EmailSetting.Email,
+                 To = tenant.Person.Email,
+                 IsBodyAnHtml = true,
+                 Body = HtmlTemplate,
+             };
+             try
+             {
+                 await _emailExternalService.SendEmail(Email);
+             }
+             catch
+             {
+                 _logger.LogWarning("Verification email failed, will retry later");
+                 throw;
+             }
+             */
 
 
-            //Create Tokens
 
-            string refreshToken = _tokenHandler.GenerateRefreshToken();
-            DtoTenantSession session = new DtoTenantSession()
-            {
-                CurrentRefreshTokenHash = _passwordHashService.Hash(refreshToken),
-                ExpiresAt = DateTime.UtcNow.AddDays(30).ToLongDateString(),
-                GraceUntil = DateTime.UtcNow.AddSeconds(40).ToLongDateString(),
-                IpAddress = Ip,
-                TenantAgent = null,
-                PreviousRefreshTokenHash = null,
-                RevokedAt = null,
-            };
-            session.SessionId = await _tenantSessionService.AddAsync(session);
-            var AccesToken = _jwtService.GenerateAccessToken(tenant.Id, session.SessionId, (int)Roles.UnverfidAdmine);
-            return new DtoTokens() { AccessToken = AccesToken, RefreshToken = refreshToken };
+
+
 
         }
+
         public async Task<DtoTokens?> LogInAsync(DtoLogIn request, string Ip)
         {
 
@@ -174,14 +183,14 @@ namespace Business.EndToEndService
                 return null;
 
 
-            if (DateTime.TryParse(session.ExpiresAt,out DateTime d)&&d <= DateTime.UtcNow)
+            if (DateTime.TryParse(session.ExpiresAt, out DateTime d) && d <= DateTime.UtcNow)
                 return null;
             // 2. Check token position
             bool isCurrent = session.CurrentRefreshTokenHash == hash;
 
             bool isPrevious =
                 session.PreviousRefreshTokenHash == hash &&
-                DateTime.TryParse(session.GraceUntil,out DateTime graceUntil) &&
+                DateTime.TryParse(session.GraceUntil, out DateTime graceUntil) &&
                 graceUntil > DateTime.UtcNow;
 
             // 3. Reuse detection (CRITICAL)
@@ -207,8 +216,8 @@ namespace Business.EndToEndService
 
             session.LastRefreshedAt = DateTime.UtcNow.ToString();
             session.LastRefreshedIp = ip;
-            
-            bool update =await _tenantSessionService.UpdateIfCurrentAsync(newHash, tokens.RefreshToken, newGraceUntil, session.SessionId);
+
+            bool update = await _tenantSessionService.UpdateIfCurrentAsync(newHash, tokens.RefreshToken, newGraceUntil, session.SessionId);
             if (!update) throw new SecurityTokenException("Race condition detected");
 
 
@@ -228,5 +237,48 @@ namespace Business.EndToEndService
                 RefreshToken = newRefresh
             };
         }
+
+        public async Task<DtoTokens?> VerifyEmailAsync(string Code, string Ip)
+        {
+            var hashCode = _passwordHashService.Hash(Code);
+            var tenant = await _tenantService.GetByPersonHashSecureCodeAsync(hashCode);
+            if (tenant == null) return null;
+            if (DateTime.TryParse(tenant.Person.EmailVerificationCodeExpiry, out DateTime expiry) && expiry < DateTime.UtcNow)
+                return null;
+            tenant.Person.IsEmailVeryfied = true;
+            tenant.Person.EmailVerificationCodeExpiry = DateTime.UtcNow.ToLongDateString();
+            await _tenantService.UpdateAsync(tenant);
+
+            //Create session and Tokens
+
+            string refreshToken = _tokenHandler.GenerateRefreshToken();
+            DtoTenantSession session = new DtoTenantSession()
+            {
+                CurrentRefreshTokenHash = _passwordHashService.Hash(refreshToken),
+                ExpiresAt = DateTime.UtcNow.AddDays(30).ToLongDateString(),
+                GraceUntil = DateTime.UtcNow.AddSeconds(40).ToLongDateString(),
+                IpAddress = Ip,
+                TenantAgent = null,
+                PreviousRefreshTokenHash = null,
+                RevokedAt = null,
+            };
+            session.SessionId = await _tenantSessionService.AddAsync(session);
+            var AccesToken = _jwtService.GenerateAccessToken(tenant.Id, session.SessionId, (int)Roles.UnverfidAdmine);
+            return new DtoTokens() { AccessToken = AccesToken, RefreshToken = refreshToken };
+
+        }
+
+        public async Task LogOut(string token ,string Ip)
+        {
+            DtoTenantSession? sesion= await _tenantSessionService.GetByToken(_passwordHashService.Hash(token));
+            if (sesion != null) return;
+            sesion.ExpiresAt = DateTime.UtcNow.ToLongDateString();
+            sesion.RevokedAt=DateTime.UtcNow.ToLongDateString() ;
+            sesion.RevokedAt = DateTime.UtcNow.ToLongDateString() ;
+            sesion.RevokedByIp = Ip;
+
+        }
     }
-}
+
+    }
+

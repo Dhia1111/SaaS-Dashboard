@@ -11,7 +11,7 @@ namespace Connection.models
 {
     public interface IGenericReadRepo<T> where T : class
     {
-       Task<IReadOnlyList<T>> GetAllAsync(int dataKey);
+       Task<IReadOnlyList<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id);
     }
     public interface IGenericWriteRepo<T> where T : class
@@ -37,7 +37,7 @@ namespace Connection.models
             _logger = logger;
         }
 
-       virtual public  async  Task<IReadOnlyList<T>> GetAllAsync(int dataKey)
+       virtual public  async  Task<IReadOnlyList<T>> GetAllAsync()
         {
             try
             {

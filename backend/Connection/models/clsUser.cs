@@ -37,19 +37,18 @@ namespace Connection.models
         }
         
 
-        public override async Task<IReadOnlyList<User>> GetAllAsync(int dataKey)
+        public override async Task<IReadOnlyList<User>> GetAllAsync()
         {
             try
             {
                 return await _context.Users
                     .AsNoTracking()
                     .Include(u => u.Person) // include related Person entity
-                    .Where(u => u.DataKey == dataKey)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching all Users for DataKey {DataKey}", dataKey);
+                _logger.LogError(ex, "Error fetching all Users " );
                 throw;
             }
         }

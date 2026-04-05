@@ -30,6 +30,7 @@ public interface IPersonRepository:IGenericRepo<Person>
     Task<Person?> GetByEmailAsync(string email);
 
     Task<IReadOnlyList<Person>> SearchByNameAsync(string namePattern);
+      Task<Person?> FindBySecureCodeAsync(string secureCode);
 
   
 }
@@ -60,7 +61,20 @@ public class clsPersonRepo : GenericRepo<Person>,IPersonRepository
             throw;
         }
     }
-
+  public async Task<Person?> FindBySecureCodeAsync(string secureCode)
+    {
+        try
+        {
+            return await _context.Persons
+                .AsNoTracking()
+                .SingleOrDefaultAsync(p => p.SecureCode == secureCode);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching person by SecureCode {SecureCode}", secureCode);
+            throw;
+        }
+    }
     public async Task<IReadOnlyList<Person>> GetByDataKeylAsync(int DataKey)
     {
         try
