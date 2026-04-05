@@ -27,30 +27,17 @@ public class TenantAuth : ControllerBase
     [HttpPost("SignUp")]
     public async Task<ActionResult> SignUp([FromBody]DtoSignUp request)
      {
-
-        string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-
-       
-        DtoTokens? tokens = await _TenantAuthService.SignUpAsync(request, IpAddress);
-        if (tokens == null)
-        {
-            throw new Exception("SignUp Service failded");
-        }
-        Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddDays(30),
-            Path = "api/auth/tenant/"
-        });
+        Response.Cookies.Delete("RefreshToken");
+        await _TenantAuthService.SignUpAsync(request); 
      
-        return Ok(ApiResult<object>.Ok(new {AccessToken=tokens.AccessToken}));
+        return Ok(ApiResult<object>.Ok(null));
+
     }
    
     [HttpPost("LogIn")]
     public async Task<ActionResult> LogIn(DtoLogIn request)
     {
+        Response.Cookies.Delete("RefreshToken");
         string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
 
@@ -76,6 +63,8 @@ public class TenantAuth : ControllerBase
     [HttpPost("RefreshToken")]
     public async Task<ActionResult> RefreshToken(DtoTenant tenant)
     {
+        Response.Cookies.Delete("RefreshToken");
+
         string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
         bool reslt = Request.Cookies.TryGetValue("", out string? RefreshToken);
         if (reslt == false||RefreshToken==null) {
@@ -112,18 +101,39 @@ public class TenantAuth : ControllerBase
     [HttpPost("LogOut")]
     public async Task<ActionResult> LogOut(DtoTenant tenant)
     {
-        await Task.Delay(1000);
-        return Ok();
+        Response.Cookies.Delete("RefreshToken");
+        string? Ip=Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+        Request.Cookies.TryGetValue("RefreshToken",out string? value);
+        if (value == null||string.IsNullOrEmpty(Ip)) return BadRequest(ApiResult<object>.Fail("404","invalid Request"));
+        await _TenantAuthService.LogOut(value,Ip);
+       
+        return Ok(ApiResult<object>.Ok(null));
 
     }
 
     [HttpPatch("VerifyEmail")]
     public async Task<ActionResult> VerifyEmail(string Code)
-    {
-
-        await Task.Delay(100);
-        return Ok();
+{
+        string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (IpAddress == null) return BadRequest();
+       
+        DtoTokens? tokens = await _TenantAuthService.VerifyEmailAsync(Code, IpAddress);
+        if (tokens == null)
+        {
+            throw new Exception("SignUp Service failded");
+        }
+        Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(30),
+            Path = "api/auth/tenant/"
+        });
+     
+        return Ok(ApiResult<object>.Ok(new {AccessToken=tokens.AccessToken}));
     }
+
 
 
 }

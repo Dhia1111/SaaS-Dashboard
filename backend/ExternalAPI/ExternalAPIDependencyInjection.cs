@@ -16,7 +16,6 @@ namespace ExternalAPI
         public static IServiceCollection AddExternalAPIDependencies(this IServiceCollection services)
         {
             services.AddLogging();
-
             // Register the settings factory
             services.AddSingleton<IEmailSettingsFactory, EnvironmentEmailSettingsFactory>();
 
@@ -26,6 +25,7 @@ namespace ExternalAPI
             var emailSettings = settingsFactory.CreateSettings();
 
             services.AddSingleton(emailSettings);
+
             // Register SmtpClient
             services.AddScoped<SmtpClient>(serviceProvider =>
             {

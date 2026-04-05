@@ -15,8 +15,9 @@ namespace Business
             Task<DtoPerson> GetByEmailAsync(string Email);
 
 
-        Task<IReadOnlyList<DtoPerson>> SearchByNameAsync(string name);
-
+            Task<IReadOnlyList<DtoPerson>> SearchByNameAsync(string name);
+        
+            Task<DtoPerson?> FindBySecureCodeAsync(string secureCode);
 
            
     }
@@ -42,6 +43,19 @@ namespace Business
                 }
             return ToDto(person);
         }
+
+   public async Task<DtoPerson> FindBySecureCodeAsync(string secureCode)
+        {
+            var person = await _repository.FindBySecureCodeAsync(secureCode);
+
+            if (person == null) {
+               
+                throw new KeyNotFoundException($"Person with secureCode {secureCode} not found.");
+            
+              }
+            return ToDto(person);
+        }
+
         public async Task<IReadOnlyList<DtoPerson>> SearchByNameAsync(string name)
             {
                 if (string.IsNullOrWhiteSpace(name))
@@ -86,6 +100,7 @@ namespace Business
                 
             }; 
         }
+
     }
     }
 

@@ -33,7 +33,7 @@ namespace Business
 
             return new DtoTenantSession
             {
-                SessionId = entity.SessionId,
+                SessionId = entity.Id,
                 TenantId = entity.TenantId,
                 GraceUntil = entity.GraceUntil.ToUniversalTime().ToString(),
                 ExpiresAt = entity.ExpiresAt.ToUniversalTime().ToString(),
@@ -55,7 +55,7 @@ namespace Business
 
             return new TenantSession
             {
-                SessionId = dto.SessionId,
+                Id = dto.SessionId,
                 TenantId = dto.TenantId,
                 GraceUntil = DateTime.Parse(dto.GraceUntil).ToUniversalTime(),
                 ExpiresAt = DateTime.Parse(dto.ExpiresAt).ToUniversalTime(),

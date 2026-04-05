@@ -19,7 +19,6 @@ namespace Connection.models
     }
     public interface IPlatformPlanRepository:IGenericRepo<PlatformPlan>
     {
-        Task<IReadOnlyList<PlatformPlan>> GetAllAsync();
     }
     public class clsPlatformPlanRepo : GenericRepo<PlatformPayment>
     {

@@ -1,10 +1,11 @@
-﻿
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.ComponentModel;
-using System.Net.Mail;
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ExternalAPI
+namespace Business
 {
     public sealed class EmailServiceUnavailableException : Exception
     {
@@ -109,65 +110,5 @@ namespace ExternalAPI
             return true;
         }
     }
-    public class DtoEmail
-    {
-        public string Subject { get; set; } = null!;
-        public string From { get; set; } = null!;
-        public string To { get; set; } = null!;
-        public bool IsBodyAnHtml { get; set; }
 
-        public string Body { get; set; } = null!;
-    }
-
-    public interface IEmailExternalService
-    {
-
-        public Task SendEmail(DtoEmail Dto);
-
-    }
-
-    public class clsExternalEmailService : IEmailExternalService
-    {
-        private readonly ILogger<clsExternalEmailService> _logger;
-        private readonly SmtpClient _smptClient;
-      public clsExternalEmailService(ILogger<clsExternalEmailService> loger, SmtpClient smptClient)
-        {
-            _logger = loger;
-            _smptClient = smptClient;
-        }
-
-        public async Task SendEmail(DtoEmail dto)
-        {
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(dto.From),
-                Subject = dto.Subject,
-                Body = dto.Body,
-                IsBodyHtml = dto.IsBodyAnHtml
-            };
-
-            mailMessage.To.Add(dto.To);
-
-            try
-            {
-                await _smptClient.SendMailAsync(mailMessage);
-            }
-            catch (SmtpException ex)
-            {
-                _logger.LogError(ex, "SMTP error while sending email to {To}", dto.To);
-                throw;                             // preserve truth
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "Unexpected error while sending email");
-                throw;
-            }
-        }
-
-    }
-      
-
-    }
-
-
-
+}
