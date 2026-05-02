@@ -1,7 +1,41 @@
 import { authContent } from '../../assets/Data/Platform/AuthLogin.js';
+import {logIn} from '../../Apis/tenantAuth.js';
+import { useState } from 'react';
+import {useDispatch} from 'react-redux';
+import {setAccessToken} from '../../globalStates/AccessToken.js';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Login() {
+ const Dispatch=useDispatch();
+ const Navigate=useNavigate();
   const { login } = authContent;
+ const [email,setEmail]=useState("");
+ const [password,setPassword]=useState("");
+  const [loading, setLoading] = useState(false);
+ 
+ const LoginAsync = async () => {
+  
+   const data={email,password}
+   setLoading(true);
+   try{
+     const AccessToken= await logIn(data);
+     if(AccessToken) Dispatch(setAccessToken(AccessToken));
+      Navigate("/users/dashboard");
+   }catch(error){
+     console.error("Login failed:", error);
+   }finally{
+     setLoading(false);
+   }
+     
+  
+
+  };
+  const SignInWithGoogle=async()=>{
+    // Implement Google Sign-In logic here
+      window.location.href =
+ "http://localhost:7073/api/auth/tenant/google/login";
+  }
 
   return (
     <div className="min-h-screen flex bg-white font-body">
@@ -22,7 +56,8 @@ export default function Login() {
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Work Email</label>
               <input 
-                type="email" 
+                type="email"
+                onChange={(e)=>setEmail(e.target.value)}
                 placeholder="name@company.com"
                 className="w-full px-4 py-3 rounded-button border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-base"
               />
@@ -38,11 +73,16 @@ export default function Login() {
               <input 
                 type="password" 
                 placeholder="••••••••"
+                onChange={(e)=>setPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-button border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-base"
               />
             </div>
 
-            <button className="w-full bg-primary text-white py-4 rounded-button font-bold shadow-lg shadow-indigo-100 hover:scale-[1.01] active:scale-[0.99] transition-base">
+            <button onClick={()=>LoginAsync()} disabled={loading}    className={`w-full py-4 rounded-button font-bold transition-all shadow-lg ${
+            !loading 
+              ? 'bg-primary text-white shadow-indigo-100 hover:brightness-110 active:scale-[0.98]' 
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+          }`}>
               Sign In
             </button>
           </form>
@@ -55,7 +95,7 @@ export default function Login() {
             </div>
           </div>
 
-          <button className="w-full border border-slate-200 text-slate-700 py-3 rounded-button font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-base">
+          <button onClick={SignInWithGoogle} className="w-full border border-slate-200 text-slate-700 py-3 rounded-button font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-base">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
