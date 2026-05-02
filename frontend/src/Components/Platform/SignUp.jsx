@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import {  useState } from 'react';
 import { signupContent } from '../../assets/Data/Platform/SignUp';
+import {signUp,resendCode,verifyEmail}  from "../../Apis/tenantAuth"
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setAccessToken } from '../../globalStates/AccessToken';
 
 export default function SignupFlow() {
+  const Dispatch= useDispatch();
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   
   // Virtual Payment State
   const [paymentData, setPaymentData] = useState({
@@ -25,13 +32,46 @@ export default function SignupFlow() {
 
   const isAuthValid = validateEmail(email) && password.length >= 8;
 
-  const handleVerificationSuccess = () => {
-    if (selectedPlan === 'free') {
-      // Logic for creating tenant and redirecting
-      window.location.href = '/dashboard';
-    } else {
-      nextStep(); // Move to Step 4: Payment
+  const handleVerificationSuccess = async () => {
+  try {
+    setLoading(true);
+
+    const data = { email, password, code: otp };
+    const AccessToken = await verifyEmail(data);
+
+    if (AccessToken === null) {
+      console.error("Verification failed: Invalid code");
+      return;
     }
+    else{
+      // Store the access token in localStorage or a global state
+      Dispatch(setAccessToken(AccessToken));
+    }
+    if (selectedPlan === 'free') {
+      navigate('/');
+    } else {
+      nextStep();
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+  const ResendCodeAsync = async () => {
+    const data={ email,password };
+     return await resendCode(data);  
+  };
+
+  const SignUpAsync = async () => {
+   const data={email,password}
+     const res= await signUp(data);
+    if(res.status!==200){
+      // Handle sign-up failure (e.g., show error message)
+      console.error("Sign-up failed:",res?.data?.message ||res.message);
+      return;
+    }
+      nextStep(); // Move to Step 3: Email Verification
+
+
   };
 
   return (
@@ -151,10 +191,9 @@ export default function SignupFlow() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-
         <button 
           disabled={!isAuthValid}
-          onClick={nextStep} 
+          onClick={SignUpAsync} 
           className={`w-full py-4 rounded-button font-bold transition-all shadow-lg ${
             isAuthValid 
               ? 'bg-primary text-white shadow-indigo-100 hover:brightness-110 active:scale-[0.98]' 
@@ -183,7 +222,7 @@ export default function SignupFlow() {
 
     <h2 className="text-2xl font-bold font-heading mb-2 text-slate-900">Verify your identity</h2>
     <p className="text-sm text-secondary mb-8 px-4">
-      We've sent an 8-digit security code to <br/>
+      We've sent a security code to <br/>
       <span className="font-bold text-slate-900 underline decoration-primary/30 decoration-2">{email}</span>
     </p>
 
@@ -207,9 +246,12 @@ export default function SignupFlow() {
 
     {/* Verify Button */}
     <button 
-      onClick={handleVerificationSuccess}
-      className="w-full bg-primary text-white py-4 rounded-button font-bold shadow-lg shadow-indigo-100 hover:brightness-110 active:scale-[0.98] transition-all mb-8"
-    >
+      onClick={handleVerificationSuccess} disabled={loading} 
+  className={`w-full py-4 rounded-button font-bold transition-all mb-8 ${
+    loading
+      ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+      : 'bg-primary text-white shadow-lg shadow-indigo-100 hover:brightness-110 active:scale-[0.98]'
+  }`}    >
       {selectedPlan === 'free' ? 'Finalize & Launch' : 'Verify & Continue'}
     </button>
 
@@ -220,10 +262,7 @@ export default function SignupFlow() {
       <div className="inline-flex items-center gap-2 p-1 px-4 bg-slate-50 border border-slate-100 rounded-full">
         <button 
           className="text-xs font-bold text-primary hover:text-indigo-700 transition-colors py-1 disabled:text-slate-400 disabled:cursor-not-allowed"
-          onClick={() => {
-            // Logic to trigger API resend
-            console.log("Resending to:", email);
-          }}
+          onClick={ResendCodeAsync}
         >
           Resend Code
         </button>
