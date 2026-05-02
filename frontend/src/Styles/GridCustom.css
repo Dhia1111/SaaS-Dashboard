@@ -1,0 +1,53 @@
+/* src/styles/GridCustom.css */
+
+/* 1. Change the Grid Header color to match BillFlow Primary */
+.e-grid .e-headercell {
+    background-color: #f8fafc; /* slate-50 */
+    color: #1e293b; /* slate-800 */
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #6366f1; /* Indigo-500 (Primary) */
+    width: 100%;
+}
+
+/* 2. Style the Rows for better readability */
+.e-grid .e-row {
+    background-color: white;
+    transition: background-color 0.2s ease;
+}
+
+.e-grid .e-row:hover {
+    background-color: #f1f5f9 !important; /* slate-100 */
+}
+
+/* 3. Style the Filter Bar */
+.e-grid .e-filterbarcell, .e-grid .e-filterbarcelldisabled {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* 4. Customize the Pagination */
+.e-grid .e-pager {
+    padding: 20px;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.e-grid .e-pager .e-currentitem {
+    background-color: #6366f1 !important; /* BillFlow Primary */
+    border-radius: 6px;
+}/* src/styles/GridCustom.css */
+
+/* Ensure the row height fits our modern buttons */
+.e-grid .e-rowcell {
+    line-height: 1.5 !important;
+    vertical-align: middle !important;
+}
+
+/* Remove default Syncfusion button borders to let Tailwind handle it */
+.e-grid .e-btn {
+    text-transform: none !important;
+    font-family: inherit !important;
+}

@@ -3,6 +3,7 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+
 @layer base {
   :root {
     /* Colors */
@@ -36,4 +37,6 @@
     --color-primary: 96 165 250;
     --color-secondary: 156 163 175;
   }
+
+  
 }

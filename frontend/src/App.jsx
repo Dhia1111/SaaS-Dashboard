@@ -7,17 +7,24 @@ import { createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
 import SignupFlow from './Components/Platform/SignUp'
 import { RouterProvider } from 'react-router-dom'
 import LogIn from './Components/Platform/LogIn'
+import UsersList from './Components/User/UsersList'
+import { User } from './Components/User/User'
 import './App.css'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<PlatformLayout/>} >
-      <Route index element={<Main/>} />
-     <Route path="contact" element={<Contact />} />
-      <Route path="terms" element={<LegalPage type="terms" />} />
-     <Route path="privacy" element={<LegalPage type="privacy" />} />
-          <Route path="login" element={<LogIn />} />
-          <Route path="signup" element={<SignupFlow />} />
+    <Route index element={<Main/>} />
+    <Route path="contact" element={<Contact />} />
+    <Route path="terms" element={<LegalPage type="terms" />} />
+    <Route path="privacy" element={<LegalPage type="privacy" />} />
+    <Route path="login" element={<LogIn />} />
+    <Route path="signup" element={<SignupFlow />} />
+            <Route path="user" element={<User/>} >
+
+        <Route index element={<UsersList />} />
+
+        </Route>
 
 
     </Route>
