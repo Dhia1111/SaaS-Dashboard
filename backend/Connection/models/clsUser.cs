@@ -12,12 +12,11 @@ namespace Connection.models
     public class DtoUser
     {
         public int Id { get; set; }
-        public int DataKey { get; set; }
-        public int PersonID { get; set; }
-        public DtoPerson Person { get; set; } = null!;
+         public int PersonID { get; set; }
+        public DtoPerson? Person { get; set; } 
         public int Role { get; set; }
         public string CreatedAt { get; set; } = null!;
-        public string? UpdatedAt { get; set; }=null!;
+        public string? UpdatedAt { get; set; }
     }
 
     public interface IUserRepo:IGenericRepo<User>
@@ -42,9 +41,7 @@ namespace Connection.models
             try
             {
                 return await _context.Users
-                    .AsNoTracking()
-                    .Include(u => u.Person) // include related Person entity
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {

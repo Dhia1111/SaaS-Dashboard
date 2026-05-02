@@ -6,13 +6,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Connection.models
 { 
 
-    public class User : IEntity
+    public class User : IEntityWithTenantId, IEntity
     {
            [Key]
            [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
             public int Id { get; set; } // PK, identity(1,1)
             [Required]
-            public int DataKey { get; set; } // required
+            public int TenantId { get; set; } // required
             [Required]
             public int PersonID { get; set; } // required public Person Person { get; set; } = null!;
             public Person Person { get; set; }=null!;
