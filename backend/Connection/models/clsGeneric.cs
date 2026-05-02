@@ -1,4 +1,5 @@
 ﻿using Connection.Data;
+using Connection.models.Entites;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
+    public interface ITenantIdProvider
+    {
+       public int TenantId {get;}
+}
     public interface IGenericReadRepo<T> where T : class
     {
        Task<IReadOnlyList<T>> GetAllAsync();
@@ -26,7 +31,7 @@ namespace Connection.models
       where T : class  // MUST repeat the constraint
     {
     }
-    public class GenericRepo<T> : IGenericRepo<T> where T: class
+    public class GenericRepo<T> : IGenericRepo<T> where T: class,IEntity
     {
         protected readonly SaasDashboardContext _context;
         protected readonly ILogger _logger;
@@ -34,7 +39,7 @@ namespace Connection.models
         public GenericRepo(SaasDashboardContext context, ILogger<GenericRepo<T>> logger)
         {
             _context = context;
-            _logger = logger;
+             _logger = logger;
         }
 
        virtual public  async  Task<IReadOnlyList<T>> GetAllAsync()
@@ -51,11 +56,13 @@ namespace Connection.models
             }
         }
 
-        public   async Task<T?> GetByIdAsync(int id)
+     virtual   public   async Task<T?> GetByIdAsync(int id)
         {
             try
             {
-                return await _context.Set<T>().FindAsync(id);
+               // return await _context.Set<T>().FindAsync(id);
+                return await _context.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+
             }
             catch (Exception ex)
             {
@@ -64,7 +71,7 @@ namespace Connection.models
             }
         }
 
-        public async Task<int> AddAsync(T entity)
+        virtual public async Task<int> AddAsync(T entity)
         {
             try
             {

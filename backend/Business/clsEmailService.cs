@@ -36,7 +36,11 @@ namespace Business
                 Subject = entity.Subject,
                 Body = entity.Body,
                 IsSent = entity.IsSent,
-                SentAt = entity.SentAt
+                SentAt = entity.SentAt,
+                From = entity.From,
+                IsBodyAnHtml = entity.IsBodyHtml,
+                CreatedAt = entity.CreatedAt,
+
             };
         }
         protected override Email FromDto(DtoEmail dto)
@@ -48,10 +52,17 @@ namespace Business
                 Subject = dto.Subject,
                 Body = dto.Body,
                 IsSent = dto.IsSent,
-                SentAt = dto.SentAt
+                SentAt = dto.SentAt,
+                From=dto.From,
+                IsBodyHtml=dto.IsBodyAnHtml,
+                CreatedAt=dto.CreatedAt,
+                
+
+
             };
         }
       
+
 
 
     }

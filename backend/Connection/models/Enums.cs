@@ -22,9 +22,12 @@ namespace Connection.models
     }
     public enum Roles { 
        
-        Admine,
-        UnverfidAdmine 
-     
-      }
+        Tenant,
+        AccountManager,
+        User,
+        SaasProvider,
+        SaasManager,
+
+    }
 
 }

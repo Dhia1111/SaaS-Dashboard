@@ -35,7 +35,6 @@ namespace Business
             {
                 Id = entity.Id,
                 TenantId = entity.TenantId,
-                DataKey = entity.DataKey,
                 UserReferenceId = entity.UserReferenceId,
                 Amount = entity.Amount,
                 Currency = entity.Currency,
@@ -68,7 +67,6 @@ namespace Business
             {
                 Id = dto.Id,
                 TenantId = dto.TenantId,
-                DataKey = dto.DataKey,
                 UserReferenceId = dto.UserReferenceId,
                 Amount = dto.Amount,
                 Currency = dto.Currency,

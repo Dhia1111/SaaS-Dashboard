@@ -14,7 +14,6 @@ namespace Connection.models
         public int Id { get; set; }
 
         public int TenantId { get; set; }
-        public int DataKey { get; set; }
 
         public string UserReferenceId { get; set; } = null!;
         public decimal Amount { get; set; }

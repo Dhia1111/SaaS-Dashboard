@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
-    public class UserPayment : IEntity
+    public class UserPayment : IEntityWithTenantId,IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,8 +17,7 @@ namespace Connection.models
 
         [Required]
         public int TenantId { get; set; }
-        [Required]
-        public int DataKey { get; set; }
+        
 
         [Required]
         public string UserReferenceId { get; set; } = null!;

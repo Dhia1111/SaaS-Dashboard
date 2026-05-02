@@ -32,6 +32,8 @@ namespace Connection.models
     {
         public Task<TenantSession?> GetByToken(string Token);
         public  Task<bool> UpdateIfCurrentAsync(string newHash, string OldHash, DateTime graceUntil, int SessionId);
+        public  Task<TenantSession?> GetByTenantId(int TenantId);
+
     }
 
     public class clsSessionRepo : GenericRepo<TenantSession>, IsessionRepo
@@ -44,7 +46,7 @@ namespace Connection.models
         {
             try
             {
-                return await _context.Sessions
+                return await _context.Sessions.IgnoreQueryFilters()
                                   .AsNoTracking().
                                   SingleOrDefaultAsync(u => u.CurrentRefreshTokenHash == HashedToken || u.PreviousRefreshTokenHash == HashedToken);
             }
@@ -56,19 +58,49 @@ namespace Connection.models
         }
         public async Task<bool> UpdateIfCurrentAsync(string newHash,string OldHash,DateTime graceUntil, int SessionId)
         {
-          int n=  await _context.Database.ExecuteSqlRawAsync(@"
-    UPDATE Sessions
+          int n=  await _context.Database.ExecuteSqlRawAsync(@$"
+    UPDATE ""Sessions""
     SET
-        PreviousRefreshTokenHash = CurrentRefreshTokenHash,
-        CurrentRefreshTokenHash = @p0,
-        GraceUntil = @p1
+        ""PreviousRefreshTokenHash"" = ""CurrentRefreshTokenHash"",
+        ""CurrentRefreshTokenHash"" = @p0,
+        ""GraceUntil"" = @p1
     WHERE
-        SessionId = @p2
-        AND CurrentRefreshTokenHash = @p3",
+        ""Id"" = @p2
+        AND ""CurrentRefreshTokenHash"" = @p3",
 newHash, graceUntil, SessionId, OldHash);
 
             return n > 0;
 
         }
+        public async Task<TenantSession?> GetByTenantId(int  TenantId)
+        {
+            try
+            {
+                return await _context.Sessions.IgnoreQueryFilters()
+                                  .AsNoTracking()
+                                  .SingleOrDefaultAsync(u => u.TenantId == TenantId && u.RevokedAt == null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching {TenantSession} by CurrentRefreshTokenHash ", typeof(TenantSession).Name);
+                throw;
+            }
+        }
+
+
+        public override async Task<TenantSession?> GetByIdAsync(int sessionId)
+        {
+            try
+            {
+                return await _context.Sessions.IgnoreQueryFilters()
+                                  .AsNoTracking()
+                                  .SingleOrDefaultAsync(u => u.Id == sessionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching {TenantSession} by SessionId {SessionId}", typeof(TenantSession).Name, sessionId);
+                throw;
+            }
+        } 
     }
 }

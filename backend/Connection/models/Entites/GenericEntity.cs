@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace Connection.models.Entites
 {
-    public interface IEntity
+    public interface IEntityWithTenantId
     {
-        int Id { get; set; }
-        int DataKey { get; set; }
+        int TenantId { get; set; }
     }
+    public interface IEntity { 
+    
+        int Id { get; set; }
+    }
+
+
 }

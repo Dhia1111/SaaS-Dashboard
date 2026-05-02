@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Connection.models
 {
-    public class PlatformSubscription : IEntity
+    public class PlatformSubscription : IEntity, IEntityWithTenantId
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -14,7 +14,6 @@ namespace Connection.models
         [Required]
         public int TenantId { get; set; }
 
-        public int DataKey {  get; set; }
 
         [Required]
         public int PlatformPlanId { get; set; }

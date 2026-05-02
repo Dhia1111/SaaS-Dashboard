@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace Connection.models.Entites
 {
-    public class PlatformPlan : IEntity
+    public class PlatformPlan :IEntity, IEntityWithTenantId
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
-        public int DataKey { get; set; }
+        public int TenantId { get; set; }
 
 
         [Required]
