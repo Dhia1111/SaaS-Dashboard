@@ -38,7 +38,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: saas-frontend
-    depends_on:
-      - backend
+    ##depends_on:
+      ##- backend
     ports:
       - "5173:80"
