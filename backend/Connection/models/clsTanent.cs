@@ -11,30 +11,20 @@ namespace Connection.models
 {
     public class DtoTenant
     {
-        public int Id { get; set; }
-        public string UniqueIdentifier { get; set; } = null!;
-        public string CompanyName { get; set; } = null!;
+        public int TenantId { get; set; }
+        public string? UniqueIdentifier { get; set; }
+        public string? CompanyName { get; set; }
         public string? Description { get; set; }
         public bool IsActive { get; set; }
         public string CreatedAt { get; set; }=null!;
-        public string PasswordHash { get; set; } = null!;
+        public string? PasswordHash { get; set; }
         public string? UpdatedAt { get; set; }
         public int PersonId { get; set; }
         public int Role {  get; set; }
-        public DtoPerson Person { get; set; } = null!;
+        public DtoPerson? Person { get; set; } 
 
         public DtoTenant() { }
-        public DtoTenant( string uniqueIdentifier, string companyName, string? description, bool isActive, string createdAt, string passwordHash, int personId, DtoPerson person)
-        {
-            UniqueIdentifier = uniqueIdentifier;
-            CompanyName = companyName;
-            Description = description;
-            IsActive = isActive;
-            CreatedAt = createdAt;
-            PasswordHash = passwordHash;
-            PersonId = personId;
-            Person = person;
-        }
+        
     }
     public interface ITenantRepo:IGenericRepo<Tenant>
     {
@@ -42,10 +32,16 @@ namespace Connection.models
         Task<Tenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
  
     }
-    public class clsTenantRepo :  GenericRepo<Tenant>, ITenantRepo
+    public class clsTenantRepo :  ITenantRepo
     {
-        public clsTenantRepo(SaasDashboardContext context, ILogger<GenericRepo<Tenant>> logger)
-            : base(context,logger) {
+        private readonly IPersonRepository _person;
+        private readonly ILogger<clsTenantRepo> _logger;
+        private readonly SaasDashboardContext _context;
+        public clsTenantRepo(SaasDashboardContext context, ILogger<clsTenantRepo> logger,IPersonRepository person)
+            {
+            _person = person;
+            _logger = logger;
+            _context = context;
             
         
         }
@@ -101,6 +97,117 @@ namespace Connection.models
             }
         }
 
+        private async Task<int> Add(Tenant entity)
+        {
+            try
+            {
+
+                await _context.AddAsync(entity);
+                await _context.SaveChangesAsync();
+                var idProperty = _context.Entry(entity).Property("TenantId").CurrentValue;
+
+                return (int)idProperty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding {Entity}", typeof(Tenant).Name);
+                throw;
+
+            }
+        }
+
+        public async Task <int> AddAsync (Tenant tenant) 
+        {
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                int personId = await _person.AddAsync(tenant.Person);
+
+                if (personId == 0)
+                    return 0;
+                 
+                tenant.PersonId = personId;
+
+                int tenantId = await Add(tenant);
+
+                if (tenantId == 0)
+                    return 0;
+
+              
+              
+
+
+              
+
+                await tx.CommitAsync();
+
+                return tenantId;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+
+        }
+
+        public async Task<bool> UpdateAsync(Tenant entity)
+        {
+            try
+            {
+                _context.Update(entity);
+                var result = await _context.SaveChangesAsync();
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating {Entity}", typeof(Tenant).Name);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(Tenant entity)
+        {
+            try
+            {
+                _context.Remove(entity);
+                var result = await _context.SaveChangesAsync();
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting {Entity}", typeof(Tenant).Name);
+                return false;
+            }
+        }
+    
+       virtual public  async  Task<IReadOnlyList<Tenant>> GetAllAsync()
+        {
+            try
+            {
+                var dbSet = _context.Set<Tenant>();
+                return await dbSet.AsNoTracking().ToListAsync(); // You can add filters via expression
+            }
+            catch (Exception  ex)
+            {
+                _logger.LogError(ex, "Error fetching all {Entity}", typeof(Tenant).Name);
+                throw;
+            }
+        }
+
+        public async Task<Tenant?> GetByIdAsync(int id)
+        {
+            try
+            {
+                return await _context.Set<Tenant>().AsNoTracking().FirstOrDefaultAsync(x => x.TenantId == id);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching {Entity} by Id {Id}", typeof(Tenant).Name, id);
+                throw;
+            }
+        }
     }
 
 

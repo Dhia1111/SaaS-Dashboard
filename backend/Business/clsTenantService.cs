@@ -1,5 +1,6 @@
 ﻿// Business/clsTenantService.cs
 using Connection.models;
+using Connection.models.Entites;
 using Microsoft.Extensions.Logging;
 
 
@@ -32,7 +33,7 @@ namespace Business
         {
             return new DtoTenant
             {
-                Id = entity.Id,
+                TenantId = entity.TenantId,
                 UniqueIdentifier = entity.UniqueIdentifier,
                 CompanyName = entity.CompanyName,
                 Description = entity.Description,
@@ -45,10 +46,17 @@ namespace Business
                 Person = entity.Person != null ? new DtoPerson
                 {
                     Id = entity.Person.Id,
-                    DataKey = entity.Person.DataKey,
                     Email = entity.Person.Email,
-                    FirstName = entity.Person.FirstName
-                } : null!
+                    FirstName = entity.Person.FirstName,
+                    SecureCode=entity.Person.SecureCode,
+                    Address=entity.Person.Address,
+                    EmailVerificationCodeExpiry = entity.Person.EmailVerificationCodeExpiry.HasValue ? entity.Person.EmailVerificationCodeExpiry.Value.ToString("o") : null ,
+                    IsEmailVeryfied=entity.Person.IsVeryfied,
+                    LastName=entity.Person.LastName,
+                    Phone=entity.Person.Phone
+                    
+                } : null
+                
             };
         }
 
@@ -58,16 +66,35 @@ namespace Business
             // No dates to parse here, simple mapping
             return new Tenant
             {
-                Id = dto.Id,
+                TenantId = dto.TenantId,
                 UniqueIdentifier = dto.UniqueIdentifier,
                 CompanyName = dto.CompanyName,
                 Description = dto.Description,
-                PasswordHash=dto.PasswordHash,
-                PersonId = dto.PersonId,
+                PasswordHash = dto.PasswordHash,
                 IsActive = dto.IsActive,
-                Role=dto.Role,
-                CreatedAt = dto.CreatedAt == null ? throw new Exception("error(Parsing): the DTo value Is null ") : DateTime.TryParse(dto.CreatedAt, out DateTime result) == false ? throw new Exception("invaild string value DateTime") : result.ToUniversalTime()
-            };
+                CreatedAt = DateTime.Parse(dto.CreatedAt).ToUniversalTime(),
+                UpdatedAt = DateTime.TryParse(dto.UpdatedAt, out DateTime updatedDate) ? updatedDate.ToUniversalTime() : null,
+                Role = dto.Role,
+                PersonId = dto.PersonId,
+                Person = dto.Person != null ? new Person 
+                { 
+                    Id = dto.Person.Id,
+                    Email = dto.Person.Email,
+                    FirstName = dto.Person.FirstName,
+                    SecureCode = dto.Person.SecureCode,
+                    Address = dto.Person.Address,
+                    EmailVerificationCodeExpiry = dto.Person.EmailVerificationCodeExpiry != null && DateTime.TryParse(dto.Person.EmailVerificationCodeExpiry?.ToString(), out DateTime EmailCodeExprtyAt) ? EmailCodeExprtyAt.ToUniversalTime() : null,
+                    IsVeryfied = dto.Person.IsEmailVeryfied,
+                    LastName = dto.Person.LastName,
+                    Phone = dto.Person.Phone,
+                    Provider = dto.Person.Provider,
+                    ProviderId = dto.Person.ProviderId,
+
+
+
+                } :null,
+
+            }; 
         }
 
         public async Task<DtoTenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier)
@@ -88,14 +115,8 @@ namespace Business
 
         public override async Task<int> AddAsync(DtoTenant tenant)
         {
-            bool Result = false;
-            tenant.PersonId = await _personService.AddAsync(tenant.Person);
-            tenant.Person.Id = tenant.PersonId;
-            Result = (tenant.PersonId == 0);
-            if (Result) return 0;
-            tenant.Id = await base.AddAsync(tenant);
-            Result = (tenant.Id == 0);
-            return tenant.Id;
+
+            return  await _tenantRepo.AddAsync(FromDto(tenant));
         }
 
         public override async Task<bool> UpdateAsync(DtoTenant tenant)

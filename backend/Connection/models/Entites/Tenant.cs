@@ -6,28 +6,24 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Connection.models
 { 
 
-    public class Tenant 
+    public class Tenant :IEntityWithTenantId
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; } // PK Identity(1,1) == DataKey
-
-        [Required]
+        public int TenantId { get; set; } // PK Identity(1,1) == DataKey
+        
         [MaxLength(100)]
-        public string UniqueIdentifier { get; set; } = null!; // public tenant id (used in redirect)
+        public string? UniqueIdentifier { get; set; }  // public tenant id (used in redirect)
 
-        [Required]
-        [MaxLength(200)]
-        public string CompanyName { get; set; } = null!;
+         [MaxLength(200)]
+        public string? CompanyName { get; set; } 
 
         [MaxLength(500)]
         public string? Description { get; set; }
 
-        [Required]
         public bool IsActive { get; set; } = true;
 
-        [Required]
-        public string PasswordHash { get; set; } = null!;
+        public string? PasswordHash { get; set; } 
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
