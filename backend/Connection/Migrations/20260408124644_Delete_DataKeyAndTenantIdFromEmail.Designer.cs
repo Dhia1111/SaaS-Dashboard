@@ -3,6 +3,7 @@ using System;
 using Connection.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Connection.Migrations
 {
     [DbContext(typeof(SaasDashboardContext))]
-    partial class SaasDashboardContextModelSnapshot : ModelSnapshot
+    [Migration("20260408124644_Delete_DataKeyAndTenantIdFromEmail")]
+    partial class Delete_DataKeyAndTenantIdFromEmail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,15 +77,15 @@ namespace Connection.Migrations
                     b.Property<int>("BillingInterval")
                         .HasColumnType("integer");
 
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -100,6 +103,9 @@ namespace Connection.Migrations
                     b.Property<string>("CurrentRefreshTokenHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
@@ -150,17 +156,20 @@ namespace Connection.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("EmailVerificationCodeExpiry")
+                    b.Property<DateTime>("EmailVerificationCodeExpiry")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsVeryfied")
+                    b.Property<bool>("IsEmailVeryfied")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
@@ -169,17 +178,9 @@ namespace Connection.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
-                    b.Property<int?>("Provider")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ProviderId")
-                        .HasColumnType("text");
-
                     b.Property<string>("SecureCode")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -200,6 +201,9 @@ namespace Connection.Migrations
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("Guid")
                         .HasColumnType("uuid");
@@ -237,6 +241,9 @@ namespace Connection.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("EndsAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -267,13 +274,14 @@ namespace Connection.Migrations
 
             modelBuilder.Entity("Connection.models.Tenant", b =>
                 {
-                    b.Property<int>("TenantId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TenantId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CompanyName")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
@@ -288,6 +296,7 @@ namespace Connection.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("PersonId")
@@ -297,13 +306,14 @@ namespace Connection.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("UniqueIdentifier")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("TenantId");
+                    b.HasKey("Id");
 
                     b.HasIndex("PersonId");
 
@@ -319,6 +329,9 @@ namespace Connection.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BillingInterval")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DataKey")
                         .HasColumnType("integer");
 
                     b.Property<string>("Description")
@@ -359,6 +372,9 @@ namespace Connection.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -367,9 +383,6 @@ namespace Connection.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -396,6 +409,9 @@ namespace Connection.Migrations
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("PaidAt")
                         .HasColumnType("timestamp with time zone");
@@ -429,6 +445,9 @@ namespace Connection.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DataKey")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("EndsAt")
                         .HasColumnType("timestamp with time zone");
