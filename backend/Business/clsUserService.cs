@@ -1,14 +1,11 @@
 ﻿// Business/clsUserService.cs
 using Connection.models;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace Business
 {
-    public interface IUserService 
+    public interface IUserService :IGenericService<DtoUser>
     {
         Task<DtoUser?> GetByEmailAsync(string email);
     }
@@ -37,18 +34,16 @@ namespace Business
             return new DtoUser
             {
                 Id = user.Id,
-                DataKey = user.DataKey,
                 PersonID = user.PersonID,
                 Person = user.Person != null ? new DtoPerson
                 {
                     Id = user.Person.Id,
-                    DataKey = user.Person.DataKey,
                     Email = user.Person.Email,
                     Phone = user.Person.Phone,
                     FirstName = user.Person.FirstName,
                     LastName = user.Person.LastName,
                     Address = user.Person.Address
-                } : null!,
+                } : null,
                 Role = user.Role,
                 CreatedAt = user.CreatedAt.ToLongDateString(),
                 UpdatedAt = user.UpdatedAt!=null? user.UpdatedAt.ToString():null,
@@ -70,7 +65,6 @@ namespace Business
             return new User
             {
                 Id = dto.Id,
-                DataKey = dto.DataKey,
                 PersonID = dto.PersonID,
                 Role = dto.Role,
                 CreatedAt = DateTime.Parse(dto.CreatedAt).ToUniversalTime() ,
