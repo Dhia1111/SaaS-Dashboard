@@ -1,80 +1,113 @@
-
 using Business;
+using Quartz;
 using ExternalAPI;
-public interface IEmailJob
-{
-    Task SendEmailAsync();
-}
+using Microsoft.Extensions.Logging;
+
 namespace APIs.BackGroundJobs
 {
-    public class EmailBackgroundJob : BackgroundService, IEmailJob
+    [DisallowConcurrentExecution]  // Prevents multiple instances of this job running simultaneously
+    public class EmailBackgroundJob : IJob  // No need for custom IEmailJob interface
     {
         private readonly ILogger<EmailBackgroundJob> _logger;
         private readonly IEmailService _emailService;
         private readonly IEmailExternalService _emailExternalService;
 
-        public EmailBackgroundJob(ILogger<EmailBackgroundJob> logger, IEmailService emailService, IEmailExternalService emailExternalService)
+        public EmailBackgroundJob(
+            ILogger<EmailBackgroundJob> logger,
+            IEmailService emailService,
+            IEmailExternalService emailExternalService)
         {
             _logger = logger;
             _emailService = emailService;
             _emailExternalService = emailExternalService;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task Execute(IJobExecutionContext context)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            Console.WriteLine("Email background job started at: " + DateTimeOffset.Now);
+ 
+            _logger.LogInformation("Email background job started at: {Time}",
+                DateTimeOffset.Now);
+
+            try
             {
-                // Simulate email sending
-                _logger.LogInformation("Sending email at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken); // Simulate delay for sending email
-                //
+                await SendEmailAsync();
+                _logger.LogInformation("Email background job completed successfully at: {Time}", DateTimeOffset.Now);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Email background job failed at: {Time}", DateTimeOffset.Now);
+                throw; // Re-throw to let Quartz handle the failure (retry, misfire, etc.)
             }
         }
 
-        public async Task SendEmailAsync()
+        private async Task SendEmailAsync()
         {
-            // Logic to send email
-            IReadOnlyList<DtoEmail>? emailsToSend = await _emailService.GetAllAsync(); // Fetch emails to send from database or queue
-          if (emailsToSend == null  )
+            // Fetch only pending emails (not sent) with pagination
+            var emailsToSend = await _emailService.GetAllAsync();
+
+            if (emailsToSend == null || emailsToSend.Count == 0)
             {
-                _logger.LogInformation("No emails to send at: {time}", DateTime.UtcNow);
-                return;
-            }
-            if (emailsToSend.Count == 0) {
-                _logger.LogInformation("No emails to send at: {time}", DateTime.UtcNow);
+                _logger.LogInformation("No pending emails to send at: {Time}", DateTime.UtcNow);
                 return;
             }
 
+            _logger.LogInformation("Found {Count} pending emails to process", emailsToSend.Count);
+
+            // Process emails in parallel with controlled concurrency
+  
             foreach (var email in emailsToSend)
             {
-                if(email.IsSent)
-                {
-                    continue; // Skip already sent emails
-                }
+                await ProcessSingleEmailAsync(email);
+            }
+
+         }
+
+        private async Task ProcessSingleEmailAsync(DtoEmail email)
+        {
+            // Skip if already sent (double-check)
+            if (email.IsSent)
+            {
+                _logger.LogDebug("Email {EmailId} already marked as sent, skipping", email.Id);
+                return;
+            }
+            // Implement retry logic
+            var maxRetries = 3;
+            //var retryDelay = TimeSpan.FromSeconds(5);
+
+        
                 try
                 {
-                    ExternalAPI.DtoEmail ExternalEmail = new  ExternalAPI.DtoEmail  { 
-                    Body=email.Body,
-                    Subject=email.Subject,
-                    From  =email.From,
-                    To =email.To,
+                    // Convert to external DTO
+                    var externalEmail = new ExternalAPI.DtoEmail
+                    {
+                        Body = email.Body,
+                        Subject = email.Subject,
+                        From = email.From,
+                        To = email.To,
+                        IsBodyAnHtml = email.IsBodyAnHtml,
                     };
-                 await _emailExternalService.SendEmail(ExternalEmail); // Send email using external service
-             
-                    email.IsSent = true; // Mark email as sent
-                    email.SentAt = DateTime.UtcNow; // Set sent time
-                    await _emailService.UpdateAsync(email); // Update email status in database
-                    _logger.LogInformation("Email sent successfully to: {to} at: {time}", email.To, DateTime.UtcNow);
+
+                    // Send email using external service
+                    Console.WriteLine($"Started {DateTime.UtcNow}");
+
+                    await _emailExternalService.SendEmailAsync(externalEmail);
+
+                    Console.WriteLine($"ended {DateTime.UtcNow}");
+
+                    email.IsSent = true;
+                    await _emailService.UpdateAsync(email);
+ 
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to send email to: {to} at: {time}", email.To, DateTime.UtcNow);
-                }
 
-                
-            }
+
+                    _logger.LogError(ex, "Failed to send email to: {To} after {MaxRetries} attempts. Error: {Error}",
+                        email.To, maxRetries, ex.Message);
+
+                }
+            
         }
     }
-
-   
 }
