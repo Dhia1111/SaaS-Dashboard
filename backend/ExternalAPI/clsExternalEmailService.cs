@@ -1,8 +1,11 @@
 ﻿
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MimeKit;
 using System.ComponentModel;
 using System.Net.Mail;
+using System.Security.Claims;
 
 namespace ExternalAPI
 {
@@ -122,52 +125,64 @@ namespace ExternalAPI
     public interface IEmailExternalService
     {
 
-        public Task SendEmail(DtoEmail Dto);
+        public Task SendEmailAsync(DtoEmail Dto);
 
     }
 
     public class clsExternalEmailService : IEmailExternalService
     {
+        private readonly EmailSettings _settings;
         private readonly ILogger<clsExternalEmailService> _logger;
-        private readonly SmtpClient _smptClient;
-      public clsExternalEmailService(ILogger<clsExternalEmailService> loger, SmtpClient smptClient)
+
+        public clsExternalEmailService(IOptions<EmailSettings> settings, ILogger<clsExternalEmailService> logger)
         {
-            _logger = loger;
-            _smptClient = smptClient;
+            _settings = settings.Value;
+            _logger = logger;
         }
 
-        public async Task SendEmail(DtoEmail dto)
+        public async Task SendEmailAsync(DtoEmail dto)
         {
-            var mailMessage = new MailMessage
+            var message = new MimeMessage();
+
+            message.From.Add(new MailboxAddress(null, _settings.Email));
+            message.To.Add(new MailboxAddress(null, dto.To));
+            message.Subject = dto.Subject;
+
+            message.Body = new TextPart(dto.IsBodyAnHtml ? "html" : "plain")
             {
-                From = new MailAddress(dto.From),
-                Subject = dto.Subject,
-                Body = dto.Body,
-                IsBodyHtml = dto.IsBodyAnHtml
+                Text = dto.Body
             };
 
-            mailMessage.To.Add(dto.To);
+            using var client = new MailKit.Net.Smtp.SmtpClient();
 
             try
             {
-                await _smptClient.SendMailAsync(mailMessage);
-            }
-            catch (SmtpException ex)
-            {
-                _logger.LogError(ex, "SMTP error while sending email to {To}", dto.To);
-                throw;                             // preserve truth
+                await client.ConnectAsync(
+                    _settings.Host,
+                    _settings.Port,
+                    MailKit.Security.SecureSocketOptions.StartTls
+                );
+
+                await client.AuthenticateAsync(_settings.Email, _settings.Password);
+
+                await client.SendAsync(message);
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Unexpected error while sending email");
+                _logger.LogError(ex, "An error occurred while sending email");
+                
                 throw;
             }
+            finally
+            {
+                await client.DisconnectAsync(true);
+            }
+
+
+
+
         }
-
     }
-      
-
-    }
-
+}
 
 
