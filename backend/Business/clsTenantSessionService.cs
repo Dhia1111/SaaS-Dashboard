@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 
 namespace Business
 {
-    public interface ITenantSessionService :IGenericService<DtoTenantSession>
+    public interface ITenantSessionService : IGenericService<DtoTenantSession>
     {
         public Task<DtoTenantSession?> GetByToken(string HashedToken);
         public Task<bool> UpdateIfCurrentAsync(string newHash, string OldHash, DateTime graceUntil, int SessionId);
+        public Task<DtoTenantSession?> GetByTenantId(int TenantId);
 
     }
 
@@ -44,8 +45,8 @@ namespace Business
                 PreviousRefreshTokenHash = entity.PreviousRefreshTokenHash,
                 RevokedByIp = entity.RevokedByIp,
                 RevokedReason = entity.RevokedReason,
-                LastRefreshedAt=entity.LastRefreshedAt.ToString(),
-                LastRefreshedIp=entity.LastRefreshedIp
+                LastRefreshedAt = entity.LastRefreshedAt.ToString(),
+                LastRefreshedIp = entity.LastRefreshedIp,
             };
         }
         protected override TenantSession FromDto(DtoTenantSession dto)
@@ -64,10 +65,12 @@ namespace Business
                 IpAddress = dto.IpAddress,
                 CurrentRefreshTokenHash = dto.CurrentRefreshTokenHash,
                 PreviousRefreshTokenHash = dto.PreviousRefreshTokenHash,
-                RevokedReason= dto.RevokedReason,
-                RevokedByIp=dto.RevokedByIp,
+                RevokedReason = dto.RevokedReason,
+                RevokedByIp = dto.RevokedByIp,
                 LastRefreshedIp = dto.LastRefreshedIp,
-                LastRefreshedAt=DateTime.TryParse(dto.LastRefreshedAt,out DateTime lastRefreshedAt)?lastRefreshedAt.ToUniversalTime():null,
+                LastRefreshedAt = DateTime.TryParse(dto.LastRefreshedAt, out DateTime lastRefreshedAt) ? lastRefreshedAt.ToUniversalTime() : null,
+           
+           
             };
 
         }
@@ -78,9 +81,14 @@ namespace Business
             return t == null ? null : ToDto(t);
         }
         public async Task<bool> UpdateIfCurrentAsync(string newHash, string OldHash, DateTime graceUntil, int SessionId)
-{
-            return await _repo.UpdateIfCurrentAsync(newHash,OldHash, graceUntil, SessionId);
-}
+        {
+            return await _repo.UpdateIfCurrentAsync(newHash, OldHash, graceUntil.ToUniversalTime(), SessionId);
+        }
+        public async Task<DtoTenantSession?> GetByTenantId(int TenantId)
+        {
+            TenantSession? t = await _repo.GetByTenantId(TenantId);
+            return t == null ? null : ToDto(t);
 
+        }
     }
 }

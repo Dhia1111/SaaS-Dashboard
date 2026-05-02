@@ -13,9 +13,8 @@ namespace Connection.models.Entites
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-            public int TenantId { get; set; }
-           [Required]
-            public int  DataKey {  get; set; }
+            [Required]
+            public int  TenantId {  get; set; }
 
             [Required]
             public string CurrentRefreshTokenHash { get; set; } = null!;
