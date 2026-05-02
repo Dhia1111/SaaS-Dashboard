@@ -12,6 +12,13 @@ namespace Business
             services.AddScoped<IUserService, clsUserService>();
             services.AddScoped<ITentantAuthService,TenantAuthService>();
             services.AddScoped<ITenantService, clsTenantService>();
+            services.AddScoped<ITenantPlanService, clsTenantPlanService>();
+            services.AddScoped<IEmailService, clsEmailService>();
+            services.AddScoped<ITenantSessionService, clsTenantSessionService>();
+            services.AddScoped<ITentantAuthService, TenantAuthService>();
+           services.AddScoped<IEmailSettingsFactory, EnvironmentEmailSettingsFactory>();
+            services.AddScoped<IJwtService, JwtService>();
+
 
             // business rules, domain services, validators, etc.
 

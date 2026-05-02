@@ -1,12 +1,19 @@
 ﻿
+using Connection.models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Connection.Data
 {
+    public class DataKeyProvider : ITenantIdProvider
+    {
+       public int TenantId { get; set; }
+    }
+
     public class SaasDashboardContextContextFactory
         : IDesignTimeDbContextFactory<SaasDashboardContext>
     {
+        DataKeyProvider datakeyObj = new DataKeyProvider();
         public SaasDashboardContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<SaasDashboardContext>();
@@ -16,7 +23,7 @@ namespace Connection.Data
                 ConnectionString
                 );
 
-            return new SaasDashboardContext(optionsBuilder.Options);
+            return new SaasDashboardContext(optionsBuilder.Options,datakeyObj );
         }
     }
 }

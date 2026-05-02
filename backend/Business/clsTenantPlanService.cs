@@ -27,7 +27,6 @@ namespace Business
             return new DtoTenantPlan
             {
                 Id = entity.Id,
-                DataKey = entity.DataKey,
                 TenantId = entity.TenantId,
                 Name = entity.Name,
                 Description = entity.Description,
@@ -43,7 +42,6 @@ namespace Business
             return new TenantPlan
             {
                 Id = dto.Id,
-                DataKey = dto.DataKey,
                 TenantId = dto.TenantId,
                 Name = dto.Name,
                 Description = dto.Description,

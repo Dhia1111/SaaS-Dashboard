@@ -8,8 +8,7 @@ namespace Connection.models
         public class DtoTenantPlan
         {
             public int Id { get; set; }
-            public int DataKey { get; set; }
-            public int TenantId { get; set; }
+             public int TenantId { get; set; }
 
             public string Name { get; set; } = null!;
             public string? Description { get; set; }
@@ -47,7 +46,7 @@ namespace Connection.models
         public  Task<List<TenantPlan>> GetAllAsync(int dataKey)
         {
             return _context.TenantPlans
-                .Where(p => p.DataKey == dataKey)
+                .Where(p => p.TenantId == dataKey)
                 .AsNoTracking()
                 .ToListAsync();
         }

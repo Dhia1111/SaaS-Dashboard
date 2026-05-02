@@ -70,15 +70,16 @@ namespace Business
                 return new DtoPerson
                 {
                     Id = person.Id,
-                    DataKey=person.DataKey,
                     Email = person.Email,
                     Phone = person.Phone,
                     FirstName = person.FirstName,
                     LastName = person.LastName,
                     Address=person.Address,
-                    IsEmailVeryfied = person.IsEmailVeryfied,
-                    tokenHash = person.SecureCode,
-                    EmailVerificationCodeExpiry=person.EmailVerificationCodeExpiry.ToLongTimeString(),
+                    IsEmailVeryfied = person.IsVeryfied,
+                    SecureCode = person.SecureCode,
+                    EmailVerificationCodeExpiry= person.EmailVerificationCodeExpiry.HasValue ? person.EmailVerificationCodeExpiry.Value.ToString("o") : null,
+                    ProviderId = person.ProviderId,
+                        Provider = person.Provider
 
                 };
             }
@@ -87,17 +88,18 @@ namespace Business
             return new Person
             {
                 Id = person.Id,
-                DataKey = person.DataKey,
                 Email = person.Email,
                 Phone = person.Phone,
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Address = person.Address,
-                IsEmailVeryfied = person.IsEmailVeryfied,
-                SecureCode = person.tokenHash,
-                EmailVerificationCodeExpiry = DateTime.TryParse(person.EmailVerificationCodeExpiry, out DateTime date)? date.ToUniversalTime() : DateTime.UtcNow.AddMinutes(12),
-
+                IsVeryfied = person.IsEmailVeryfied,
+                SecureCode = person.SecureCode,
+                EmailVerificationCodeExpiry = DateTime.TryParse(person.EmailVerificationCodeExpiry, out DateTime date)? date.ToUniversalTime() :null,
+                Provider= person.Provider,
+                ProviderId = person.ProviderId,
                 
+
             }; 
         }
 

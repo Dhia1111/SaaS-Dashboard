@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
-    public class PlatformPayment : IEntity
+    public class PlatformPayment :IEntity, IEntityWithTenantId
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -21,8 +21,7 @@ namespace Connection.models
         [Required]
 
          public int PlatformPlanId {  get; set; }
-        public int DataKey { get; set; }
-
+ 
         [Required]
         public decimal Amount { get; set; }
 

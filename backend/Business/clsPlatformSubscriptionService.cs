@@ -37,7 +37,7 @@ namespace Business
                 StripeSubscriptionId = entity.StripeSubscriptionId,
                 StartedAt = entity.StartedAt.ToString("O"),
                 EndsAt = entity.EndsAt?.ToString("O") ?? string.Empty,
-                Tenant = entity.Tenant != null ? new DtoTenant { Id = entity.Tenant.Id, CompanyName = entity.Tenant.CompanyName } : null!,
+                Tenant = entity.Tenant != null ? new DtoTenant { TenantId = entity.Tenant.TenantId, CompanyName = entity.Tenant.CompanyName } : null!,
                 PlatformPlan = entity.PlatformPlan != null ? new DtoPlatformPlan { Id = entity.PlatformPlan.Id, Name = entity.PlatformPlan.Name } : null!
             };
         }

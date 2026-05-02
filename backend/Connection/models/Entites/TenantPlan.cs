@@ -9,20 +9,18 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
-    public class TenantPlan : IEntity
+    public class TenantPlan : IEntityWithTenantId,IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
-        public int DataKey { get; set; }
-
-        [Required]
         public int TenantId { get; set; }
 
         [Required]
-        public string Name { get; set; } = null!;
+ 
+         public string Name { get; set; } = null!;
 
         public string? Description { get; set; }
 

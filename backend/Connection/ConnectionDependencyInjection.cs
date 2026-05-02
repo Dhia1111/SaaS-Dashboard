@@ -11,6 +11,9 @@ namespace Connection
             services.AddScoped<IPersonRepository, clsPersonRepo>();
             services.AddScoped<IUserRepo, clsUserRepo>();
             services.AddScoped<ITenantRepo, clsTenantRepo>();
+            services.AddScoped<IEmailRepository, clsEmailRepository>();
+            services.AddScoped<ITenantPlanRepo, clsTenantPlanRepo>();
+            services.AddScoped<IsessionRepo, clsSessionRepo>();
             return services;
         }
     }

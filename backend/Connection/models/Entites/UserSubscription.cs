@@ -9,17 +9,16 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
-    public class UserSubscription : IEntity
+    public class UserSubscription : IEntityWithTenantId,IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Required]
         public int UserId {  get; set; }
+      
         [Required]
         public int TenantId { get; set; }
-        [Required]
-        public int DataKey { get; set; }
 
           [Required]
           public string UserReferenceId { get; set; } = null!;

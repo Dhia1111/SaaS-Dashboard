@@ -7,14 +7,15 @@ using System.ComponentModel.DataAnnotations;
 public class DtoPerson
 {
     public int Id { get; set; }
-    public int DataKey { get; set; }
     public string Email { get; set; } = null!;
     public string? Phone { get; set; }
     public string? FirstName { get; set; } 
     public string? LastName { get; set; }
     public string? Address { get; set; }
-    public string tokenHash { get; set; } = null!;
-    public string EmailVerificationCodeExpiry { get; set; } = null!;
+    public string? SecureCode { get; set; } 
+    public string? EmailVerificationCodeExpiry { get; set; } 
+    public string? ProviderId { get; set; } 
+    public int? Provider { get; set; }
 
     [Required]
     public bool IsEmailVeryfied { get; set; }
@@ -35,18 +36,12 @@ public interface IPersonRepository:IGenericRepo<Person>
   
 }
 
- 
-
 public class clsPersonRepo : GenericRepo<Person>,IPersonRepository
 {
-
     public clsPersonRepo(SaasDashboardContext context, ILogger<clsPersonRepo> logger):base(context,logger)
     {
       
     }
-
-
-
     public async Task<Person?> GetByEmailAsync(string email)
     {
         try
@@ -61,7 +56,7 @@ public class clsPersonRepo : GenericRepo<Person>,IPersonRepository
             throw;
         }
     }
-  public async Task<Person?> FindBySecureCodeAsync(string secureCode)
+    public async Task<Person?> FindBySecureCodeAsync(string secureCode)
     {
         try
         {
@@ -70,27 +65,12 @@ public class clsPersonRepo : GenericRepo<Person>,IPersonRepository
                 .SingleOrDefaultAsync(p => p.SecureCode == secureCode);
         }
         catch (Exception ex)
-        {
+        { //AQAAAAIAAYagAAAAEGfTKE/gtSS7mN5X1caFym3fZFhfA4gQ164u5cRt1mg+t9hVg9SPM+Wqy9Sn2/gVLg==
+          //AQAAAAIAAYagAAAAEEALywEFNAKgPG0shYJm+foXfDSlc09sdWWSKmtzU6CfRXYzdwq/wj/vWF76b96bEA==
             _logger.LogError(ex, "Error fetching person by SecureCode {SecureCode}", secureCode);
             throw;
         }
     }
-    public async Task<IReadOnlyList<Person>> GetByDataKeylAsync(int DataKey)
-    {
-        try
-        {
-            return await _context.Persons
-                .Where(p => p.DataKey == DataKey)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching persons by DataKey {DataKey}", DataKey);
-            throw;
-        }
-    }
-
     public async Task<IReadOnlyList<Person>> SearchByNameAsync(string namePattern)
     {
         try

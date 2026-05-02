@@ -13,7 +13,8 @@ public class DtoEmail
         public string Body { get; set; } = null!;
         public bool IsSent { get; set; }=false;
         public DateTime? SentAt { get; set; }
-        public int Id { get; set; }
+        public DateTime CreatedAt { get; set; }=DateTime.UtcNow;
+    public int Id { get; set; }
     
     }
 

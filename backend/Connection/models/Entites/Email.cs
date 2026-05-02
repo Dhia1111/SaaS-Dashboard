@@ -11,12 +11,7 @@ namespace Connection.Models
         public int Id { get; set; }
 
         [Required]
-        public int TenantId { get; set; }
-
-        [Required]
-        public int DataKey { get; set; }
-
-        [Required]
+     
         public string To { get; set; } = null!;
 
         [Required]

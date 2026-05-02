@@ -13,7 +13,6 @@ namespace Connection.models
     {
         public int Id { get; set; }
 
-        public int DataKey { get; set; }
         public int TenantId { get; set; }
         public int UserId { get; set; }
 
