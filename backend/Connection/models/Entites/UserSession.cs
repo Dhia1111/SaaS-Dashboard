@@ -17,20 +17,22 @@ namespace Connection.models.Entites
             public int Id { get; set; }
             [Required]
             public int UserId { get; set; }
-            [Required]
-            public int TenantId {  get; set; }  
+            [Required] 
+        public int TenantId { get; set; }
 
-            [Required]
-            public string CurrentRefreshTokenHash { get; set; } = null!;
-            public string? PreviousRefreshTokenHash { get; set; }
+        [Required]
+        public string CurrentRefreshTokenHash { get; set; } = null!;
+        public string? PreviousRefreshTokenHash { get; set; }
+        public string? RevokedReason { get; set; }
+        public string? RevokedByIp { get; set; }
+        public DateTime GraceUntil { get; set; }
 
-            public DateTime GraceUntil { get; set; }
+        public DateTime ExpiresAt { get; set; }
+        public DateTime? RevokedAt { get; set; }
+        public DateTime? LastRefreshedAt { get; set; }
+        public string? LastRefreshedIp { get; set; }
+        public string? TenantAgent { get; set; }
+        public string? IpAddress { get; set; }
 
-            public DateTime ExpiresAt { get; set; }
-            public DateTime? RevokedAt { get; set; }
-
-            public string? UserAgent { get; set; }
-            public string? IpAddress { get; set; }
-        
     }
 }

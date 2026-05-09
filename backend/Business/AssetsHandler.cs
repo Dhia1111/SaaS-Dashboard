@@ -9,6 +9,7 @@ namespace Business
     public interface IEmailTemplateHandler
     {
         Task<string> CreateTemplate(string code);
+        public  Task<string> CreateTemplateForUsers(string Token);
     }
 
 }

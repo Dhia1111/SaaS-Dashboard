@@ -1,32 +1,29 @@
-﻿// Business/clsUserService.cs
-using Connection.models;
+﻿using Connection.models;
 using Microsoft.Extensions.Logging;
-
 
 namespace Business
 {
-    public interface IUserService :IGenericService<DtoUser>
+    public interface IUserService : IGenericService<DtoUser>
     {
         Task<DtoUser?> GetByEmailAsync(string email);
     }
 
-
-    public class clsUserService : GenericService<DtoUser, User>, IUserService
+    public class UserService
+        : GenericService<DtoUser, User>,
+          IUserService
     {
-        private readonly IUserRepo _userRepo; // contains person-aware methods
-        private readonly IPersonRepository _personRepo;
-        private readonly ILogger<clsUserService> _typedLogger;
+        private readonly IUserRepo _userRepo;
+        private readonly ILogger<UserService> _logger;
 
-        public clsUserService(
+        public UserService
+        (
             IUserRepo userRepo,
-            IPersonRepository personRepo,
-            ILogger<clsUserService> logger)
-
+            ILogger<UserService> logger
+        )
             : base(userRepo, logger)
         {
             _userRepo = userRepo;
-            _personRepo = personRepo;
-            _typedLogger = logger;
+            _logger = logger;
         }
 
         protected override DtoUser ToDto(User user)
@@ -34,74 +31,107 @@ namespace Business
             return new DtoUser
             {
                 Id = user.Id,
-                PersonID = user.PersonID,
-                Person = user.Person != null ? new DtoPerson
-                {
-                    Id = user.Person.Id,
-                    Email = user.Person.Email,
-                    Phone = user.Person.Phone,
-                    FirstName = user.Person.FirstName,
-                    LastName = user.Person.LastName,
-                    Address = user.Person.Address
-                } : null,
+                PersonID = user.PersonId,
+                Authorization = user.Authorization,
                 Role = user.Role,
-                CreatedAt = user.CreatedAt.ToLongDateString(),
-                UpdatedAt = user.UpdatedAt!=null? user.UpdatedAt.ToString():null,
+                CreatedAt = user.CreatedAt.ToString(),
+                UpdatedAt = user.UpdatedAt?.ToString(),
+                PasswordHash = user.PasswordHash,
+                TenantId = user.TenantId,
+
+                Person = user.Person == null
+                    ? null
+                    : new DtoPerson
+                    {
+                        Id = user.Person.Id,
+                        Email = user.Person.Email,
+                        Phone = user.Person.Phone,
+                        FirstName = user.Person.FirstName,
+                        LastName = user.Person.LastName,
+                        Address = user.Person.Address,
+                        SecureCode = user.Person.SecureCode,
+                        EmailVerificationCodeExpiry =
+                            user.Person.EmailVerificationCodeExpiry?.ToString(),
+                        IsEmailVeryfied = user.Person.IsVeryfied,
+                        Provider = user.Person.Provider,
+                        ProviderId = user.Person.ProviderId
+                    }
             };
         }
 
         protected override User FromDto(DtoUser dto)
         {
-            // Validate person exists
-            var personTask = _personRepo.GetByIdAsync(dto.PersonID);
-            personTask.Wait(); // small sync call - prefer async flows in controllers
-            var person = personTask.Result;
-            if (person == null)
-            {
-                _typedLogger.LogWarning("Person {PersonId} not found when mapping User DTO", dto.PersonID);
-                throw new KeyNotFoundException($"Person {dto.PersonID} not found.");
-            }
-
             return new User
             {
                 Id = dto.Id,
-                PersonID = dto.PersonID,
+                PersonId = dto.PersonID,
+                Authorization = dto.Authorization,
                 Role = dto.Role,
-                CreatedAt = DateTime.Parse(dto.CreatedAt).ToUniversalTime() ,
-                UpdatedAt = dto.UpdatedAt!=null?DateTime.Parse(dto.UpdatedAt).ToUniversalTime():null,
+                PasswordHash = dto.PasswordHash,
+                TenantId = dto.TenantId,
+
+                CreatedAt =
+                    DateTime.Parse(dto.CreatedAt).ToUniversalTime(),
+
+                UpdatedAt =
+                    dto.UpdatedAt == null
+                    ? null
+                    : DateTime.Parse(dto.UpdatedAt).ToUniversalTime(),
+
+                Person = dto.Person == null
+                    ? null
+                    : new Person
+                    {
+                        Id = dto.PersonID,
+                        Email = dto.Person.Email,
+                        Phone = dto.Person.Phone,
+                        FirstName = dto.Person.FirstName,
+                        LastName = dto.Person.LastName,
+                        Address = dto.Person.Address,
+                        SecureCode = dto.Person.SecureCode,
+                        IsVeryfied = dto.Person.IsEmailVeryfied,
+                        Provider = dto.Person.Provider,
+                        ProviderId = dto.Person.ProviderId,
+                        TenantId = dto.TenantId
+                    }
             };
         }
 
         public async Task<DtoUser?> GetByEmailAsync(string email)
         {
             var user = await _userRepo.GetByEmailAsync(email);
-            return user != null ? ToDto(user) : null;
+
+            return user == null
+                ? null
+                : ToDto(user);
         }
 
-        // Override Add/Update if you want special checks
         public override async Task<int> AddAsync(DtoUser dto)
         {
-            // explicit mapping will validate existence of Person
-            var user = FromDto(dto);
-            return await _userRepo.AddAsync(user);
+            return await _userRepo.AddAsync(FromDto(dto));
         }
 
         public override async Task<bool> UpdateAsync(DtoUser dto)
         {
-            var user = FromDto(dto);
-            return await _userRepo.UpdateAsync(user);
+            return await _userRepo.UpdateAsync(FromDto(dto));
         }
 
         public override async Task<bool> DeleteAsync(int id)
         {
-            var existing = await _userRepo.GetByIdAsync(id);
-            if (existing == null)
+            var user = await _userRepo.GetByIdAsync(id);
+
+            if (user == null)
             {
-                _typedLogger.LogWarning("User id {Id} not found for delete", id);
+                _logger.LogWarning
+                (
+                    "User {UserId} not found",
+                    id
+                );
+
                 return false;
             }
-            return await _userRepo.DeleteAsync(existing);
+
+            return await _userRepo.DeleteAsync(user);
         }
     }
-
 }
