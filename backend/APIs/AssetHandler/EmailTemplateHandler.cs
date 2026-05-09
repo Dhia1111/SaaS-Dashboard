@@ -32,7 +32,7 @@ namespace APIs.AssetHandler
 
                 // 3. Replace the placeholder
                 // Using .Replace is safer than string.Format for raw HTML
-                return htmlContent.Replace("{verificationCode}", code).Replace("{DateTime.Now.Year}",DateTime.Now.Year.ToString());
+                return htmlContent.Replace("{verificationCode}", code).Replace("{DateTime.Now.Year}",DateTime.UtcNow.Year.ToString());
             }
             catch (Exception ex)
             {
@@ -41,5 +41,34 @@ namespace APIs.AssetHandler
                 return $"Your verification code is: {code} (Valid for 60s)";
             }
         }
+        public async Task<string> CreateTemplateForUsers(string Token)
+        {
+            try
+            {
+                // 1. Locate the file in wwwroot
+                string filePath = Path.Combine(_env.WebRootPath, "EmailTemplateUsers.html");
+
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogError("Email template not found at: {Path}", filePath);
+                    throw new FileNotFoundException("The email template file is missing.");
+                }
+
+                // 2. Read the file content
+                string htmlContent = await File.ReadAllTextAsync(filePath);
+
+                // 3. Replace the placeholder
+                // Using .Replace is safer than string.Format for raw HTML
+                return htmlContent.Replace("{verificationCode}", Token).Replace("{DateTime.Now.Year}", DateTime.UtcNow.Year.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Error generating email template");
+                // Return a fallback plain-text version so the system doesn't crash
+                return $"Your verification code is: {Token} (Valid for 60s)";
+            }
+        }
+
+
     }
 }

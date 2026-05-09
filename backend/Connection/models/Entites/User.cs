@@ -14,13 +14,15 @@ namespace Connection.models
             [Required]
             public int TenantId { get; set; } // required
             [Required]
-            public int PersonID { get; set; } // required public Person Person { get; set; } = null!;
-            public Person Person { get; set; }=null!;
-            public string PasswordHash { get; set; } = null!;
+            public int PersonId { get; set; } // required public Person Person { get; set; } = null!;
+            public Person? Person { get; set; }
+            public string? PasswordHash { get; set; } 
             public int Role { get; set; }
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
             public DateTime? UpdatedAt { get; set; }
-        }
+        public int Authorization { get; set; }
+
     }
+}
 
 

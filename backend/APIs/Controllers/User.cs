@@ -1,6 +1,4 @@
-﻿// APIs/Controllers/UsersController.cs
-
-using APIs.Responses;
+﻿using APIs.Responses;
 using Business;
 using Connection.models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,86 +7,104 @@ namespace APIs.Controllers
 {
     [ApiController]
     [Route("api/user")]
-    public class UsersController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly ILogger<UsersController> _logger;
+        private readonly ITenantIdProvider _tenantIdProvider;
 
-        public UsersController(
+        public UserController(
             IUserService userService,
-            ILogger<UsersController> logger)
+            ITenantIdProvider tenantIdProvider)
         {
             _userService = userService;
-            _logger = logger;
+            _tenantIdProvider = tenantIdProvider;
         }
 
-        // GET: api/user/list
-        [HttpGet("list")]
+        // GET: api/user
+        [HttpGet]
         public async Task<ActionResult<ApiResult<IReadOnlyList<DtoUser>>>> GetAll()
         {
             var users = await _userService.GetAllAsync();
 
-            return Ok(
-                ApiResult<IReadOnlyList<DtoUser>>
-                .Ok(users, "Users fetched successfully")
-            );
+            return Ok(ApiResult<IReadOnlyList<DtoUser>>
+                .Ok(users, "Users fetched successfully"));
         }
 
-        // GET: api/users/5
+        // GET: api/user/{id}
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResult<DtoUser>>> GetById(int id)
         {
             var user = await _userService.GetByIdAsync(id);
 
-            return Ok(
-                ApiResult<DtoUser>
-                .Ok(user, "User fetched successfully")
-            );
+            return Ok(ApiResult<DtoUser>
+                .Ok(user, "User fetched successfully"));
         }
 
-        // POST: api/users
-        [HttpPost]
-        public async Task<ActionResult<ApiResult<int>>> Add([FromBody] DtoUser dto)
-        {
-            if (!ModelState.IsValid)
-                throw new ArgumentException("Invalid payload.");
-
-            var newId = await _userService.AddAsync(dto);
-
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = newId },
-                ApiResult<int>.Ok(newId, "User created successfully")
-            );
-        }
-
-        // PUT: api/users/5
+        // PUT: api/user/{id}
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<ApiResult<bool>>> Update(
-            int id,
-            [FromBody] DtoUser dto)
+        public async Task<ActionResult<ApiResult<bool>>> Update(int id, [FromBody] DtoUser dto)
         {
             if (id != dto.Id)
-                throw new ArgumentException("Route id does not match body id.");
+                throw new ArgumentException("Route id mismatch");
 
-            var updated = await _userService.UpdateAsync(dto);
+            var result = await _userService.UpdateAsync(dto);
 
-            return Ok(
-                ApiResult<bool>
-                .Ok(updated, "User updated successfully")
-            );
+            return Ok(ApiResult<bool>
+                .Ok(result, "User updated successfully"));
         }
 
-        // DELETE: api/users/5
+        // DELETE: api/user/{id}
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ApiResult<bool>>> Delete(int id)
         {
-            var deleted = await _userService.DeleteAsync(id);
+            var result = await _userService.DeleteAsync(id);
 
-            return Ok(
-                ApiResult<bool>
-                .Ok(deleted, "User deleted successfully")
-            );
+            return Ok(ApiResult<bool>
+                .Ok(result, "User deleted successfully"));
+        }
+
+        // POST: api/user/invitations
+        [HttpPost("invitations")]
+        public async Task<ActionResult<ApiResult<int>>> SendInvitation(
+            [FromBody] DtoSendInvitation dto)
+        {
+            dto.TenantId = _tenantIdProvider.TenantId;
+
+            if (dto.TenantId == 0)
+                throw new ArgumentException("TenantId not found");
+
+            var userId = await _userService.SendInvitationAsync(dto);
+
+            return Ok(ApiResult<int>
+                .Ok(userId, "Invitation sent successfully"));
+        }
+
+        // GET: api/user/roles
+        [HttpGet("roles")]
+        public ActionResult GetRoles()
+        {
+            var roles = Enum.GetValues(typeof(Roles))
+                .Cast<Roles>()
+                .Select(x => new KeyValuePair<int, string>((int)x, x.ToString()))
+                .ToList();
+
+            return Ok(ApiResult<object>
+                .Ok(roles, "Roles fetched successfully"));
+        }
+
+        // GET: api/user/authorization-options
+        [HttpGet("authorization-options")]
+        public ActionResult GetAuthorizationOptions()
+        {
+            var list = Enum.GetValues(typeof(UsersAutherization))
+                .Cast<UsersAutherization>()
+                .Select(x => new KeyValuePair<int, string>(
+                    (int)x,
+                    x.ToString().Replace("__", " ")))
+                .ToList();
+
+            return Ok(ApiResult<object>
+                .Ok(list, "Authorization options fetched successfully"));
         }
     }
 }
