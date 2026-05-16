@@ -1,6 +1,6 @@
 import {  useState } from 'react';
 import { signupContent } from '../../assets/Data/Platform/SignUp';
-import {signUp,resendCode,verifyEmail}  from "../../Apis/tenantAuth"
+import {signUp,resendCode,verifyEmail,IsNameUsed}  from "../../Apis/tenantAuth"
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setAccessToken } from '../../globalStates/AccessToken';
@@ -11,8 +11,10 @@ export default function SignupFlow() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [tenantName,setTenantName ] = useState('');
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [IsNameUnique, setIsNameUnique] = useState(true);
   const navigate = useNavigate();
   
   // Virtual Payment State
@@ -30,11 +32,20 @@ export default function SignupFlow() {
     return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email.toLowerCase());
   }
 
-  const isAuthValid = validateEmail(email) && password.length >= 8;
+ async function handLeTenantNameChange(tenantName) {
+   
+    const isUsed = await IsNameUsed(tenantName);
+    setIsNameUnique(!isUsed);
+    setTenantName(tenantName);
+  }
+
+  const isAuthValid = validateEmail(email) && password.length >= 8&& tenantName.length > 2&& IsNameUnique;
 
   const handleVerificationSuccess = async () => {
   try {
     setLoading(true);
+
+
 
     const data = { email, password, code: otp };
     const AccessToken = await verifyEmail(data);
@@ -62,17 +73,18 @@ export default function SignupFlow() {
   };
 
   const SignUpAsync = async () => {
-   const data={email,password}
+
+   const data={email,password,tenantName};
      const res= await signUp(data);
     if(res.status!==200){
       // Handle sign-up failure (e.g., show error message)
       console.error("Sign-up failed:",res?.data?.message ||res.message);
       return;
     }
+  
       nextStep(); // Move to Step 3: Email Verification
-
-
-  };
+  
+    };
 
   return (
     <div className="min-h-screen bg-slate-50 font-body py-12 px-6">
@@ -170,8 +182,23 @@ export default function SignupFlow() {
         </div>
       </div>
 
+
       {/* Manual Email/Password Form */}
       <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Tenant Name</label>
+          {!IsNameUnique && <span className="text-danger text-xs font-bold">Name already in use</span>}
+        </div>
+        <div className="space-y-1">
+          <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Tenant Name</label>
+          <input 
+            type="text" 
+            placeholder="Min. 3 characters" 
+            className="w-full px-4 py-3 rounded-button border border-slate-200 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+            onChange={(e) =>  handLeTenantNameChange(e.target.value)}
+          />
+        </div>
+
         <div className="space-y-1">
           <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">Email Address</label>
           <input 
