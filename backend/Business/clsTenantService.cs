@@ -10,9 +10,12 @@ namespace Business
     {
 
         public Task<DtoTenant?> GetByEmailAsync(string email);
+        public Task<DtoTenant?> GetByEmailOrNameAsync(string email,string name);
 
         Task<DtoTenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
         Task<DtoTenant?> GetByPersonHashSecureCodeAsync(string secureCode);
+           Task<DtoTenant?> GetByNameAsync(string name);
+            Task<bool> IsNameUsed(string Name);
     }
 
     public class clsTenantService : GenericService<DtoTenant, Tenant>, ITenantService
@@ -35,7 +38,7 @@ namespace Business
             {
                 TenantId = entity.TenantId,
                 UniqueIdentifier = entity.UniqueIdentifier,
-                CompanyName = entity.CompanyName,
+                Name = entity.Name,
                 Description = entity.Description,
                 PasswordHash=entity.PasswordHash,
                 IsActive = entity.IsActive,
@@ -68,7 +71,7 @@ namespace Business
             {
                 TenantId = dto.TenantId,
                 UniqueIdentifier = dto.UniqueIdentifier,
-                CompanyName = dto.CompanyName,
+                Name = dto.Name,
                 Description = dto.Description,
                 PasswordHash = dto.PasswordHash,
                 IsActive = dto.IsActive,
@@ -135,6 +138,27 @@ namespace Business
             return null;
         }
 
-        
+      public async  Task<DtoTenant?> GetByNameAsync(string name)
+        {
+            Tenant? t = await _tenantRepo.GetByNameAsync(name);
+            if (t != null) return this.ToDto(t);
+            return null;
+        }
+
+        public async Task<DtoTenant?> GetByEmailOrNameAsync(string email, string name)
+        {
+            Tenant? t = await _tenantRepo.GetByEmailAsync(email);
+            if (t != null) return this.ToDto(t);
+            t = await _tenantRepo.GetByNameAsync(name);
+            if (t != null) return this.ToDto(t);
+            return null;
+        }
+
+
+        public async Task<bool> IsNameUsed(string Name)
+        {
+            var tenant = await _tenantRepo.GetByNameAsync(Name);
+            return tenant != null;
+        }
     }
 }

@@ -8,11 +8,14 @@ public class DtoSignUp
 {
     [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    public string Email { get; set; }=null!;
 
     [Required]
     [MinLength(8)]
-    public string Password { get; set; }
+    public string Password { get; set; }=null!;
+    [Required]
+    [MinLength(3)]
+    public string TenantName { get; set; }=null!;
 
 }
 public class DtoLogIn
@@ -53,8 +56,12 @@ public class DtoOAuth
     [Required]
     public AuthProviders AuthProvider { get; set; }
 
+    [Required]
+    [MinLength(4)]
+    public string TenantName { get; set; }=null!;
 
-    
+
+
 }
 namespace Business.EndToEndService
 {
@@ -67,6 +74,7 @@ namespace Business.EndToEndService
         public Task<DtoTokens> VerifyEmailAsync(DtoVerifyEmail dto, string Ip);
         public Task ReSendCode(DtoLogIn request);
         Task LogOut(string token, string Ip);
+        Task<bool> IsTenantNmaeUsed(string tenantName);
         Task<DtoTokens> OAuth(string email, DtoOAuth dto, string ip);
     }
     public class TenantAuthService : ITentantAuthService
@@ -105,13 +113,14 @@ namespace Business.EndToEndService
             _EmailService = emailService;
             _personService = personService;
             _settings = options.Value;
+
          }
 
         // constructor unchanged...
 
         public async Task SignUpAsync(DtoSignUp request)
         {
-            var existing = await _tenantService.GetByEmailAsync(request.Email);
+            var existing = await _tenantService.GetByEmailOrNameAsync(request.Email, request.TenantName);
 
             if (existing != null)
                 throw new ResourceAlreadyExistsException("User", request.Email);
@@ -121,9 +130,10 @@ namespace Business.EndToEndService
 
             var tenant = new DtoTenant
             {
-                Role=(int)Roles.Tenant,
+                Role=(int)Roles.Admine,
                 CreatedAt = DateTime.Now.ToString(),
                 PasswordHash = _passwordHashService.Hash(request.Password),
+                Name = request.TenantName,
                 Person = new DtoPerson
                 {
                     Email = request.Email,
@@ -163,7 +173,7 @@ namespace Business.EndToEndService
             var refreshToken = _jwtService.GenerateAccessToken(
                 tenant.TenantId,
                 -1,
-                (int)Roles.Tenant
+                (int)Roles.Admine
             );
 
             var session = new DtoTenantSession
@@ -226,9 +236,8 @@ namespace Business.EndToEndService
             }
 
             var newRefresh = _jwtService.GenerateRefreshTokenToken(
-                session.TenantId,
-               (int) Roles.Tenant
-            );
+                session.TenantId
+             );
             var newHash = _genralHashService.Sha256(newRefresh);
 
             var updated = await _tenantSessionService.UpdateIfCurrentAsync(
@@ -246,7 +255,7 @@ namespace Business.EndToEndService
             var accessToken = _jwtService.GenerateAccessToken(
                 session.TenantId,
                 session.SessionId,
-                (int)Roles.Tenant
+                (int)Roles.Admine
             );
 
             return new DtoTokens
@@ -278,8 +287,7 @@ namespace Business.EndToEndService
                 await _tenantService.UpdateAsync(tenant);
             }
             var refreshToken = _jwtService.GenerateRefreshTokenToken(
-               tenant.TenantId,
-                (int)Roles.Tenant   
+               tenant.TenantId
            );
             var session = new DtoTenantSession
             {
@@ -350,6 +358,8 @@ namespace Business.EndToEndService
         }
         public async Task<DtoTokens> OAuth(string email, DtoOAuth dto, string ip)
         {
+            
+
             var tenant=await _tenantService.GetByEmailAsync(email);
 
             if (tenant != null)
@@ -363,8 +373,7 @@ namespace Business.EndToEndService
                         tenant.Role
                     );
                     var RefreshToken = _jwtService.GenerateRefreshTokenToken(
-                        tenant.TenantId,
-                         (int)Roles.Tenant
+                        tenant.TenantId
                     );
 
                     Session = new DtoTenantSession
@@ -390,11 +399,14 @@ namespace Business.EndToEndService
                 }
                 else
                 {
+                    // check if tenant name is unique
 
+                    bool Unique=!await _tenantService.IsNameUsed(dto.TenantName);
+                    if (!Unique)
+                        throw new ResourceAlreadyExistsException("Tenant", dto.TenantName);
 
                     var RefreshToken = _jwtService.GenerateRefreshTokenToken(
-                        tenant.TenantId,
-                         (int)Roles.Tenant
+                        tenant.TenantId
                     );
 
                     Session = new DtoTenantSession
@@ -432,7 +444,8 @@ namespace Business.EndToEndService
             {
                 var newTenant = new DtoTenant
                 {
-                    Role = (int)Roles.Tenant,
+                    Role = (int)Roles.Admine,
+                    Name =dto.TenantName,
                     CreatedAt = DateTime.Now.ToString(),
                     Person = new DtoPerson
                     {
@@ -446,8 +459,7 @@ namespace Business.EndToEndService
                 };
                 newTenant.TenantId=await _tenantService.AddAsync(newTenant);
                 var RefreshToken = _jwtService.GenerateRefreshTokenToken(
-                     newTenant.TenantId,
-                   (int)Roles.Tenant
+                     newTenant.TenantId
                 );
                 var Session = new DtoTenantSession
                 {
@@ -475,6 +487,13 @@ namespace Business.EndToEndService
             }
 
         }
+
+        public async Task<bool> IsTenantNmaeUsed(string tenantName)
+        {
+                return await _tenantService.IsNameUsed(tenantName);
+        }
+        
+   
     }
 
 }

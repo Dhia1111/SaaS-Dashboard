@@ -13,9 +13,9 @@ namespace Connection.models
     {
         public int TenantId { get; set; }
         public string? UniqueIdentifier { get; set; }
-        public string? CompanyName { get; set; }
+        public string Name { get; set; }=null!;
         public string? Description { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
         public string CreatedAt { get; set; }=null!;
         public string? PasswordHash { get; set; }
         public string? UpdatedAt { get; set; }
@@ -30,7 +30,8 @@ namespace Connection.models
     {
         public  Task<Tenant?> GetByEmailAsync(string email);
         Task<Tenant?> GetByUniqueIdentifierWithPersonAsync(string uniqueIdentifier);
- 
+        public Task<Tenant?> GetByNameAsync(string name);
+
     }
     public class clsTenantRepo :  ITenantRepo
     {
@@ -97,6 +98,22 @@ namespace Connection.models
             }
         }
 
+
+        public async Task<Tenant?> GetByNameAsync(string name)
+        {
+            try
+            {
+                return await _context.Tenants.IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(u => u.Name == name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching User by Email {Name}", name);
+                throw;
+            }
+        }
+
         private async Task<int> Add(Tenant entity)
         {
             try
@@ -124,20 +141,18 @@ namespace Connection.models
                 int personId = await _person.AddAsync(tenant.Person);
 
                 if (personId == 0)
-                    return 0;
-                 
+                    throw new  Exception("Failed to create Person for Tenant");
+
                 tenant.PersonId = personId;
 
                 int tenantId = await Add(tenant);
 
-                if (tenantId == 0)
-                    return 0;
+                if (tenantId == 0) throw new Exception("Failed to create Tenant");
 
-              
-              
-
-
-              
+                tenant.Person.TenantId = tenantId;
+                    
+                bool UpdatePersonResult = await _person.UpdateAsync(tenant.Person);
+                if (!UpdatePersonResult) throw new Exception("Failed to update Person with TenantId");
 
                 await tx.CommitAsync();
 
@@ -199,7 +214,7 @@ namespace Connection.models
         {
             try
             {
-                return await _context.Set<Tenant>().AsNoTracking().FirstOrDefaultAsync(x => x.TenantId == id);
+                return await _context.Set<Tenant>().AsNoTracking().Include(t => t.Person).FirstOrDefaultAsync(x => x.TenantId == id);
 
             }
             catch (Exception ex)

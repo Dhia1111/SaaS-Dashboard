@@ -155,16 +155,24 @@ public class TenantAuth : ControllerBase
             GoogleDefaults.AuthenticationScheme);
 
         if (!result.Succeeded) throw new UnauthorizedAccessException("Google authentication failed");
-
+        
         var email = result.Principal.FindFirstValue(ClaimTypes.Email);
         var providerId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
         var Name= result.Principal.FindFirstValue(ClaimTypes.Name);
-
+        if(email == null || providerId == null || Name == null)
+        {
+            throw new ArgumentException("Google authentication failed: Missing claims");
+        }
+        if(Name.Length < 3)
+        {
+           throw new ArgumentException("Google authentication failed: Name must be at least 3 characters long");
+        }
         var dto = new DtoOAuth
         {
             ProviderId = providerId,
             TenantId = 0,
-            AuthProvider = AuthProviders.Google,       
+            AuthProvider = AuthProviders.Google, 
+            TenantName = Name ,
         };
 
         var tokens = await _TenantAuthService.OAuth(email, dto,
@@ -183,4 +191,13 @@ public class TenantAuth : ControllerBase
 
         return Redirect(_clientInfo.Url);
     }
+
+    [HttpGet("is-name-used")]
+    public async Task<ActionResult> IsNameUsed([FromQuery] string tenantName)
+    {
+        if (string.IsNullOrWhiteSpace(tenantName)) throw new ArgumentException("TenantId not found");
+        var IsUsed = await _TenantAuthService.IsTenantNmaeUsed(tenantName);
+        return Ok(ApiResult<bool>.Ok(IsUsed));
+    }
+
 }
