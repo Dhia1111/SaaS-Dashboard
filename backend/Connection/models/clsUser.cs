@@ -20,6 +20,7 @@ namespace Connection.models
         public string?PasswordHash { get; set; }
         public int TenantId { get; set; }
         public int Authorization { get; set; }
+        public bool IsActive { get; set; } = false;
     }
 
     public interface IUserRepo:IGenericRepo<User>
@@ -57,7 +58,6 @@ namespace Connection.models
             }
         }
 
-      
         public async Task<User?> GetByPersonIdAsync(int personId)
         {
             try

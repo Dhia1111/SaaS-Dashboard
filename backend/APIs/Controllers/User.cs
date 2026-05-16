@@ -63,22 +63,7 @@ namespace APIs.Controllers
                 .Ok(result, "User deleted successfully"));
         }
 
-        // POST: api/user/invitations
-        [HttpPost("invitations")]
-        public async Task<ActionResult<ApiResult<int>>> SendInvitation(
-            [FromBody] DtoSendInvitation dto)
-        {
-            dto.TenantId = _tenantIdProvider.TenantId;
-
-            if (dto.TenantId == 0)
-                throw new ArgumentException("TenantId not found");
-
-            var userId = await _userService.SendInvitationAsync(dto);
-
-            return Ok(ApiResult<int>
-                .Ok(userId, "Invitation sent successfully"));
-        }
-
+   
         // GET: api/user/roles
         [HttpGet("roles")]
         public ActionResult GetRoles()

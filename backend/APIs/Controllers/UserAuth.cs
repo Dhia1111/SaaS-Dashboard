@@ -12,58 +12,75 @@ namespace APIs.Controllers
     {
         private readonly IUserAuthService _authService;
         private readonly ITenantIdProvider _tenantIdProvider;
+        private readonly IJwtService _jwtService;
 
         public UserAuthController(
             IUserAuthService authService,
-            ITenantIdProvider tenantIdProvider)
+            ITenantIdProvider tenantIdProvider,
+            IJwtService jwtService)
         {
             _authService = authService;
             _tenantIdProvider = tenantIdProvider;
+            _jwtService = jwtService;
         }
 
         // POST: api/user/auth/login
-      [HttpPost("login")]
-        public async Task<ActionResult<ApiResult<object>>> Login([FromBody] DtoUserLogIn request)
+        [HttpPost("login")]
+         public async Task<ActionResult<ApiResult<object>>> Login([FromBody] DtoUserLogIn request)
         {
-            var result = await _authService.LoginAsync(request);
+            string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-            return Ok(ApiResult<object>
-                .Ok(result, "Login successful"));
+            var result = await _authService.LoginAsync(request,IpAddress);
+            Response.Cookies.Append("RefreshToken", result.RefreshToken, options: new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax, Path = "/" });
+
+            return Ok(ApiResult<string>
+                .Ok(result.AccessToken, "Login successful"));
+        }
+    
+        // POST: api/user/auth/invitations
+        [HttpPost("invitations")]
+        public async Task<ActionResult<ApiResult<int>>> SendInvitation(
+            [FromBody] DtoSendInvitation dto)
+        {
+            dto.TenantId = _tenantIdProvider.TenantId;
+
+            if (dto.TenantId == 0)
+                throw new ArgumentException("TenantId not found");
+
+            var userId = await _authService.SendInvitationAsync(dto);
+
+            return Ok(ApiResult<int>
+                .Ok(userId, "Invitation sent successfully"));
         }
 
-        /*   // POST: api/user/auth/refresh
+          // POST: api/user/auth/refresh
          [HttpPost("refresh")]
          public async Task<ActionResult<ApiResult<string>>> Refresh()
          {
-             string? refreshToken = Request.Cookies["refreshToken"];
+            string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-             if (string.IsNullOrWhiteSpace(refreshToken))
+            string? refreshToken = Request.Cookies["refreshToken"];
+            var dtoTokens = new DtoTokens { RefreshToken=refreshToken,AccessToken=null};
+            
+            if (string.IsNullOrWhiteSpace(refreshToken))
+
                  throw new ArgumentException("Refresh token not found");
 
-             var newToken = await _authService.RefreshTokenAsync(refreshToken);
-
+             var newToken = await _authService.RefreshTokenAsync(IpAddress,dtoTokens);
+            Response.Cookies.Append("RefreshToken",newToken.RefreshToken,options: new CookieOptions{ HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax ,Path = "/"});
              return Ok(ApiResult<string>
-                 .Ok(newToken, "Token refreshed successfully"));
+                 .Ok(newToken.AccessToken, "Token refreshed successfully"));
          }
 
-         // POST: api/user/auth/logout
-         [HttpPost("logout")]
-         public async Task<ActionResult<ApiResult<bool>>> Logout()
-         {
-             await _authService.LogoutAsync();
-
-             Response.Cookies.Delete("refreshToken");
-
-             return Ok(ApiResult<bool>
-                 .Ok(true, "Logout successful"));
-         }
-       */
+       
 
         // POST: api/user/auth/complete-registration
         [HttpPost("complete-registration")]
         public async Task<ActionResult<ApiResult<bool>>> CompleteRegistration(
             [FromBody] DtoLogIn request)
         {
+            string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+
             string? authHeader = Request.Headers["Authorization"].FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(authHeader) ||
@@ -74,6 +91,8 @@ namespace APIs.Controllers
 
             string accessToken = authHeader["Bearer ".Length..].Trim();
 
+            if(_jwtService.ValidateToken(accessToken) == null)
+                throw new ArgumentException("Invalid access token");
             int tenantId = _tenantIdProvider.TenantId;
 
             if (tenantId == 0)
@@ -82,10 +101,28 @@ namespace APIs.Controllers
             var result = await _authService.CompleteRegistrationAsync(
                 request,
                 tenantId,
-                accessToken);
+                accessToken, IpAddress);
+            Response.Cookies.Append("RefreshToken", result.RefreshToken, options: new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax, Path = "/" });
 
-            return Ok(ApiResult<bool>
-                .Ok(result, "Registration completed successfully"));
+            return Ok(ApiResult<string>
+                .Ok(result.AccessToken, "Registration completed successfully"));
         }
+
+        // post: api/user/auth/logout
+        [HttpPost("logout")]
+        public async Task<ActionResult> LogOut()
+        {
+            Response.Cookies.Delete("RefreshToken");
+            string? Ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            Request.Cookies.TryGetValue("RefreshToken", out string? value);
+            if (value == null || string.IsNullOrEmpty(Ip)) throw new ArgumentException();
+            await _authService.LogOutAsync(value, Ip);
+
+            return Ok(ApiResult<object>.Ok(null));
+
+        }
+
+
+
     }
 }
