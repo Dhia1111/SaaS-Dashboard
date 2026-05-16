@@ -54,4 +54,8 @@ export const resendCode = async (data) => {
   const res = await tenantAuth.post("/ReSendCode", data);
   return res.data;
 };
+ export const IsNameUsed = async (tenantName) => {
+  const res = await tenantAuth.get("/is-name-unique", { params: { tenantName:tenantName } });
+  return (Boolean.parse(res.data.data));
+};
 
