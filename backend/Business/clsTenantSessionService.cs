@@ -21,8 +21,8 @@ namespace Business
 
     public class clsTenantSessionService : GenericService<DtoTenantSession, TenantSession>, ITenantSessionService
     {
-        private readonly IsessionRepo _repo;
-        public clsTenantSessionService(IsessionRepo repo, ILogger<clsTenantSessionService> logger) : base(repo, logger)
+        private readonly ITenantsessionRepo _repo;
+        public clsTenantSessionService(ITenantsessionRepo repo, ILogger<clsTenantSessionService> logger) : base(repo, logger)
         {
             _repo = repo;
 
