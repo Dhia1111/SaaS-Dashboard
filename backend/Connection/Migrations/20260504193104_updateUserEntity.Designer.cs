@@ -3,6 +3,7 @@ using System;
 using Connection.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Connection.Migrations
 {
     [DbContext(typeof(SaasDashboardContext))]
-    partial class SaasDashboardContextModelSnapshot : ModelSnapshot
+    [Migration("20260504193104_updateUserEntity")]
+    partial class updateUserEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,60 +139,7 @@ namespace Connection.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TenantsSessions");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.UserSession", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CurrentRefreshTokenHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("GraceUntil")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("IpAddress")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("LastRefreshedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastRefreshedIp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PreviousRefreshTokenHash")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("RevokedByIp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RevokedReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TenantAgent")
-                        .HasColumnType("text");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UsersSessions");
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("Connection.models.Person", b =>
@@ -326,6 +276,10 @@ namespace Connection.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TenantId"));
 
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -335,11 +289,6 @@ namespace Connection.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
@@ -358,9 +307,6 @@ namespace Connection.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("TenantId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.HasIndex("PersonId");
 
@@ -418,9 +364,6 @@ namespace Connection.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");

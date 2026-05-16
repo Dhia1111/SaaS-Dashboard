@@ -13,7 +13,10 @@ namespace Connection
             services.AddScoped<ITenantRepo, clsTenantRepo>();
             services.AddScoped<IEmailRepository, clsEmailRepository>();
             services.AddScoped<ITenantPlanRepo, clsTenantPlanRepo>();
-            services.AddScoped<IsessionRepo, clsSessionRepo>();
+            services.AddScoped<ITenantsessionRepo, clsSessionRepo>();
+            services.AddScoped<IUserSessionRepo, clsUserSessionRepo>();
+
+
             return services;
         }
     }

@@ -90,7 +90,7 @@ namespace Connection.models
             }
         }
 
-        public async Task<bool> UpdateAsync(T entity)
+      virtual public async Task<bool> UpdateAsync(T entity)
         {
             try
             {

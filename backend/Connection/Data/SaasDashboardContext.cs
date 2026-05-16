@@ -24,7 +24,8 @@ namespace Connection.Data
         public virtual DbSet<TenantPlan> TenantPlans { get; set; } = null!;
         public virtual DbSet<UserPayment> UserPayments { get; set; } = null!;
         public virtual DbSet<UserSubscription> UserSubscriptions { get; set; } = null!;
-        public virtual DbSet<TenantSession> Sessions { get; set; } = null!;
+        public virtual DbSet<TenantSession> TenantsSessions { get; set; } = null!;
+        public virtual DbSet<UserSession> UsersSessions { get; set; } = null!;
         public virtual DbSet<Email> Emails { get; set; } = null!;
 
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options, ITenantIdProvider dataKeyProvider) :base(options) {
@@ -49,6 +50,12 @@ namespace Connection.Data
                     method?.Invoke(this, new object[] { modelBuilder });
                 }
             }
+
+            //Constraint 
+            modelBuilder.Entity<Tenant>()
+       .HasIndex(u => u.Name)
+       .IsUnique();
+
         }
 
         private void SetGlobalFilter<TEntity>(ModelBuilder builder)

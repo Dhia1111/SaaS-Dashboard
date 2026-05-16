@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 public class DtoPerson
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public string Email { get; set; } = null!;
     public string? Phone { get; set; }
     public string? FirstName { get; set; } 

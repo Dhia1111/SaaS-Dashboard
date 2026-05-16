@@ -22,12 +22,18 @@ namespace Connection.models
     }
     public enum Roles { 
        
-        Tenant,
-        AccountManager,
-        User,
-        SaasProvider,
-        SaasManager,
+        Admine,// full access to the account
+        Manager, // alowd to have access to the tenant data with constraints 
+        User,// no access autherization just as record 
+    }
 
+    public enum UsersAutherization {
+    
+        Edit__User__Autherization = 2,
+        Delete__User = 4,
+        View__User = 8,
+        View__UserList = 16,
+        Add__Invoice = 32, 
     }
 
 }
