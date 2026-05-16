@@ -21,6 +21,7 @@ namespace Connection.models
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
             public DateTime? UpdatedAt { get; set; }
         public int Authorization { get; set; }
+      public bool IsActive { get; set; } = default;
 
     }
 }

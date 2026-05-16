@@ -8,17 +8,17 @@ namespace Business
         Task<DtoUser?> GetByEmailAsync(string email);
     }
 
-    public class UserService
+    public class clsUserService
         : GenericService<DtoUser, User>,
           IUserService
     {
         private readonly IUserRepo _userRepo;
-        private readonly ILogger<UserService> _logger;
+        private readonly ILogger<clsUserService> _logger;
 
-        public UserService
+        public clsUserService
         (
             IUserRepo userRepo,
-            ILogger<UserService> logger
+            ILogger<clsUserService> logger
         )
             : base(userRepo, logger)
         {
@@ -55,7 +55,9 @@ namespace Business
                         IsEmailVeryfied = user.Person.IsVeryfied,
                         Provider = user.Person.Provider,
                         ProviderId = user.Person.ProviderId
-                    }
+                        
+                    },
+                IsActive=user.IsActive
             };
         }
 
@@ -93,7 +95,9 @@ namespace Business
                         Provider = dto.Person.Provider,
                         ProviderId = dto.Person.ProviderId,
                         TenantId = dto.TenantId
-                    }
+                    },
+                IsActive=dto.IsActive
+
             };
         }
 

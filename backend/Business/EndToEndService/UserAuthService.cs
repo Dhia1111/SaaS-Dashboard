@@ -1,5 +1,6 @@
 ﻿using Business.Exceptions;
 using Connection.models;
+using Connection.models.Entites;
 using System.ComponentModel.DataAnnotations;
 
 public class DtoSendInvitation
@@ -8,7 +9,7 @@ public class DtoSendInvitation
     [EmailAddress]
     public string Email { get; set; } = null!;
 
-    public int TenantId { get; set; }
+    public int TenantId { get; set; } 
 
     [Required]
     public Roles Role { get; set; }
@@ -35,14 +36,25 @@ namespace Business
             DtoSendInvitation request
         );
 
-       
 
-        Task<bool> CompleteRegistrationAsync
+
+
+        Task<DtoTokens?> CompleteRegistrationAsync
         (
             DtoLogIn request,
             int tenantId,
-            string accessToken
+            string accessToken,
+            string ip
         );
+        Task<DtoTokens> LoginAsync(
+            DtoUserLogIn request,string ip
+        );
+
+        Task<DtoTokens> RefreshTokenAsync(
+            string ip, DtoTokens request
+        );
+
+        Task LogOutAsync(string token, string ip);
     }
 
     public class UserAuthService : IUserAuthService
@@ -55,6 +67,7 @@ namespace Business
         private readonly IEmailTemplateHandler _templateHandler;
         private readonly ITenantService _tenantService;
         private readonly IPasswordHashService _passwordHashService;
+        private readonly IUserSessionRepo _userSessionRepo;
 
         public UserAuthService
         (
@@ -66,6 +79,7 @@ namespace Business
             IEmailTemplateHandler templateHandler,
             ITenantService tenantService,
             IPasswordHashService passwordHashService
+            ,IUserSessionRepo userSessionRepo
         )
         {
             _userRepo = userRepo;
@@ -76,6 +90,7 @@ namespace Business
             _templateHandler = templateHandler;
             _tenantService = tenantService;
             _passwordHashService = passwordHashService;
+            _userSessionRepo = userSessionRepo;
         }
 
         public async Task<int> SendInvitationAsync
@@ -127,7 +142,6 @@ namespace Business
             {
                 existingUser.Person!.SecureCode =
                     _hashService.Sha256(token);
-
                 bool updated =
                     await _personRepo
                     .UpdateAsync(existingUser.Person);
@@ -156,7 +170,7 @@ namespace Business
                 Authorization = request.UserAuthorization,
                 TenantId = request.TenantId,
                 CreatedAt = DateTime.UtcNow,
-
+                IsActive = false,
                 Person = new Person
                 {
                     Email = request.Email,
@@ -188,11 +202,12 @@ namespace Business
             return userId;
         }
 
-        public async Task<bool> CompleteRegistrationAsync
+        public async Task<DtoTokens?> CompleteRegistrationAsync
         (
             DtoLogIn request,
             int tenantId,
-            string accessToken
+            string accessToken,
+            string ip
         )
         {
             var user =
@@ -229,8 +244,41 @@ namespace Business
             user.UpdatedAt = DateTime.UtcNow;
 
             user.Person.IsVeryfied = true;
+            user.IsActive = true;
 
-            return await _userRepo.UpdateAsync(user);
+            bool result = await _userRepo.UpdateAsync(user);
+            if (!result)
+            {
+                throw new ScadulingDataException("Unable to update user");
+            }
+            var refreshToken =
+                _jwtService.GenerateRefreshTokenToken(tenantId);
+            var session = new UserSession
+            {
+                CurrentRefreshTokenHash = _hashService.Sha256(refreshToken),
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                GraceUntil = DateTime.UtcNow.AddSeconds(40),
+                IpAddress = ip,
+                TenantId =tenantId,
+            };
+
+            session.Id = await _userSessionRepo.AddAsync(session);
+
+            var AccessToken =
+                _jwtService.GenerateAccessTokenForUsers
+                (
+                    tenantId,
+                    session.Id
+                    ,
+                    user.Role,
+                    user.Authorization
+                );
+            
+            return new DtoTokens
+            {
+                AccessToken = AccessToken,
+                RefreshToken = refreshToken
+            };
         }
 
         private async Task RegisterInvitationEmail
@@ -261,7 +309,7 @@ namespace Business
 
         public async Task<DtoTokens> LoginAsync
 (
-    DtoUserLogIn request
+    DtoUserLogIn request,string ip
 )
         {
             var tenant =
@@ -293,17 +341,28 @@ namespace Business
                 throw new ArgumentException("Email not verified");
 
             string accessToken =
-                _jwtService.GenerateAccessToken
+                _jwtService.GenerateAccessTokenForUsers
                 (
                     tenant.TenantId,
                     user.Id,
                     user.Role
+                    ,user.Authorization
                 );
 
             string refreshToken =
                 _jwtService.GenerateRefreshTokenToken(tenant.TenantId);
 
-            
+            var session = new UserSession
+            {
+                CurrentRefreshTokenHash = _hashService.Sha256(refreshToken),
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                GraceUntil = DateTime.UtcNow.AddSeconds(40),
+                IpAddress = ip,
+                TenantId = tenant.TenantId,
+            };
+
+            session.Id = await _userSessionRepo.AddAsync(session);
+
             return new DtoTokens
             {
                 AccessToken = accessToken,
@@ -311,6 +370,84 @@ namespace Business
                
             };
         }
+
+        public async Task<DtoTokens> RefreshTokenAsync(string ip, DtoTokens tokens)
+        {
+
+            var hash = _hashService.Sha256(tokens.RefreshToken);
+            var session = await _userSessionRepo.GetByToken(hash);
+
+
+
+            if (session == null || session.RevokedAt != null)
+                throw new AuthenticationFailedException();
+
+
+            if (session.ExpiresAt <= DateTime.UtcNow)
+                throw new AuthenticationFailedException();
+
+            bool isCurrent = session.CurrentRefreshTokenHash == hash;
+
+            bool isPrevious =
+                session.PreviousRefreshTokenHash == hash &&
+                session.GraceUntil > DateTime.UtcNow;
+
+            if (!isCurrent && !isPrevious)
+            {
+                session.RevokedAt = DateTime.UtcNow;
+                session.RevokedReason = "ReuseDetected";
+                session.RevokedByIp = ip;
+
+                bool update = await _userSessionRepo.UpdateAsync(session);
+
+                if (!update) throw new AuthenticationFailedException();
+            }
+
+            var newRefresh = _jwtService.GenerateRefreshTokenToken(
+                session.TenantId
+             );
+            var newHash = _hashService.Sha256(newRefresh);  
+            var updated = await _userSessionRepo.UpdateIfCurrentAsync(
+                newHash,
+                _hashService.Sha256(tokens.RefreshToken),
+                DateTime.Now.AddSeconds(60),
+                session.Id
+            );
+
+            if (!updated)
+                throw new AuthenticationFailedException();
+
+            var user = await _userRepo.GetByIdAsync(session.UserId);
+            if (user == null) throw new AuthenticationFailedException(); 
+            var accessToken = _jwtService.GenerateAccessTokenForUsers(
+                session.TenantId,
+                session.Id,
+                (int)user.Role,
+                (int)user.Authorization
+                
+            );
+
+            return new DtoTokens
+            {
+                AccessToken = accessToken,
+                RefreshToken = newRefresh
+            };
+        }
+
+        public async Task LogOutAsync(string token, string ip)
+        {
+            var session = await _userSessionRepo.GetByToken(_hashService.Sha256(token));
+
+            if (session == null)
+                throw new AuthenticationFailedException();
+
+            session.ExpiresAt = DateTime.UtcNow;
+            session.RevokedAt = DateTime.UtcNow;
+            session.RevokedByIp = ip;
+
+            await _userSessionRepo.UpdateAsync(session);
+        }
+
 
 
     }
