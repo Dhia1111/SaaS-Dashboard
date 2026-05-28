@@ -22,18 +22,20 @@ namespace Connection.models
     }
     public enum Roles { 
        
-        Admine,// full access to the account
-        Manager, // alowd to have access to the tenant data with constraints 
-        User,// no access autherization just as record 
-    }
+        Tenant__Admine,// full access to the account
+        Account__Manager, // alowd to have access to the tenant data with constraints 
+        Platform__Admine,
+        Platform__Mananger,
+     }
 
-    public enum UsersAutherization {
+    public enum TenantAccountManangerAutherization {
     
-        Edit__User__Autherization = 2,
+        Edit_User__Autherization = 2,
         Delete__User = 4,
         View__User = 8,
         View__UserList = 16,
         Add__Invoice = 32, 
     }
+    public enum PlatFromManangerAutherizations { }
 
 }
