@@ -43,8 +43,8 @@ export default function DashboardLayout() {
       ),
     },
      {
-      path: "/dashboard/authorizations-settings",
-      label: "Authorizations Settings",
+      path: "/dashboard/permissions",
+      label: "Permissions",
      icon: (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
     {/* Shield Boundary */}
