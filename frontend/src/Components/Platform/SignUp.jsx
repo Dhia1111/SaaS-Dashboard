@@ -34,7 +34,7 @@ export default function SignupFlow() {
 
  async function handLeTenantNameChange(tenantName) {
    
-    const isUsed = await IsNameUsed(tenantName);
+    const isUsed = (await IsNameUsed(tenantName)).data;
     setIsNameUnique(!isUsed);
     setTenantName(tenantName);
   }
@@ -48,15 +48,15 @@ export default function SignupFlow() {
 
 
     const data = { email, password, code: otp };
-    const AccessToken = await verifyEmail(data);
+    const result = (await verifyEmail(data));
 
-    if (AccessToken === null) {
-      console.error("Verification failed: Invalid code");
+    if (!result.success) {
+      console.log(result.message);
       return;
     }
     else{
       // Store the access token in localStorage or a global state
-      Dispatch(setAccessToken(AccessToken));
+      Dispatch(setAccessToken(result.data));
     }
     if (selectedPlan === 'free') {
       navigate('/');
@@ -69,16 +69,16 @@ export default function SignupFlow() {
 };
   const ResendCodeAsync = async () => {
     const data={ email,password };
-     return await resendCode(data);  
+     return (await resendCode(data)).data;  
   };
 
   const SignUpAsync = async () => {
 
    const data={email,password,tenantName};
      const res= await signUp(data);
-    if(res.status!==200){
+    if(!res.success){
       // Handle sign-up failure (e.g., show error message)
-      console.error("Sign-up failed:",res?.data?.message ||res.message);
+      console.error(res.message);
       return;
     }
   

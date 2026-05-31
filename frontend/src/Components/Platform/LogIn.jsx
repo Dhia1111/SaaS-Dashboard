@@ -18,19 +18,21 @@ export default function Login() {
   
    const data={email,password}
    setLoading(true);
-   try{
-     const AccessToken= await logIn(data);
-     if(AccessToken) Dispatch(setAccessToken(AccessToken));
-      Navigate("/users/dashboard");
-   }catch(error){
-     console.error("Login failed:", error);
-   }finally{
+     const result= (await logIn(data));
      setLoading(false);
-   }
+     if(!result.success){
+      console.log(result.message);
+      //alert(result.message);
+     }else{
+      Dispatch(setAccessToken(result.data));
+      Navigate("/user");
+     }
+    
      
   
 
   };
+
   const SignInWithGoogle=async()=>{
     // Implement Google Sign-In logic here
       window.location.href =

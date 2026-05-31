@@ -21,41 +21,92 @@ import axios from "axios";
 
 // 🔹 SignUp
  export const signUp = async (data) => {
-  const res = await tenantAuth.post("/SignUp", data);
-  return res;
+ try{
+ const res = await tenantAuth.post("/SignUp", data);
+  return { data: res.data.data , message: res.data.message||"Sign up successful." ,success: true };
+} catch  {
+  return {
+    success: false,
+    message: "Failed to sign up.",
+    data: null
+  };
+}
 };
 
 // 🔹 LogIn
 export const logIn = async (data) => {
+  try{
   const res = await tenantAuth.post("/LogIn", data);
-  return res.data.data.accessToken;
+  return { data: res.data.data , message: res.data.message||"Log in successful." ,success: true };
+} catch {
+  return {
+    success: false,
+    message: "Failed to log in.",
+    data: null
+  };
+}
 };
 
 // 🔹 Refresh Token
 export const refreshToken = async () => {
-  const res = await tenantAuth.post("/RefreshToken");
-  return res.data.data.accessToken;
+  try {
+    const res = await tenantAuth.post("/RefreshToken");
+    return res.data.data.accessToken;
+  } catch {
+    return null;
+  }
 };
 
 // 🔹 LogOut
 export const logOut = async () => {
-  const res = await tenantAuth.post("/LogOut");
-  return res.data;
+  try {
+    const res = await tenantAuth.post("/LogOut");
+    return { data: res.data.data , message: res.data.message||"Log out successful." ,success: true }  ;
+  } catch {
+    return {
+      success: false,
+      message: "Failed to logout.",
+      data: null
+    };
+  }
 };
 
 // 🔹 Verify Email
 export const verifyEmail = async (data) => {
-  const res = await tenantAuth.patch(`/VerifyEmail`,  data );
-  return res.data.data.accessToken;
+  try {
+    const res = await tenantAuth.patch(`/VerifyEmail`,  data );
+    return { data: res.data.data , message: res.data.message||"Email verified successfully." ,success: true } ;
+  } catch {
+    return {
+      success: false,
+      message: "Failed to verify email.",
+      data: null
+    };
+  }
 };
 
 // 🔹 Resend Code
 export const resendCode = async (data) => {
-  const res = await tenantAuth.post("/ReSendCode", data);
-  return res.data;
+  try {
+    const res = await tenantAuth.post("/ReSendCode", data);
+    return { data: res.data.data , message: res.data.message||"Code resent successfully." ,success: true } ;
+  } catch {
+    return {
+      success: false,
+      message: "Failed to resend code.",
+      data: null
+    };
+  }
 };
  export const IsNameUsed = async (tenantName) => {
-  const res = await tenantAuth.get("/is-name-unique", { params: { tenantName:tenantName } });
-  return (Boolean.parse(res.data.data));
+  try {
+    const res = await tenantAuth.get("/is-name-unique", { params: { tenantName:tenantName } });
+    return {data: Boolean.parse(res.data.data), message: "Tenant name availability checked successfully.", success: true} ;
+  } catch {
+    return {
+      success: false,
+      message: "Failed to check tenant name availability.",
+      data: null  
+    };
+  }
 };
-
