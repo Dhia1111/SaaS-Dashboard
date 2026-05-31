@@ -5,8 +5,7 @@ import NavBar from '../User/NavBar'
 export default function UserAuth() {
   return (
     <div>
-      <NavBar Links={[{title:"Users",value:"/user"},{title:"Login",value:"/user/auth/login"}]} />
-      <Outlet />
+       <Outlet />
     </div>
   )
 }

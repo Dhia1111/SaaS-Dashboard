@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {  LoginUserAsync } from "../../Apis/UserAuth"; // Assume your login API exists here
+import { setAccessToken } from "../../globalStates/AccessToken";
+import { useDispatch } from "react-redux";
 
 export default function TenantLogin() {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ export default function TenantLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,20 +24,22 @@ export default function TenantLogin() {
     e.preventDefault();
     setLoading(true);
     
-    try {
+  
       const response = await LoginUserAsync(formData);
       
-      if (response.state === 1) {
+      if (response.success) {
         // Your interceptor/middleware will handle the token storage from here
-        navigate("/dashboard");
+         // Store token in Redux or Context
+         dispatch(setAccessToken(response.data.accessToken));
+         // Redirect to user dashboard
+        navigate("/user");
       } else {
         setError(response.message || "Invalid credentials or workspace name.");
       }
-    } catch  {
-      setError("Server connection failed. Please try again.");
-    } finally {
+   
+ 
       setLoading(false);
-    }
+   
   };
 
   return (
@@ -107,7 +112,7 @@ export default function TenantLogin() {
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
                   Password
                 </label>
-                <Link to="/forgot-password" size="sm" className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-700">
+                <Link to="/user-auth/forgot-password" size="sm" className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-700">
                   Forgot?
                 </Link>
               </div>

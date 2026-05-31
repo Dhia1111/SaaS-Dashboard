@@ -22,13 +22,14 @@ export const LoginUserAsync = async (data) => {
   try {
 
     const res = await UserAuth.post(`/login`, data);
-    return res;
+    return { data: res.data.data , message: res.data.message||"Log in successful." ,success: true };
 
   } catch (err) {
 
     return {
-      state: 0,
-      message: err.response?.data?.message || "An error occurred."
+      success: false,
+      message: err.response?.data?.message || "An error occurred.",
+      data: null
     };
   }
 };
@@ -38,39 +39,59 @@ export const VerifyUserAsync = async (data) => {
   try {
 
     const res = await UserAuth.post(`/complete-registration`, data);
-    return res;
+    return { data: res.data.data , message: res.data.message||"User verified successfully." ,success: true } ;
 
   } catch (err) {
 
     return {
-      state: 0,
-      message: err.response?.data?.message || "An error occurred."
+      success: false,
+      message: err.response?.data?.message || "An error occurred.",
+      data: null
     };
   }
 };
 
 export const refreshUserToken = async () => {
 
-  const res = await UserAuth.post(`/refresh`);
+ try{ const res = await UserAuth.post(`/refresh`);
 
-  return res.data.data.accessToken;
+  return { data: res.data.data.accessToken, message: "Token refreshed successfully.", success: true };
+} catch (err) {
+  return {
+    success: false,
+    message: err.response?.data?.message || "An error occurred.",
+    data: null
+  };
+}
 };
+
+ 
 
 export const LogoutUserAsync = async () => {
 
-  const res = await UserAuth.post(`/logout`);
+ try{ const res = await UserAuth.post(`/logout`);
 
-  return res.data;
+  return { data: res.data.data , message: res.data.message||"Log out successful." ,success: true }  ;
+} catch {
+  return {
+    success: false,
+    message: "Failed to logout.",
+    data: null
+  };
+}
 };
+
+     
 
 export const SendInvitationAsync = async (data) => {
   try{
 const res = await UserAuth.post(`/invitations`, data);
-  return res;
+  return { data: res.data.data , message: res.data.message||"Invitation sent successfully." ,success: true } ;
   }catch{
 return {
-  state: 0,
-  message: "Failed to send invitation."
+  success: false,
+  message: "Failed to send invitation.",
+  data: null
 };
   }
 };

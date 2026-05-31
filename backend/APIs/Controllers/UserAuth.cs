@@ -26,7 +26,7 @@ namespace APIs.Controllers
 
         // POST: api/user/auth/login
         [HttpPost("login")]
-         public async Task<ActionResult<ApiResult<object>>> Login([FromBody] DtoUserLogIn request)
+         public async Task<ActionResult<ApiResult<string>>> Login([FromBody] DtoUserLogIn request)
         {
             string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
@@ -76,7 +76,7 @@ namespace APIs.Controllers
 
         // POST: api/user/auth/complete-registration
         [HttpPost("complete-registration")]
-        public async Task<ActionResult<ApiResult<bool>>> CompleteRegistration(
+        public async Task<ActionResult<ApiResult<string>>> CompleteRegistration(
             [FromBody] DtoLogIn request)
         {
             string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
