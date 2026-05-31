@@ -70,6 +70,7 @@ namespace Business
                 return new DtoPerson
                 {
                     Id = person.Id,
+                    TenantId = person.TenantId,
                     Email = person.Email,
                     Phone = person.Phone,
                     FirstName = person.FirstName,
@@ -88,6 +89,7 @@ namespace Business
             return new Person
             {
                 Id = person.Id,
+                TenantId=person.TenantId,
                 Email = person.Email,
                 Phone = person.Phone,
                 FirstName = person.FirstName,
@@ -98,6 +100,7 @@ namespace Business
                 EmailVerificationCodeExpiry = DateTime.TryParse(person.EmailVerificationCodeExpiry, out DateTime date)? date.ToUniversalTime() :null,
                 Provider= person.Provider,
                 ProviderId = person.ProviderId,
+                
                 
 
             }; 
