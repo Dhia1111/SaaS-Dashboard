@@ -21,6 +21,7 @@ namespace Business {
         public string GenerateRefreshTokenToken(int tenantId);
 
         public ClaimsPrincipal? ValidateToken(string  token);
+        public string GenerateAccessTokenForUsers(int tenantId, int SessionId, int Roles,int UserAuthorization);
 
     }
 
@@ -106,6 +107,33 @@ namespace Business {
                 return null;
             }
         }
+
+        public string GenerateAccessTokenForUsers(int TenantId, int sessionId, int roles,int autherizations)
+        {
+            var claims = new[]
+            {
+            new Claim(JwtRegisteredClaimNames.Sub, TenantId.ToString()),
+            new Claim("SessionId", sessionId.ToString()),
+            new Claim("TenantId", TenantId.ToString()),
+            new Claim("Roles", roles.ToString()),
+            new Claim("Authorization", autherizations.ToString()),
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSetting.Key));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSetting.Issuer,
+                audience: _jwtSetting.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(10), // 🔥 short-lived
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
     }
 
 }
