@@ -81,8 +81,8 @@ namespace APIs.Controllers
         [HttpGet("authorization-options")]
         public ActionResult GetAuthorizationOptions()
         {
-            var list = Enum.GetValues(typeof(UsersAutherization))
-                .Cast<UsersAutherization>()
+            var list = Enum.GetValues(typeof(TenantAccountManangerAutherization))
+                .Cast<TenantAccountManangerAutherization>()
                 .Select(x => new KeyValuePair<int, string>(
                     (int)x,
                     x.ToString().Replace("__", " ")))

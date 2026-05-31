@@ -1,59 +1,111 @@
-import { store } from "../store";
 import axios from "axios";
-import { refreshToken } from "./tenantAuth";
-  const User = axios.create({
+import { store } from "../store";
+import { refreshUserToken } from "./UserAuth";
+
+const User = axios.create({
   baseURL: "http://localhost:7073/api/user",
-  withCredentials: true, 
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json"
   }
 });
- // the method to inject the token
- 
-User.interceptors.request.use(async (config)  => {
-  var token = store.getState().auth.accessToken;
+
+User.interceptors.request.use(async (config) => {
+
+  let token = store.getState().auth.accessToken;
+
+  if (!token) {
+    try {
+      token = await refreshUserToken();
+    }
+    catch {
+      token = null;
+    }
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-   }
- else{
-    token= await refreshToken();
-     if(!token){
-       window.location.href = "/login";
-    }
-    else {
-          config.headers.Authorization = `Bearer ${token}`;
-     }
- }
- 
+  }
 
   return config;
 });
 
-
-
-export const AddUser = async (data) => {
-  const res = await User.post(`/.`, data );
-  return res.data.data;
-};
-
-export const ListAsync = async () => {
-  const res = await User.get(`/list` );
-  return res.data.data;
+export const ListUsersAsync = async () => {
+ try{
+ const res = await User.get(`/`);
+  return { data: res.data.data, message: "Users listed successfully.", success: true };
+} catch {
+  return {
+    success: false,
+    message: "Failed to list users.",
+    data: null
+  };
+}
 };
 
 export const FindUserAsync = async (id) => {
-  const res = await User.get(`/${id}`  );
-  return res.data.data;
+  try {
+    const res = await User.get(`/${id}`);
+    return { data: res.data.data, message: "User found successfully.", success: true };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to find user.",
+      data: null
+    };
+  }
+};
+
+export const UpdateUserAsync = async (data) => {
+  try {
+    const res = await User.put(`/${data.id}`, data);
+    return { data: res.data.data, message: "User updated successfully.", success: true };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to update user.",
+      data: null
+    };
+  }
+};
+
+export const DeleteUserAsync = async (id) => {
+  try {
+    const res = await User.delete(`/${id}`);
+
+  return { data: res.data.data, message: "User deleted successfully.", success: true };
+        }
+    catch {      return {
+        success: false,
+        message: "Failed to delete user.",
+        data: null
+      };
+    }
 };
 
 
-export const UpdateUser = async (data) => {
-  const res = await User.patch(`/${data.id}`, data );
-  return res.data.data;
+export const GetUserRolesAsync = async () => {
+  try {
+    const res = await User.get(`/roles`);
+    return { data: res.data.data, message: "User roles retrieved successfully.", success: true };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to get user roles.",
+      data: null
+    };
+  }
 };
 
-export const DeleteUser = async (id) => {
-  const res = await User.delete(`/${id}`);
-  return res.data.data;
-};
+export const GetAuthorizationOptionsAsync = async () => {
+  try {
+    const res = await User.get(`/authorization-options`);
+    return { data: res.data.data, message: "Authorization options retrieved successfully.", success: true };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to get authorization options.",
+      data: null
+    };
+  }
+};  
