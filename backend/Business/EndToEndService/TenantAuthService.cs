@@ -130,7 +130,7 @@ namespace Business.EndToEndService
 
             var tenant = new DtoTenant
             {
-                Role=(int)Roles.Admine,
+                Role=(int)Roles.Tenant__Admine,
                 CreatedAt = DateTime.Now.ToString(),
                 PasswordHash = _passwordHashService.Hash(request.Password),
                 Name = request.TenantName,
@@ -173,7 +173,7 @@ namespace Business.EndToEndService
             var refreshToken = _jwtService.GenerateAccessToken(
                 tenant.TenantId,
                 -1,
-                (int)Roles.Admine
+                (int)Roles.Tenant__Admine
             );
 
             var session = new DtoTenantSession
@@ -255,7 +255,7 @@ namespace Business.EndToEndService
             var accessToken = _jwtService.GenerateAccessToken(
                 session.TenantId,
                 session.SessionId,
-                (int)Roles.Admine
+                (int)Roles.Tenant__Admine
             );
 
             return new DtoTokens
@@ -360,11 +360,10 @@ namespace Business.EndToEndService
         {
             
 
-            var tenant=await _tenantService.GetByEmailAsync(email);
-
+            var tenant=await _tenantService.GetByNameAsync(dto.TenantName);
             if (tenant != null)
-            {  
-                var Session=await _tenantSessionService.GetByTenantId(tenant.TenantId);
+            {
+                var Session =await _tenantSessionService.GetByTenantId(tenant.TenantId);
                 if (Session != null && Session.IpAddress == ip)
                 { //update the session 
                    var AcessToken= _jwtService.GenerateAccessToken(
@@ -401,9 +400,6 @@ namespace Business.EndToEndService
                 {
                     // check if tenant name is unique
 
-                    bool Unique=!await _tenantService.IsNameUsed(dto.TenantName);
-                    if (!Unique)
-                        throw new ResourceAlreadyExistsException("Tenant", dto.TenantName);
 
                     var RefreshToken = _jwtService.GenerateRefreshTokenToken(
                         tenant.TenantId
@@ -442,9 +438,14 @@ namespace Business.EndToEndService
             }
             else
             {
+
+                bool Unique = !await _tenantService.IsNameUsed(dto.TenantName);
+                if (!Unique)
+                    throw new ResourceAlreadyExistsException("Tenant", dto.TenantName);
+
                 var newTenant = new DtoTenant
                 {
-                    Role = (int)Roles.Admine,
+                    Role = (int)Roles.Tenant__Admine,
                     Name =dto.TenantName,
                     CreatedAt = DateTime.Now.ToString(),
                     Person = new DtoPerson
