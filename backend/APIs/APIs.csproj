@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\EmailTemplate.html" />
+    <Content Remove="wwwroot\EmailTemplateUsers.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\EmailTemplateUsers.html" />
     <None Include="wwwroot\EmailTemplate.html" />
   </ItemGroup>
 

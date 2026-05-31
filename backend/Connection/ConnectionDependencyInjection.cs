@@ -15,7 +15,11 @@ namespace Connection
             services.AddScoped<ITenantPlanRepo, clsTenantPlanRepo>();
             services.AddScoped<ITenantsessionRepo, clsSessionRepo>();
             services.AddScoped<IUserSessionRepo, clsUserSessionRepo>();
-
+            services.AddScoped<ITenantPermissionRepository, TenantPermissionRepository>();
+            services.AddScoped<ITenantPlanRepository, TenantPlanRepository>();
+            services.AddScoped<ITenantPlanBenifestRepository, TenantPlanBenifestRepository>();
+            services.AddScoped<ITenantPlanPermissionRepository, TenantPlanPermissionRepository>();
+            services.AddScoped<ITenantPricingOptionRepository, TenantPricingOptionRepository>();
 
             return services;
         }

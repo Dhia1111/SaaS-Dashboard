@@ -45,4 +45,9 @@
         public SecurityBreachException(string message)
             : base(message, "SECURITY_BREACH") { }
     }
+    public class ScadulingDataException : DomainException
+    {
+        public ScadulingDataException(string message)
+            : base(message, "SCADULING_DATA ") { }
+    }
 }

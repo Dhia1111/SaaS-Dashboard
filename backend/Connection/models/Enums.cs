@@ -15,7 +15,7 @@ namespace Connection.models
         Cancelled = 4,
         Success= 5,
     }
-    public enum PlatformBillingInterval
+    public enum BillingCycle
     {
         Monthly = 1,
         Yearly = 2

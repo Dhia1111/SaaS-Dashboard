@@ -28,6 +28,13 @@ namespace Connection.Data
         public virtual DbSet<UserSession> UsersSessions { get; set; } = null!;
         public virtual DbSet<Email> Emails { get; set; } = null!;
 
+        public virtual DbSet<TenantPlan> TenantsPlans { get; set; } = null!;
+        public virtual DbSet<TenantPermission> TenantsPermissions { get; set; } = null!;
+        public virtual DbSet<TenantPlanPermission> TenantsPlansPermissions { get; set; } = null!;
+        public virtual DbSet<TenantPlanBenifest> TenantsPlansBenifests { get; set; } = null!;
+        public virtual DbSet<TenantPricingOption> TenantsPricingOptions { get; set; } = null!;
+
+
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options, ITenantIdProvider dataKeyProvider) :base(options) {
 
                 _TenantID = dataKeyProvider.TenantId;
