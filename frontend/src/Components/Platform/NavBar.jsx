@@ -1,5 +1,5 @@
 
-
+import { Link } from "react-router-dom"
 
 export default function NavBar({Links=[{title:"",value:""}]}){
 
@@ -9,9 +9,11 @@ return(
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg"></div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+             <Link to="/" className="flex items-center gap-2"> 
+           <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               BillFlow
             </span>
+            </Link>
           </div>
           <ul className="hidden md:flex items-center gap-8 text-gray-600 list-none">
             {Links.map((link, index) => (
@@ -25,7 +27,7 @@ return(
           <div className="flex items-center gap-4">
             <button className="px-4 py-2 text-gray-600 hover:text-primary transition">
 
-          <a href="/login" className="hover:text-primary transition">
+          <a href="/signin-options" className="hover:text-primary transition">
                   Sign In
                 </a>
             </button>
