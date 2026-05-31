@@ -3,6 +3,7 @@ using System;
 using Connection.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Connection.Migrations
 {
     [DbContext(typeof(SaasDashboardContext))]
-    partial class SaasDashboardContextModelSnapshot : ModelSnapshot
+    [Migration("20260530164314_updateDb11")]
+    partial class updateDb11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,129 +90,6 @@ namespace Connection.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PlatformPlans");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.TenantPermission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("BitValue")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("PermissionKey")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TenantsPermissions");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.TenantPlanBenifest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("PlanId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TenantsPlansBenifests");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.TenantPlanPermission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PermissionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantPlanId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PermissionId");
-
-                    b.HasIndex("TenantPlanId");
-
-                    b.ToTable("TenantsPlansPermissions");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.TenantPricingOption", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BillingCycle")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DurationInMonths")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantPlanId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("TenantPlanId");
-
-                    b.ToTable("TenantsPricingOptions");
                 });
 
             modelBuilder.Entity("Connection.models.Entites.TenantSession", b =>
@@ -515,7 +395,7 @@ namespace Connection.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("TenantPlan");
+                    b.ToTable("TenantPlans");
                 });
 
             modelBuilder.Entity("Connection.models.User", b =>
@@ -641,44 +521,6 @@ namespace Connection.Migrations
                     b.HasIndex("TenantPlanId");
 
                     b.ToTable("UserSubscriptions");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.TenantPlanPermission", b =>
-                {
-                    b.HasOne("Connection.models.Entites.TenantPermission", "Permission")
-                        .WithMany()
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Connection.models.TenantPlan", "TenantPlan")
-                        .WithMany()
-                        .HasForeignKey("TenantPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("TenantPlan");
-                });
-
-            modelBuilder.Entity("Connection.models.Entites.TenantPricingOption", b =>
-                {
-                    b.HasOne("Connection.models.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Connection.models.TenantPlan", "TenantPlan")
-                        .WithMany()
-                        .HasForeignKey("TenantPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tenant");
-
-                    b.Navigation("TenantPlan");
                 });
 
             modelBuilder.Entity("Connection.models.PlatformPayment", b =>
