@@ -1,6 +1,7 @@
 import axios from "axios";
 //import { store } from "../store";
 import {refreshToken as GenralRefreshToken } from "./GenralAuth";
+import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
  const tenantAuth = axios.create({
   baseURL: "http://localhost:7073/api/auth/tenant",
   withCredentials: true, 
@@ -23,7 +24,7 @@ import {refreshToken as GenralRefreshToken } from "./GenralAuth";
 // 🔹 SignUp
  export const signUp = async (data) => {
  try{
- const res = await tenantAuth.post("/SignUp", data);
+ const res = await executeWithRetry(() => tenantAuth.post("/SignUp", data), RetryPolicies.WriteNormal)    ;
   return { data: res.data.data , message: res.data.message||"Sign up successful." ,success: true };
 } catch  {
   return {
@@ -37,7 +38,7 @@ import {refreshToken as GenralRefreshToken } from "./GenralAuth";
 // 🔹 LogIn
 export const logIn = async (data) => {
   try{
-  const res = await tenantAuth.post("/LogIn", data);
+  const res = await executeWithRetry(() => tenantAuth.post("/LogIn", data), RetryPolicies.WriteNormal)    ;
   return { data: res.data.data , message: res.data.message||"Log in successful." ,success: true };
 } catch {
   return {
@@ -56,7 +57,7 @@ export const refreshToken = async () => {
 // 🔹 LogOut
 export const logOut = async () => {
   try {
-    const res = await tenantAuth.post("/LogOut");
+    const res = await executeWithRetry(() => tenantAuth.post("/LogOut"), RetryPolicies.WriteNormal);
     return { data: res.data.data , message: res.data.message||"Log out successful." ,success: true }  ;
   } catch {
     return {
@@ -70,7 +71,7 @@ export const logOut = async () => {
 // 🔹 Verify Email
 export const verifyEmail = async (data) => {
   try {
-    const res = await tenantAuth.patch(`/VerifyEmail`,  data );
+    const res = await executeWithRetry(() => tenantAuth.patch(`/VerifyEmail`,  data ), RetryPolicies.WriteNormal);
     return { data: res.data.data , message: res.data.message||"Email verified successfully." ,success: true } ;
   } catch {
     return {
@@ -84,7 +85,7 @@ export const verifyEmail = async (data) => {
 // 🔹 Resend Code
 export const resendCode = async (data) => {
   try {
-    const res = await tenantAuth.post("/ReSendCode", data);
+    const res = await executeWithRetry(() => tenantAuth.post("/ReSendCode", data), RetryPolicies.WriteNormal);
     return { data: res.data.data , message: res.data.message||"Code resent successfully." ,success: true } ;
   } catch {
     return {
@@ -96,7 +97,7 @@ export const resendCode = async (data) => {
 };
  export const IsNameUsed = async (tenantName) => {
   try {
-    const res = await tenantAuth.get("/is-name-unique", { params: { tenantName:tenantName } });
+    const res = await executeWithRetry(() => tenantAuth.get("/is-name-unique", { params: { tenantName:tenantName } }), RetryPolicies.ReadFast);
     return {data: Boolean.parse(res.data.data), message: "Tenant name availability checked successfully.", success: true} ;
   } catch {
     return {

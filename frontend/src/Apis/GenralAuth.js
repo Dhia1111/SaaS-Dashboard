@@ -1,5 +1,6 @@
 import axios from "axios";
 import { store } from "../store";
+import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
 const Auth = axios.create({
   baseURL: "http://localhost:7073/api/auth",
   withCredentials: true,
@@ -19,7 +20,9 @@ Auth.interceptors.request.use((config) => {
 
 export const refreshToken = async () => {
 
- try{ const res = await Auth.post(`/refresh`);
+ try{
+  
+  const res =  await  executeWithRetry(() => Auth.post(`/refresh`), RetryPolicies.Critical);
 
   return { data: res.data.data.accessToken, message: "Token refreshed successfully.", success: true };
 } catch (err) {
