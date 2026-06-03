@@ -1,6 +1,7 @@
 import axios from "axios";
 import { store } from "../store";
 import { refreshUserToken } from "./UserAuth";
+import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
 
 const User = axios.create({
   baseURL: "http://localhost:7073/api/user",
@@ -32,7 +33,7 @@ User.interceptors.request.use(async (config) => {
 
 export const ListUsersAsync = async () => {
  try{
- const res = await User.get(`/`);
+ const res = await executeWithRetry(() => User.get(`/`), RetryPolicies.ReadFast)    ;
   return { data: res.data.data, message: "Users listed successfully.", success: true };
 } catch {
   return {
@@ -45,7 +46,7 @@ export const ListUsersAsync = async () => {
 
 export const FindUserAsync = async (id) => {
   try {
-    const res = await User.get(`/${id}`);
+    const res = await executeWithRetry(() => User.get(`/${id}`), RetryPolicies.ReadFast);
     return { data: res.data.data, message: "User found successfully.", success: true };
   } catch {
     return {
@@ -58,7 +59,7 @@ export const FindUserAsync = async (id) => {
 
 export const UpdateUserAsync = async (data) => {
   try {
-    const res = await User.put(`/${data.id}`, data);
+    const res = await executeWithRetry(() => User.put(`/${data.id}`, data), RetryPolicies.WriteNormal)    ;
     return { data: res.data.data, message: "User updated successfully.", success: true };
   } catch {
     return {
@@ -71,12 +72,12 @@ export const UpdateUserAsync = async (data) => {
 
 export const DeleteUserAsync = async (id) => {
   try {
-    const res = await User.delete(`/${id}`);
+    const res = await executeWithRetry(() => User.delete(`/${id}`), RetryPolicies.WriteNormal);
 
-  return { data: res.data.data, message: "User deleted successfully.", success: true };
-        }
-    catch {      return {
-        success: false,
+    return { data: res.data.data, message: "User deleted successfully.", success: true };
+  } catch {
+    return {
+      success: false,
         message: "Failed to delete user.",
         data: null
       };
@@ -86,7 +87,7 @@ export const DeleteUserAsync = async (id) => {
 
 export const GetUserRolesAsync = async () => {
   try {
-    const res = await User.get(`/roles`);
+    const res = await executeWithRetry(() => User.get(`/roles`), RetryPolicies.ReadFast)    ;
     return { data: res.data.data, message: "User roles retrieved successfully.", success: true };
   } catch {
     return {
@@ -99,7 +100,7 @@ export const GetUserRolesAsync = async () => {
 
 export const GetAuthorizationOptionsAsync = async () => {
   try {
-    const res = await User.get(`/authorization-options`);
+    const res = await executeWithRetry(() => User.get(`/authorization-options`), RetryPolicies.ReadFast)    ;
     return { data: res.data.data, message: "Authorization options retrieved successfully.", success: true };
   } catch {
     return {

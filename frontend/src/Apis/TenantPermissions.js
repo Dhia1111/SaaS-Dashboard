@@ -1,5 +1,7 @@
 import axios from "axios";
 import { store } from "../store";
+import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
+
 const TenantPermissionAuth = axios.create({
   baseURL: "http://localhost:7073/api/tenant/permission",
   withCredentials: true,
@@ -19,7 +21,7 @@ TenantPermissionAuth.interceptors.request.use((config) => {
 
 export const TenantPermissionsListAsync = async () => {
   try { 
-    const res = await TenantPermissionAuth.get(`/GetPermissions`);
+    const res = await executeWithRetry(() => TenantPermissionAuth.get(`/GetPermissions`), RetryPolicies.ReadFast)   ;
     return { data: res.data.data , message: res.data.message||"Permissions fetched successfully." ,success: true } ;
   } catch (err) {
     return {
@@ -32,7 +34,7 @@ export const TenantPermissionsListAsync = async () => {
 
 export const AddTenantPermissionAsync = async (data) => {   
     try {
-        const res = await TenantPermissionAuth.post(`/AddPermission`, data);
+        const res = await executeWithRetry(() => TenantPermissionAuth.post(`/AddPermission`, data), RetryPolicies.WriteNormal);
         return { data: res.data.data , message: res.data.message||"Permission added successfully." ,success: true } ;
     } catch (err) {
         return {
@@ -45,7 +47,7 @@ export const AddTenantPermissionAsync = async (data) => {
 
 export const EditTenantPermissionAsync = async (id, data) => {
     try {
-        const res = await TenantPermissionAuth.put(`/EditPermission/${id}`, data);
+        const res = await executeWithRetry(() => TenantPermissionAuth.put(`/EditPermission/${id}`, data), RetryPolicies.WriteNormal)    ;
         return { data: res.data.data , message: res.data.message||"Permission updated successfully." ,success: true } ;
     } catch (err) {
         return {
@@ -59,7 +61,7 @@ export const EditTenantPermissionAsync = async (id, data) => {
 
 export const DeleteTenantPermissionAsync = async (id) => {
     try {
-        const res = await TenantPermissionAuth.delete(`/DeletePermission/${id}`);
+        const res = await executeWithRetry(() => TenantPermissionAuth.delete(`/DeletePermission/${id}`), RetryPolicies.WriteNormal)    ;
         return { data: res.data.data , message: res.data.message||"Permission deleted successfully." ,success: true } ;
     } catch (err) {
         return {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { store } from "../store";
 import { refreshToken } from "./GenralAuth";
+import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
 const UserAuth = axios.create({
   baseURL: "http://localhost:7073/api/user/auth",
   withCredentials: true,
@@ -22,7 +23,7 @@ export const LoginUserAsync = async (data) => {
 
   try {
 
-    const res = await UserAuth.post(`/login`, data);
+    const res = await executeWithRetry(() => UserAuth.post(`/login`, data), RetryPolicies.WriteNormal)    ;
     return { data: res.data.data , message: res.data.message||"Log in successful." ,success: true };
 
   } catch (err) {
@@ -39,7 +40,7 @@ export const VerifyUserAsync = async (data) => {
 
   try {
 
-    const res = await UserAuth.post(`/complete-registration`, data);
+    const res = await executeWithRetry(() => UserAuth.post(`/complete-registration`, data), RetryPolicies.WriteNormal)    ;
     return { data: res.data.data , message: res.data.message||"User verified successfully." ,success: true } ;
 
   } catch (err) {
@@ -62,7 +63,7 @@ export const refreshUserToken = async () => {
 
 export const LogoutUserAsync = async () => {
 
- try{ const res = await UserAuth.post(`/logout`);
+ try{ const res = await executeWithRetry(() => UserAuth.post(`/logout`), RetryPolicies.WriteNormal)    ;
 
   return { data: res.data.data , message: res.data.message||"Log out successful." ,success: true }  ;
 } catch {
@@ -78,7 +79,7 @@ export const LogoutUserAsync = async () => {
 
 export const SendInvitationAsync = async (data) => {
   try{
-const res = await UserAuth.post(`/invitations`, data);
+const res = await executeWithRetry(() => UserAuth.post(`/invitations`, data), RetryPolicies.WriteNormal);
   return { data: res.data.data , message: res.data.message||"Invitation sent successfully." ,success: true } ;
   }catch{
 return {
