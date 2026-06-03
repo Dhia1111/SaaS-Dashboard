@@ -18,10 +18,10 @@ using System.Text;
 
 public class TenantAuth : ControllerBase
 {
-    private readonly ITentantAuthService _TenantAuthService;
+    private readonly ITenantAuthService _TenantAuthService;
     private readonly ClientInfo _clientInfo;
 
-    public TenantAuth(ITentantAuthService tenantAuthService, IOptions<ClientInfo> clientInfo)
+    public TenantAuth(ITenantAuthService tenantAuthService, IOptions<ClientInfo> clientInfo)
     {
 
         _TenantAuthService = tenantAuthService;
@@ -63,43 +63,7 @@ public class TenantAuth : ControllerBase
 
     }
 
-    [HttpPost("RefreshToken")]
-    public async Task<ActionResult> RefreshToken()
-    {
- 
-        string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-        bool reslt = Request.Cookies.TryGetValue("RefreshToken", out string? RefreshToken);
-        if (reslt == false || RefreshToken == null)
-        {
-
-             throw new ArgumentException(); 
-
-        }
-
-        DtoTokens RequestTokens = new DtoTokens
-        {
-            AccessToken = "",
-            RefreshToken = RefreshToken,
-        };
-
-        DtoTokens? tokens = await _TenantAuthService.RefreshTokens(IpAddress, RequestTokens);
-        if (tokens == null)
-        {
-            throw new Exception("SignUp Service failded");
-        }
-        Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTime.UtcNow.AddDays(30),
-            Path = "/"
-        });
-
-        return Ok(ApiResult<object>.Ok(new { AccessToken = tokens.AccessToken }));
-
-
-    }
+   
 
     [HttpPost("LogOut")]
     public async Task<ActionResult> LogOut()

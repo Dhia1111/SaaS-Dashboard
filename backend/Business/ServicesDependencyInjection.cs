@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Business.EndToEndService;
+using Business.Config;
 
 namespace Business
 {
@@ -10,12 +11,12 @@ namespace Business
         {
             services.AddScoped<IPersonService, clsPersonService>();
             services.AddScoped<IUserService, clsUserService>();
-            services.AddScoped<ITentantAuthService,TenantAuthService>();
+            services.AddScoped<ITenantAuthService,TenantAuthService>();
             services.AddScoped<ITenantService, clsTenantService>();
             services.AddScoped<ITenantPlanServices, clsTenantPlanServices>();
             services.AddScoped<IEmailService, clsEmailService>();
             services.AddScoped<ITenantSessionService, clsTenantSessionService>();
-            services.AddScoped<ITentantAuthService, TenantAuthService>();
+            services.AddScoped<ITenantAuthService, TenantAuthService>();
             services.AddScoped<IEmailSettingsFactory, EnvironmentEmailSettingsFactory>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserAuthService, UserAuthService>();
@@ -25,6 +26,11 @@ namespace Business
             services.AddScoped<ITenantPlanBenifestServices, clsTenantPlanBenifestServices>();
             services.AddScoped<ITenantPlanPermissionServices, clsTenantPlanPermissionServices>();
             services.AddScoped<ITenantPricingOptionServices, clsTenantPricingOptionServices>();
+            //
+            services.AddScoped<IRefreshTokenService, TenantAuthService>();
+            services.AddScoped<IRefreshTokenService, UserAuthService>();
+            //
+            services.AddSingleton<INamingCookies, NamingCookies>();
 
 
 

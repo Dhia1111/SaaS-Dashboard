@@ -53,27 +53,7 @@ namespace APIs.Controllers
                 .Ok(userId, "Invitation sent successfully"));
         }
 
-          // POST: api/user/auth/refresh
-         [HttpPost("refresh")]
-         public async Task<ActionResult<ApiResult<string>>> Refresh()
-         {
-            string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-
-            string? refreshToken = Request.Cookies["refreshToken"];
-            var dtoTokens = new DtoTokens { RefreshToken=refreshToken,AccessToken=null};
-            
-            if (string.IsNullOrWhiteSpace(refreshToken))
-
-                 throw new ArgumentException("Refresh token not found");
-
-             var newToken = await _authService.RefreshTokenAsync(IpAddress,dtoTokens);
-            Response.Cookies.Append("RefreshToken",newToken.RefreshToken,options: new CookieOptions{ HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax ,Path = "/"});
-             return Ok(ApiResult<string>
-                 .Ok(newToken.AccessToken, "Token refreshed successfully"));
-         }
-
        
-
         // POST: api/user/auth/complete-registration
         [HttpPost("complete-registration")]
         public async Task<ActionResult<ApiResult<string>>> CompleteRegistration(

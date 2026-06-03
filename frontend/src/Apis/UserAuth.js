@@ -1,5 +1,6 @@
 import axios from "axios";
 import { store } from "../store";
+import { refreshToken } from "./GenralAuth";
 const UserAuth = axios.create({
   baseURL: "http://localhost:7073/api/user/auth",
   withCredentials: true,
@@ -53,19 +54,11 @@ export const VerifyUserAsync = async (data) => {
 
 export const refreshUserToken = async () => {
 
- try{ const res = await UserAuth.post(`/refresh`);
+ const res = await refreshToken();
 
-  return { data: res.data.data.accessToken, message: "Token refreshed successfully.", success: true };
-} catch (err) {
-  return {
-    success: false,
-    message: err.response?.data?.message || "An error occurred.",
-    data: null
-  };
+ return res;
+
 }
-};
-
- 
 
 export const LogoutUserAsync = async () => {
 
