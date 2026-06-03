@@ -1,8 +1,10 @@
 ﻿using Business.Exceptions;
 using Connection.models;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
+using Business.Config;
 
 public class DtoSignUp
 {
@@ -65,19 +67,18 @@ public class DtoOAuth
 }
 namespace Business.EndToEndService
 {
-    public interface ITentantAuthService
+    public interface ITenantAuthService
     {
 
         public Task SignUpAsync(DtoSignUp Request);
         public Task<DtoTokens> LogInAsync(DtoLogIn request, string Ip);
-        public Task<DtoTokens> RefreshTokens(string Ip, DtoTokens tokens);
-        public Task<DtoTokens> VerifyEmailAsync(DtoVerifyEmail dto, string Ip);
+         public Task<DtoTokens> VerifyEmailAsync(DtoVerifyEmail dto, string Ip);
         public Task ReSendCode(DtoLogIn request);
         Task LogOut(string token, string Ip);
         Task<bool> IsTenantNmaeUsed(string tenantName);
         Task<DtoTokens> OAuth(string email, DtoOAuth dto, string ip);
     }
-    public class TenantAuthService : ITentantAuthService
+    public class TenantAuthService : ITenantAuthService, IRefreshTokenService
     {
         private readonly ITenantSessionService _tenantSessionService;
         private readonly IJwtService _jwtService;
@@ -90,7 +91,8 @@ namespace Business.EndToEndService
         private readonly IGenralHashService _genralHashService;
         private readonly IEmailService _EmailService;
         private readonly IPersonService _personService;
-         public TenantAuthService(ITenantService tenant, IEmailTemplateHandler emailTemplateHandler,
+        private readonly INamingCookies _ProprtiesNaming;
+        public TenantAuthService(ITenantService tenant, IEmailTemplateHandler emailTemplateHandler,
             ILogger<TenantAuthService> logger,
             IOptions<EmailSettings> options,
             IPasswordHashService passwordHash,
@@ -99,7 +101,8 @@ namespace Business.EndToEndService
             IJwtService jwtService,
             ITenantSessionService tenantSession,
             IEmailService emailService,
-            IPersonService personService
+            IPersonService personService,
+            INamingCookies proprtiesNaming
              )
         {
             _tenantSessionService = tenantSession;
@@ -113,11 +116,12 @@ namespace Business.EndToEndService
             _EmailService = emailService;
             _personService = personService;
             _settings = options.Value;
+            _ProprtiesNaming = proprtiesNaming;
 
-         }
+        }
 
         // constructor unchanged...
-
+        public string CookieName { get { return _ProprtiesNaming.TenantRefreshToken; } }
         public async Task SignUpAsync(DtoSignUp request)
         {
             var existing = await _tenantService.GetByEmailOrNameAsync(request.Email, request.TenantName);
@@ -202,7 +206,7 @@ namespace Business.EndToEndService
             };
         }
 
-        public async Task<DtoTokens> RefreshTokens(string ip, DtoTokens tokens)
+        public async Task<DtoTokens?> RefreshTokensAsync(string? ip, DtoTokens tokens)
         {
 
             var hash = _genralHashService.Sha256(tokens.RefreshToken);

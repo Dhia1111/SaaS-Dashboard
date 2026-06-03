@@ -1,5 +1,6 @@
 import axios from "axios";
 //import { store } from "../store";
+import {refreshToken as GenralRefreshToken } from "./GenralAuth";
  const tenantAuth = axios.create({
   baseURL: "http://localhost:7073/api/auth/tenant",
   withCredentials: true, 
@@ -49,12 +50,7 @@ export const logIn = async (data) => {
 
 // 🔹 Refresh Token
 export const refreshToken = async () => {
-  try {
-    const res = await tenantAuth.post("/RefreshToken");
-    return res.data.data.accessToken;
-  } catch {
-    return null;
-  }
+  return await GenralRefreshToken();
 };
 
 // 🔹 LogOut

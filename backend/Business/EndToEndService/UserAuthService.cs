@@ -1,4 +1,6 @@
-﻿using Business.Exceptions;
+﻿using Business.Config;
+using Business.EndToEndService;
+using Business.Exceptions;
 using Connection.models;
 using Connection.models.Entites;
 using System.ComponentModel.DataAnnotations;
@@ -50,14 +52,12 @@ namespace Business
             DtoUserLogIn request,string ip
         );
 
-        Task<DtoTokens> RefreshTokenAsync(
-            string ip, DtoTokens request
-        );
+        
 
         Task LogOutAsync(string token, string ip);
     }
 
-    public class UserAuthService : IUserAuthService
+    public class UserAuthService : IUserAuthService, IRefreshTokenService
     {
         private readonly IUserRepo _userRepo;
         private readonly IPersonRepository _personRepo;
@@ -68,6 +68,7 @@ namespace Business
         private readonly ITenantService _tenantService;
         private readonly IPasswordHashService _passwordHashService;
         private readonly IUserSessionRepo _userSessionRepo;
+        private readonly INamingCookies _namingProprties;
 
         public UserAuthService
         (
@@ -79,7 +80,9 @@ namespace Business
             IEmailTemplateHandler templateHandler,
             ITenantService tenantService,
             IPasswordHashService passwordHashService
-            ,IUserSessionRepo userSessionRepo
+            ,IUserSessionRepo userSessionRepo,
+            INamingCookies namingProprties
+
         )
         {
             _userRepo = userRepo;
@@ -91,6 +94,12 @@ namespace Business
             _tenantService = tenantService;
             _passwordHashService = passwordHashService;
             _userSessionRepo = userSessionRepo;
+            _namingProprties = namingProprties;
+        }
+
+        public string CookieName{get{
+                return _namingProprties.UserRefreshToken;
+            }
         }
 
         public async Task<int> SendInvitationAsync
@@ -371,7 +380,7 @@ namespace Business
             };
         }
 
-        public async Task<DtoTokens> RefreshTokenAsync(string ip, DtoTokens tokens)
+        public async Task<DtoTokens> RefreshTokensAsync( string? ip,DtoTokens tokens )
         {
 
             var hash = _hashService.Sha256(tokens.RefreshToken);
