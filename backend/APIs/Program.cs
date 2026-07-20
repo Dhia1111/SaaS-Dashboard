@@ -1,20 +1,20 @@
-using APIs.AssetHandler;
-using APIs.BackGroundJobs;
+ using APIs.BackGroundJobs;
 using APIs.ConfigClasses;
-using APIs.Hashing;
-using APIs.Responses;
+ using APIs.Responses;
+using APIs.TokenHandler;
 using Business;
 using Connection;
 using Connection.Data;
-using Connection.models;
-using ExternalAPI;
+ using ExternalAPI;
+using ExternalAPI.PaymentProvidersConfig;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Quartz;
+ using Quartz;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration["DefaultConnection"];
@@ -29,6 +29,15 @@ builder.Services.Configure<Business.JwtSetting>(
 
 builder.Services.Configure<ClientInfo>(
     builder.Configuration.GetSection("ClientInfo"));
+
+builder.Services.Configure<StripeInfo>(
+    builder.Configuration.GetSection("StripeInfo"));
+
+builder.Services
+    .AddOptions<Business.Config.PlatformInfo>()
+    .Bind(builder.Configuration.GetSection("PlatformInfo"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -57,6 +66,91 @@ if (connString == null)
     throw new Exception("Connection string does not exist");
 }
 
+
+
+var _jwtSettings = builder.Configuration
+    .GetSection("JwtSettings")
+    .Get<JwtSetting>();
+
+ builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = "DynamicJwt";
+        options.DefaultChallengeScheme = "DynamicJwt";
+    })
+    .AddPolicyScheme("DynamicJwt", "Dynamic JWT", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            var selector =
+        context.RequestServices.GetRequiredService<IJwtSchemeSelector>();
+
+            return selector.Select(context);
+
+
+        };
+    })
+    .AddJwtBearer("UserJwt", options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidAudience = _jwtSettings.Audience,
+
+            IssuerSigningKey =
+                            new SymmetricSecurityKey(
+                                Encoding.UTF8.GetBytes(_jwtSettings.Key))
+
+
+
+
+        };
+
+
+    })
+    .AddJwtBearer("TenantJwt", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters() {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidAudience = _jwtSettings.Audience,
+
+            IssuerSigningKey =
+                            new SymmetricSecurityKey(
+                                Encoding.UTF8.GetBytes(_jwtSettings.Key))
+        };
+
+    }).
+    AddJwtBearer("D", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidAudience = _jwtSettings.Audience,
+
+            IssuerSigningKey =
+                          new SymmetricSecurityKey(
+                              Encoding.UTF8.GetBytes(_jwtSettings.Key))
+        };
+
+
+    });
+ 
+
+
 builder.Services.AddDbContextFactory<SaasDashboardContext>(options =>
 {
     options.UseNpgsql(connString);
@@ -70,6 +164,7 @@ builder.Services.AddBusinessDependencies();
 // Register your job as a scoped service (required for DbContext)
 builder.Services.AddScoped<EmailBackgroundJob>();
 // Add Quartz services
+//Add Quartz EmailJob
 builder.Services.AddQuartz(q =>
 {
     // Use persistent store with PgServer
@@ -80,11 +175,14 @@ builder.Services.AddQuartz(q =>
         {
 
             PgServer.ConnectionString =connString;
-            PgServer.TablePrefix = "qrtz_";
+            PgServer.TablePrefix = "quartz.qrtz_";
+            
+         
 
 
 
         });
+    
        // options.Properties.Set("quartz.jobStore.databaseUpdate", "true"); // For Quartz 3.x
 
 
@@ -131,13 +229,53 @@ builder.Services.AddQuartz(q =>
         .WithCronSchedule("0 */1 * ? * *")  // Every 1 minute
         .WithDescription("Triggers email processing every 1 minute")
     );
+
+    var SetPaymentToExpierJobKey = new JobKey("SetPaymentToExpierJob", "SetPaymentToExpierGroup");
+
+    q.AddJob<SetPaymentToExprierBackgroundJob>(opts => opts
+        .WithIdentity(SetPaymentToExpierJobKey)
+        .StoreDurably()  // Job survives even with no triggers
+            .UsingJobData("ForceSet", "false")  // Add this line - set default value
+
+    );
+    //   TRIGGER EVERY 1 MINUTE using cron expression
+    q.AddTrigger(opts => opts
+        .ForJob(SetPaymentToExpierJobKey)
+        .WithIdentity("SetPaymentToExpierJobKey", "PaymentProcessing")
+        .WithCronSchedule("0 */1 * ? * *")  // Every 1 minute
+        .WithDescription("Triggers payment processing every 1 minute")
+    );
+
+
+    // Register durable job
+    var ManageClientSubscriptionKey = new JobKey("ManageClientSubscriptionJob", "ManageClientSubscriptionGroup");
+
+    q.AddJob<ManageClientSubscription>(opts => opts
+        .WithIdentity(ManageClientSubscriptionKey)
+        .StoreDurably()  // Job survives even with no triggers
+            .UsingJobData("ForceSend", "false")  // Add this line - set default value
+
+    );
+    //   TRIGGER EVERY 1 MINUTE using cron expression
+    q.AddTrigger(opts => opts
+        .ForJob(ManageClientSubscriptionKey)
+        .WithIdentity("ManageClientSubscriptionTrigger", "ManageClientSubscriptionProcessing")
+        .WithCronSchedule("0 */1 * ? * *")  // Every 1 minute
+        .WithDescription("Triggers ManageClientSubscription processing every 1 minute")
+    );
+
 });
+
+
+
+
 // Add Quartz hosted service (starts scheduler with the app)
 builder.Services.AddQuartzHostedService(options =>
 {
     options.WaitForJobsToComplete = true;  // Graceful shutdown
     options.AwaitApplicationStarted = true; // Start after app starts
-});  
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -175,6 +313,12 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var loader = scope.ServiceProvider.GetRequiredService<IPermissionLoader>();
+
+    await loader.ReloadAsync();
+}
 // 1. Exception handling must be FIRST to catch errors in all subsequent steps
 app.UseMiddleware<ExceptionMiddleware>();
 
