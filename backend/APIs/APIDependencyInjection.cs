@@ -27,6 +27,11 @@ namespace ExternalAPI
             services.AddTransient<EmailBackgroundJob>();
             services.AddHttpContextAccessor();
             services.AddScoped<ITenantIdProvider, APIs.ConfigClasses.TenantIdProvider>();
+            services.AddScoped<IPaymentProvider, Stripe>();
+            services.AddScoped<IAccessTokenReader ,AccessTokenReader>();
+            services.AddSingleton<IJwtSchemeSelector, JwtSchemeSelector>();
+            services.AddScoped<IPermissionLoader,PermissionsLoader>();
+
             return services;
         }
    

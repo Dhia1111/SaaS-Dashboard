@@ -21,7 +21,6 @@ namespace Business
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserAuthService, UserAuthService>();
             services.AddScoped<IUserSessionService, clsUserSessionService>();
-
             services.AddScoped<ITenantPermissionServices, clsTenantPermissionServices>();
             services.AddScoped<ITenantPlanBenifestServices, clsTenantPlanBenifestServices>();
             services.AddScoped<ITenantPlanPermissionServices, clsTenantPlanPermissionServices>();
@@ -31,12 +30,19 @@ namespace Business
             services.AddScoped<IRefreshTokenService, UserAuthService>();
             //
             services.AddSingleton<INamingCookies, NamingCookies>();
+            services.AddScoped<ITenantPricingCycleServices, clsTenantPricingCycleServices>();
+            services.AddScoped<IEmployeeService, clsEmployeeService>();
+            services.AddScoped<IPlatformAdmineService,clsPlatformAdmineService>();
+            services.AddScoped<IPaymentService, clsPaymentService>();
+            services.AddScoped<IPlatformSubscriptionService, clsPlatformSubscriptionService>();
+            services.AddScoped<IDiscoveryPlatformService, clsDiscoveryPlatformService>();
+            services.AddScoped<ITenantFreePlanService, clsTenantFreePlanService>();
+            services.AddScoped<ITenantTokenReader, TenantTokenReader>();
+            services.AddScoped<IUserTokenReader, UserTokenReader>();
+            services.AddScoped<IClientSubscriptionService, clsClientSubscriptionService>();
 
 
 
-
-
-            // business rules, domain services, validators, etc.
 
             return services;
         }
