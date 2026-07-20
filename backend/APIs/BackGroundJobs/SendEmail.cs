@@ -24,7 +24,7 @@ namespace APIs.BackGroundJobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            Console.WriteLine("Email background job started at: " + DateTimeOffset.Now);
+            Console.WriteLine("Email background job started at: " + DateTimeOffset.UtcNow);
  
             _logger.LogInformation("Email background job started at: {Time}",
                 DateTimeOffset.Now);
@@ -32,11 +32,11 @@ namespace APIs.BackGroundJobs
             try
             {
                 await SendEmailAsync();
-                _logger.LogInformation("Email background job completed successfully at: {Time}", DateTimeOffset.Now);
+                _logger.LogInformation("Email background job completed successfully at: {Time}", DateTimeOffset.UtcNow);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Email background job failed at: {Time}", DateTimeOffset.Now);
+                _logger.LogError(ex, "Email background job failed at: {Time}", DateTimeOffset.UtcNow);
                 throw; // Re-throw to let Quartz handle the failure (retry, misfire, etc.)
             }
         }
