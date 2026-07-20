@@ -18,13 +18,14 @@ import App from './App.jsx'
 import { registerLicense } from '@syncfusion/ej2-base';
 
 // 2. Inject your key here (Get this from your Syncfusion dashboard)
-registerLicense('Ngo9BigBOggjHTQxAR8/V1JHaF5cWWdCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWXtcdXVTR2lYU0N1W0dWYEo=');
+registerLicense('Ngo9BigBOggjHTQxAR8/V1JAaF5cX2pCd1p/TH5YfUNzdUVEY1ZUTXxaS1ZhSXxVdkJiWX5ecXxQRWBVVkJ9XEY=');
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
       
  <Provider store={store}>
     <App />
+    
   </Provider >
     </StrictMode>,
 )

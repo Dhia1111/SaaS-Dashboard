@@ -6,6 +6,9 @@ import autoprefixer from 'autoprefixer'
 // This is for your ACTUAL development server
 export default defineConfig({
   plugins: [react()],
+  server:{
+    port:5173
+  },
   css: {
     postcss: {
       plugins: [
