@@ -3,6 +3,7 @@ using System;
 using Connection.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Connection.Migrations
 {
     [DbContext(typeof(SaasDashboardContext))]
-    partial class SaasDashboardContextModelSnapshot : ModelSnapshot
+    [Migration("20260706140159_Update3")]
+    partial class Update3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -510,74 +513,6 @@ namespace Connection.Migrations
                     b.ToTable("Emails");
                 });
 
-            modelBuilder.Entity("Connection.models.ClientSubscription", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Discription")
-                        .HasColumnType("text");
-
-                    b.Property<int>("GradeStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsFree")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TenantClientIdentifier")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("ClientSubscriptions");
-                });
-
-            modelBuilder.Entity("Connection.models.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminstrationAuth")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("Identifier")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("PlatformRole")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Employees");
-                });
-
             modelBuilder.Entity("Connection.models.Entites.DiscoveryPlatform", b =>
                 {
                     b.Property<int>("Id")
@@ -1039,12 +974,6 @@ namespace Connection.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsItFree")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsRegisterdToClientSubscription")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1064,6 +993,40 @@ namespace Connection.Migrations
                         .IsUnique();
 
                     b.ToTable("PlatformSubscriptions");
+                });
+
+            modelBuilder.Entity("Connection.models.PlatformUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdminstrationAuth")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("Identifier")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PlatformRole")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("PlatformUsers");
                 });
 
             modelBuilder.Entity("Connection.models.Tenant", b =>
@@ -1254,28 +1217,6 @@ namespace Connection.Migrations
                     b.Navigation("JobDetail");
                 });
 
-            modelBuilder.Entity("Connection.models.ClientSubscription", b =>
-                {
-                    b.HasOne("Connection.models.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tenant");
-                });
-
-            modelBuilder.Entity("Connection.models.Employee", b =>
-                {
-                    b.HasOne("Connection.models.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Connection.models.Employee", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Connection.models.Entites.Payment", b =>
                 {
                     b.HasOne("Connection.models.PlatformSubscription", "Subscription")
@@ -1402,6 +1343,17 @@ namespace Connection.Migrations
                     b.Navigation("Tenant");
 
                     b.Navigation("TenantPlanPricingOption");
+                });
+
+            modelBuilder.Entity("Connection.models.PlatformUser", b =>
+                {
+                    b.HasOne("Connection.models.User", "User")
+                        .WithOne()
+                        .HasForeignKey("Connection.models.PlatformUser", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Connection.models.Tenant", b =>

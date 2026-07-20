@@ -5,14 +5,14 @@
 namespace Connection.Migrations
 {
     /// <inheritdoc />
-    public partial class ChangePersionTable : Migration
+    public partial class Update2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "FirstName",
-                table: "Persons",
+                name: "ProviderPaymentId",
+                table: "PlatformPayments",
                 type: "text",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -23,8 +23,8 @@ namespace Connection.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "FirstName",
-                table: "Persons",
+                name: "ProviderPaymentId",
+                table: "PlatformPayments",
                 type: "text",
                 nullable: false,
                 defaultValue: "",
