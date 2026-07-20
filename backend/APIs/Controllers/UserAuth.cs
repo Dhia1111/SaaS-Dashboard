@@ -1,5 +1,6 @@
 ﻿using APIs.Responses;
 using Business;
+using Business.Config;
 using Business.EndToEndService;
 using Connection.models;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,17 @@ namespace APIs.Controllers
         private readonly IUserAuthService _authService;
         private readonly ITenantIdProvider _tenantIdProvider;
         private readonly IJwtService _jwtService;
-
+        private readonly INamingCookies _cookiesNames;
         public UserAuthController(
             IUserAuthService authService,
             ITenantIdProvider tenantIdProvider,
-            IJwtService jwtService)
+            IJwtService jwtService,
+            INamingCookies namingCookies)
         {
             _authService = authService;
             _tenantIdProvider = tenantIdProvider;
             _jwtService = jwtService;
+            _cookiesNames = namingCookies;
         }
 
         // POST: api/user/auth/login
@@ -31,7 +34,7 @@ namespace APIs.Controllers
             string? IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
             var result = await _authService.LoginAsync(request,IpAddress);
-            Response.Cookies.Append("RefreshToken", result.RefreshToken, options: new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax, Path = "/" });
+            Response.Cookies.Append(_cookiesNames.UserRefreshToken, result.RefreshToken, options: new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax, Path = "/" });
 
             return Ok(ApiResult<string>
                 .Ok(result.AccessToken, "Login successful"));
@@ -71,7 +74,7 @@ namespace APIs.Controllers
 
             string accessToken = authHeader["Bearer ".Length..].Trim();
 
-            if(_jwtService.ValidateToken(accessToken) == null)
+            if(_jwtService.ValidateAccessToken() == null)
                 throw new ArgumentException("Invalid access token");
             int tenantId = _tenantIdProvider.TenantId;
 
@@ -82,7 +85,7 @@ namespace APIs.Controllers
                 request,
                 tenantId,
                 accessToken, IpAddress);
-            Response.Cookies.Append("RefreshToken", result.RefreshToken, options: new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax, Path = "/" });
+            Response.Cookies.Append(_cookiesNames.UserRefreshToken, result.RefreshToken, options: new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax, Path = "/" });
 
             return Ok(ApiResult<string>
                 .Ok(result.AccessToken, "Registration completed successfully"));
@@ -92,9 +95,9 @@ namespace APIs.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult> LogOut()
         {
-            Response.Cookies.Delete("RefreshToken");
+            Response.Cookies.Delete(_cookiesNames.UserRefreshToken);
             string? Ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-            Request.Cookies.TryGetValue("RefreshToken", out string? value);
+            Request.Cookies.TryGetValue(_cookiesNames.UserRefreshToken, out string? value);
             if (value == null || string.IsNullOrEmpty(Ip)) throw new ArgumentException();
             await _authService.LogOutAsync(value, Ip);
 

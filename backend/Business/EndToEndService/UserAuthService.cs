@@ -3,6 +3,7 @@ using Business.EndToEndService;
 using Business.Exceptions;
 using Connection.models;
 using Connection.models.Entites;
+using SharedDto_Enum;
 using System.ComponentModel.DataAnnotations;
 
 public class DtoSendInvitation
@@ -14,7 +15,7 @@ public class DtoSendInvitation
     public int TenantId { get; set; } 
 
     [Required]
-    public Roles Role { get; set; }
+    public enRoles Role { get; set; }
 
     [Required]
     public int UserAuthorization { get; set; }
@@ -69,6 +70,7 @@ namespace Business
         private readonly IPasswordHashService _passwordHashService;
         private readonly IUserSessionRepo _userSessionRepo;
         private readonly INamingCookies _namingProprties;
+        private readonly IEmployeeService _platformUserService;
 
         public UserAuthService
         (
@@ -80,9 +82,9 @@ namespace Business
             IEmailTemplateHandler templateHandler,
             ITenantService tenantService,
             IPasswordHashService passwordHashService
-            ,IUserSessionRepo userSessionRepo,
-            INamingCookies namingProprties
-
+            , IUserSessionRepo userSessionRepo,
+            INamingCookies namingProprties,
+            IEmployeeService platFormUserService
         )
         {
             _userRepo = userRepo;
@@ -95,6 +97,7 @@ namespace Business
             _passwordHashService = passwordHashService;
             _userSessionRepo = userSessionRepo;
             _namingProprties = namingProprties;
+            _platformUserService = platFormUserService;
         }
 
         public string CookieName{get{
@@ -136,12 +139,7 @@ namespace Business
             }
 
             var token =
-                _jwtService.GenerateAccessToken
-                (
-                    request.TenantId,
-                    0,
-                    (int)request.Role
-                );
+                _jwtService.GenerateRefreshTokenToken(request.TenantId);
 
             var html =
                 await _templateHandler
@@ -273,14 +271,19 @@ namespace Business
 
             session.Id = await _userSessionRepo.AddAsync(session);
 
+            var Employee=await _platformUserService.GetByUserIdAsync(user.Id);
             var AccessToken =
                 _jwtService.GenerateAccessTokenForUsers
                 (
+                    user.Id,
                     tenantId,
-                    session.Id
-                    ,
-                    user.Role,
-                    user.Authorization
+                     user.Role,
+                    user.Authorization,
+                    user.IsActive
+                    ,Employee!=null,Employee!=null?(int)Employee.PlatformRole:null,
+                    Employee!=null?Employee.AdminstrationAuth:null
+                    
+                   
                 );
             
             return new DtoTokens
@@ -349,13 +352,18 @@ namespace Business
             if (!user.Person.IsVeryfied)
                 throw new ArgumentException("Email not verified");
 
+            var Employee = await _platformUserService.GetByUserIdAsync(user.Id);
             string accessToken =
                 _jwtService.GenerateAccessTokenForUsers
                 (
-                    tenant.TenantId,
                     user.Id,
-                    user.Role
-                    ,user.Authorization
+                    tenant.TenantId,
+                     user.Role
+                    ,user.Authorization,
+                    user.IsActive
+                    ,Employee!=null,
+                    Employee != null ? (int)Employee.PlatformRole : null, 
+                    Employee != null ? Employee.AdminstrationAuth : null
                 );
 
             string refreshToken =
@@ -409,7 +417,8 @@ namespace Business
 
                 bool update = await _userSessionRepo.UpdateAsync(session);
 
-                if (!update) throw new AuthenticationFailedException();
+                 throw new AuthenticationFailedException();
+
             }
 
             var newRefresh = _jwtService.GenerateRefreshTokenToken(
@@ -424,16 +433,24 @@ namespace Business
             );
 
             if (!updated)
-                throw new AuthenticationFailedException();
+                throw new ResourceAlreadyExistsException("Resource allready Exsist", session.Id.ToString());
 
             var user = await _userRepo.GetByIdAsync(session.UserId);
-            if (user == null) throw new AuthenticationFailedException(); 
-            var accessToken = _jwtService.GenerateAccessTokenForUsers(
-                session.TenantId,
-                session.Id,
-                (int)user.Role,
-                (int)user.Authorization
+            if (user == null) throw new AuthenticationFailedException();
+
+            var Employee = await _platformUserService.GetByUserIdAsync(user.Id);
                 
+            var accessToken = _jwtService.GenerateAccessTokenForUsers(
+                user.Id,
+                session.TenantId,
+                (int)user.Role,
+                (int)user.Authorization,
+                user.IsActive,
+                Employee!=null,
+                   Employee != null ? (int)Employee.PlatformRole : null,
+                    Employee != null ? Employee.AdminstrationAuth : null
+
+
             );
 
             return new DtoTokens

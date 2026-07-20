@@ -1,10 +1,13 @@
-﻿using Business.Exceptions;
+﻿using Business.Config;
+using Business.Exceptions;
 using Connection.models;
+using Connection.models.Entites;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SharedDto_Enum;
 using System.ComponentModel.DataAnnotations;
-using Business.Config;
+using System.Numerics;
 
 public class DtoSignUp
 {
@@ -92,6 +95,11 @@ namespace Business.EndToEndService
         private readonly IEmailService _EmailService;
         private readonly IPersonService _personService;
         private readonly INamingCookies _ProprtiesNaming;
+        private readonly IPlatformAdmineService _PlatformOwnerService;
+        private readonly IPlatformSubscriptionRepo _platformSubscriptionRepo;
+        private readonly ITenantPlanRepository _tenantPlanRepo;
+        private readonly ITenantPermissionRepository _tenantPermissionRepository;
+        
         public TenantAuthService(ITenantService tenant, IEmailTemplateHandler emailTemplateHandler,
             ILogger<TenantAuthService> logger,
             IOptions<EmailSettings> options,
@@ -103,6 +111,11 @@ namespace Business.EndToEndService
             IEmailService emailService,
             IPersonService personService,
             INamingCookies proprtiesNaming
+, IPlatformAdmineService platformOwnerService,
+            IPlatformSubscriptionRepo platformSubscriptionRepo,
+            ITenantPlanRepository tenantPlanRepo,
+            ITenantPermissionRepository tenantPermissionRepository
+
              )
         {
             _tenantSessionService = tenantSession;
@@ -117,7 +130,10 @@ namespace Business.EndToEndService
             _personService = personService;
             _settings = options.Value;
             _ProprtiesNaming = proprtiesNaming;
-
+            _PlatformOwnerService = platformOwnerService;
+            _platformSubscriptionRepo = platformSubscriptionRepo;
+            _tenantPlanRepo = tenantPlanRepo;
+            _tenantPermissionRepository = tenantPermissionRepository;
         }
 
         // constructor unchanged...
@@ -134,10 +150,11 @@ namespace Business.EndToEndService
 
             var tenant = new DtoTenant
             {
-                Role=(int)Roles.Tenant__Admine,
+                Role = (int)enRoles.Tenant__Admine,
                 CreatedAt = DateTime.Now.ToString(),
                 PasswordHash = _passwordHashService.Hash(request.Password),
                 Name = request.TenantName,
+                HaveUsedTheFreeTry =false,
                 Person = new DtoPerson
                 {
                     Email = request.Email,
@@ -174,10 +191,9 @@ namespace Business.EndToEndService
             if (!tenant.Person.IsEmailVeryfied)
                 throw new EmailNotVerifiedException();
 
-            var refreshToken = _jwtService.GenerateAccessToken(
-                tenant.TenantId,
-                -1,
-                (int)Roles.Tenant__Admine
+            var Owner = await _PlatformOwnerService.GetByTenantIdAsync(tenant.TenantId);
+            var refreshToken = _jwtService.GenerateRefreshTokenToken(
+                tenant.TenantId
             );
 
             var session = new DtoTenantSession
@@ -191,12 +207,24 @@ namespace Business.EndToEndService
 
             session.SessionId = await _tenantSessionService.AddAsync(session);
 
-          
+
+           
 
             var accessToken = _jwtService.GenerateAccessToken(
+
                 tenant.TenantId,
-                session.SessionId,
-                tenant.Role
+                tenant.Role,
+                tenant.IsActive ,
+                Owner != null,
+               (int) (Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
+               await GetTenantAuthorizations(tenant)
+
+                
+
+
+
+
+
             );
 
             return new DtoTokens
@@ -204,6 +232,42 @@ namespace Business.EndToEndService
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
+        }
+        private async Task<long> GetTenantAuthorizations(DtoTenant tenant)
+        {
+            PlatformSubscription ActiveSubscription = await _platformSubscriptionRepo.GetActiveByTenantIdAsync(tenant.TenantId);
+            if (ActiveSubscription != null)
+            {
+                TenantPlan plan = await _tenantPlanRepo.GetSingleWithDependenciesIgnoreQuerryAsync(tenant.TenantId, ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+                if (plan == null)
+                {
+                    _logger.LogError("we could not find plan with and Id {Id} and tenantId {tenantId}",tenant.TenantId,ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+
+                    throw new Exception(" this subscription is not related to any plan (can't fetch the plan )");
+
+                }
+                else
+                {
+                    IReadOnlyList<TenantPermission> TenantPermissions = await _tenantPermissionRepository.GetAllAsync();
+                  if(TenantPermissions != null || TenantPermissions?.Count == 0)
+                    {
+                        _logger.LogError("we could not fetch Permission for plan with an id {Id} and tenantId {tenantId}", tenant.TenantId, ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+
+                        throw new Exception("Could not fetch Permissions for plan ");
+
+                    }
+                    else
+                    {
+                        Dictionary<int, long> PermissionsMap = TenantPermissions.ToDictionary(e => e.Id, e => e.BitValue);
+                        long tenantAuthorizations = plan.Permissions.Sum(e => PermissionsMap[e.PermissionId]);
+                        return tenantAuthorizations;
+                    }
+                }
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         public async Task<DtoTokens?> RefreshTokensAsync(string? ip, DtoTokens tokens)
@@ -236,7 +300,7 @@ namespace Business.EndToEndService
 
              bool update=   await _tenantSessionService.UpdateAsync(session);
 
-           if(!update)  throw new AuthenticationFailedException();
+                  throw new AuthenticationFailedException();
             }
 
             var newRefresh = _jwtService.GenerateRefreshTokenToken(
@@ -252,14 +316,19 @@ namespace Business.EndToEndService
             );
 
             if (!updated)
-                throw new AuthenticationFailedException();
+                throw new ResourceAlreadyExistsException("Resource allready Exsist", session.SessionId.ToString());
 
             var tenant = await _tenantService.GetByIdAsync(session.TenantId);
-
+            var Owner = await _PlatformOwnerService.GetByTenantIdAsync(session.TenantId);
             var accessToken = _jwtService.GenerateAccessToken(
                 session.TenantId,
-                session.SessionId,
-                (int)Roles.Tenant__Admine
+                (int)enRoles.Tenant__Admine,
+                tenant.IsActive,
+                Owner!=null,
+              (int)  (Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
+              await GetTenantAuthorizations(tenant)
+
+
             );
 
             return new DtoTokens
@@ -304,12 +373,18 @@ namespace Business.EndToEndService
 
             session.SessionId = await _tenantSessionService.AddAsync(session);
 
-           
+
+            var Owner = await _PlatformOwnerService.GetByTenantIdAsync(tenant.TenantId);
 
             var accessToken = _jwtService.GenerateAccessToken(
                 tenant.TenantId,
-                session.SessionId,
-                tenant.Role
+                tenant.Role,
+                tenant.IsActive,
+                Owner!=null
+                ,
+                 (int)(Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
+              await GetTenantAuthorizations(tenant)
+
             );
 
             return new DtoTokens
@@ -362,9 +437,8 @@ namespace Business.EndToEndService
         }
         public async Task<DtoTokens> OAuth(string email, DtoOAuth dto, string ip)
         {
-            
-
             var tenant=await _tenantService.GetByNameAsync(dto.TenantName);
+            var Owner = tenant!=null? await _PlatformOwnerService.GetByTenantIdAsync(tenant.TenantId):null;
             if (tenant != null)
             {
                 var Session =await _tenantSessionService.GetByTenantId(tenant.TenantId);
@@ -372,8 +446,11 @@ namespace Business.EndToEndService
                 { //update the session 
                    var AcessToken= _jwtService.GenerateAccessToken(
                         tenant.TenantId,
-                        Session.SessionId,
-                        tenant.Role
+                        tenant.Role,
+                        tenant.IsActive,
+                        Owner!=null,
+ (int)(Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
+              await GetTenantAuthorizations(tenant)
                     );
                     var RefreshToken = _jwtService.GenerateRefreshTokenToken(
                         tenant.TenantId
@@ -425,8 +502,11 @@ namespace Business.EndToEndService
 
                     var AcessToken = _jwtService.GenerateAccessToken(
                       tenant.TenantId,
-                      Session.SessionId,
-                      tenant.Role
+                      tenant.Role,
+                      tenant.IsActive,
+                      Owner!=null,
+  (int)(Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
+              await GetTenantAuthorizations(tenant)
                   );
 
                     return new DtoTokens
@@ -449,7 +529,7 @@ namespace Business.EndToEndService
 
                 var newTenant = new DtoTenant
                 {
-                    Role = (int)Roles.Tenant__Admine,
+                    Role = (int)enRoles.Tenant__Admine,
                     Name =dto.TenantName,
                     CreatedAt = DateTime.Now.ToString(),
                     Person = new DtoPerson
@@ -459,6 +539,8 @@ namespace Business.EndToEndService
                         Provider=(int)dto.AuthProvider,
                         ProviderId=dto.ProviderId,
                     },
+                    IsActive=true,
+                    HaveUsedTheFreeTry=false,
                    
                     
                 };
@@ -478,8 +560,11 @@ namespace Business.EndToEndService
                 Session.SessionId=await _tenantSessionService.AddAsync(Session);
                 var AcessToken = _jwtService.GenerateAccessToken(
                   newTenant.TenantId,
-                  Session.SessionId,
-                  newTenant.Role
+                  newTenant.Role,
+                  newTenant.IsActive,
+                  Owner!=null,
+  (int)(Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
+              await GetTenantAuthorizations(newTenant)
               );
                 return new DtoTokens
                 {
@@ -500,6 +585,7 @@ namespace Business.EndToEndService
         
    
     }
+
 
 }
 

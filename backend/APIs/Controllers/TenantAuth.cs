@@ -9,8 +9,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Options;
 using APIs.ConfigClasses;
-using Business;
-using System.Text;
+using Business.Config;
+
 
 
 [Route("api/auth/tenant")]
@@ -20,18 +20,23 @@ public class TenantAuth : ControllerBase
 {
     private readonly ITenantAuthService _TenantAuthService;
     private readonly ClientInfo _clientInfo;
+    private readonly INamingCookies _cookiesNames;
 
-    public TenantAuth(ITenantAuthService tenantAuthService, IOptions<ClientInfo> clientInfo)
+    public TenantAuth(ITenantAuthService tenantAuthService,
+        IOptions<ClientInfo> clientInfo,
+        INamingCookies cookiesNames
+      )
     {
 
         _TenantAuthService = tenantAuthService;
         _clientInfo = clientInfo.Value;
+        _cookiesNames = cookiesNames;
     }
 
     [HttpPost("SignUp")]
     public async Task<ActionResult> SignUp([FromBody] DtoSignUp request)
     {
-        Response.Cookies.Delete("RefreshToken");
+        Response.Cookies.Delete(_cookiesNames.TenantRefreshToken);
         await _TenantAuthService.SignUpAsync(request);
 
         return Ok(ApiResult<object>.Ok(null));
@@ -49,13 +54,14 @@ public class TenantAuth : ControllerBase
         {
             throw new Exception("LogIn Service failded");
         }
-        Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
+        Response.Cookies.Append(_cookiesNames.TenantRefreshToken, tokens.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = false,
             SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddDays(30),
-            Path = "/"
+            Path = "/",
+            
         });
 
         return Ok(ApiResult<object>.Ok(new { AccessToken = tokens.AccessToken }));
@@ -68,9 +74,9 @@ public class TenantAuth : ControllerBase
     [HttpPost("LogOut")]
     public async Task<ActionResult> LogOut()
     {
-        Response.Cookies.Delete("RefreshToken");
+        Response.Cookies.Delete(_cookiesNames.TenantRefreshToken);
         string? Ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-        Request.Cookies.TryGetValue("RefreshToken", out string? value);
+        Request.Cookies.TryGetValue(_cookiesNames.TenantRefreshToken, out string? value);
         if (value == null || string.IsNullOrEmpty(Ip)) throw new ArgumentException();
         await _TenantAuthService.LogOut(value, Ip);
 
@@ -89,7 +95,7 @@ public class TenantAuth : ControllerBase
         {
             throw new ArgumentException();
         }
-        Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
+        Response.Cookies.Append(_cookiesNames.TenantRefreshToken, tokens.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = false,
@@ -97,6 +103,7 @@ public class TenantAuth : ControllerBase
             Expires = DateTime.UtcNow.AddDays(30),
             Path = "/"
         });
+    
         return Ok(ApiResult<object>.Ok(new { AccessToken = tokens.AccessToken }));
     }
 
@@ -142,7 +149,7 @@ public class TenantAuth : ControllerBase
         var tokens = await _TenantAuthService.OAuth(email, dto,
             Request.HttpContext.Connection.RemoteIpAddress?.ToString());
         Response.Cookies.Delete("ExternalAuthCookie");
-        Response.Cookies.Append("RefreshToken", tokens.RefreshToken,
+        Response.Cookies.Append(_cookiesNames.TenantRefreshToken, tokens.RefreshToken,
             new CookieOptions
             {
                 HttpOnly = true,
@@ -163,5 +170,8 @@ public class TenantAuth : ControllerBase
         var IsUsed = await _TenantAuthService.IsTenantNmaeUsed(tenantName);
         return Ok(ApiResult<bool>.Ok(IsUsed));
     }
+
+   
+
 
 }
