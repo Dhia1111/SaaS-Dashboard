@@ -1,5 +1,6 @@
 ﻿// in APIs.ConfigClasses.DataKeyProvider.cs
 using Business;
+using Business.Config;
 using Connection.models;
 using Quartz.Impl.AdoJobStore.Common;
 
@@ -10,7 +11,7 @@ namespace APIs.ConfigClasses
     {
         private int _Id;
         private readonly HttpContext? context;
-
+        private readonly INamingCookies _cookiesNames;
          private int GetTenantIDFromToken(string? token,IJwtService jwtService)
         {
             if (!string.IsNullOrWhiteSpace(token)) { 
@@ -33,10 +34,14 @@ namespace APIs.ConfigClasses
             }
             return 0;
         }
-        public TenantIdProvider(IHttpContextAccessor httpContextAccessor, IJwtService jwtService)
+        public TenantIdProvider(IHttpContextAccessor httpContextAccessor, IJwtService jwtService, INamingCookies cookiesNames)
         {
             context = httpContextAccessor.HttpContext;
-            string? RefreshToken = context?.Request.Cookies["RefreshToken"];
+            _cookiesNames = cookiesNames;
+
+            string? RefreshToken = context?.Request.Cookies[_cookiesNames.TenantRefreshToken];
+            RefreshToken= string.IsNullOrWhiteSpace(RefreshToken) ? context?.Request.Cookies[_cookiesNames.UserRefreshToken]: RefreshToken;
+            RefreshToken = string.IsNullOrWhiteSpace(RefreshToken) ? context?.Request.Cookies[_cookiesNames.PlatformRefreshToken] : RefreshToken;
             string? accessToken=null;
             string? authHeader = context?.Request.Headers["Authorization"].FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(authHeader) &&
