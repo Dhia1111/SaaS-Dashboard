@@ -1,6 +1,7 @@
 ﻿using APIs.Responses;
 using Business;
  using Business.EndToEndService;
+using Business.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Asn1.Ocsp;
 
@@ -51,10 +52,17 @@ namespace APIs.Controllers
                         "Token refreshed successfully"));
 
                 }
+                else
+                {
+                    throw new AuthenticationFailedException();
+                }
             }
 
             throw new UnauthorizedAccessException("No valid refresh token found in cookies");
 
         }
+
+     
+    
     }
 }
