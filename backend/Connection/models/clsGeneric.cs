@@ -24,6 +24,9 @@ namespace Connection.models
         Task<int> AddAsync(T entity);
         Task<bool> UpdateAsync(T entity);
         Task<bool> DeleteAsync(T entity);
+        Task<bool> UpdateRangeAsync(IEnumerable<T> enties);
+        Task<bool> AddRangeAsync(IEnumerable<T> enties);
+
     }
 
 
@@ -55,7 +58,7 @@ namespace Connection.models
                 throw;
             }
         }
-
+       
      virtual   public   async Task<T?> GetByIdAsync(int id)
         {
             try
@@ -89,8 +92,39 @@ namespace Connection.models
 
             }
         }
+        virtual public async Task<bool>AddRangeAsync(IEnumerable<T> entities)
+        {
+            try
+            {
+                  await _context.Set<T>().AddRangeAsync(entities);
+                await _context.SaveChangesAsync();
+                return true;
 
-      virtual public async Task<bool> UpdateAsync(T entity)
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex,"Error Adding a range of {Entyties}",typeof(T).Name);
+                return false;
+            }
+        }
+
+        virtual public async Task<bool> UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            try
+            {
+                 _context.Set<T>().UpdateRange(entities);
+                await _context.SaveChangesAsync();
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error Updating a range of {Entyties}", typeof(T).Name);
+                return false;
+
+            }
+        }
+        virtual public async Task<bool> UpdateAsync(T entity)
         {
             try
             {

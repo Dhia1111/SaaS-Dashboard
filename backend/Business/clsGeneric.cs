@@ -15,6 +15,8 @@ namespace Business
         Task<int> AddAsync(TDto dto);
         Task<bool> UpdateAsync(TDto dto);
       public  Task<bool> DeleteAsync(int id);
+        public Task<bool>AddRangeAsync(IEnumerable<TDto> dtos);
+        public Task<bool> UpdateRangeAsync(IEnumerable<TDto> dtos);
     }
     public abstract class GenericService<TDto, TEntity> : IGenericService<TDto>
         where TEntity : class
@@ -76,5 +78,20 @@ namespace Business
             }
             return await _repo.DeleteAsync(existing);
         }
+ 
+        public virtual async Task<bool> AddRangeAsync(IEnumerable<TDto> list)
+        {
+
+            return await _repo.AddRangeAsync(list.Select(i => FromDto(i)));
+
+        }
+
+        public virtual async Task<bool>UpdateRangeAsync(IEnumerable<TDto> list)
+        {
+            return await _repo.UpdateRangeAsync(list.Select(i=>FromDto(i)));
+        }
+
+
+    
     }
 }
