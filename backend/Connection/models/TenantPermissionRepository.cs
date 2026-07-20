@@ -11,6 +11,8 @@ public interface ITenantPermissionRepository : IGenericRepo<TenantPermission>
 {
     public Task<long> GetMaxBitAsync();
     Task<bool> IsPermissionKeyExist(string key);
+    Task<List<TenantPermission>> GetAllByTenantIdWithFilterIgnoreAsync(int tenantId);
+
 
 
 }
@@ -56,6 +58,14 @@ namespace Connection
         {
             var v = await _context.TenantsPermissions.FirstOrDefaultAsync(tp => tp.PermissionKey == key);
             return v != null;
+        }
+
+        public async Task<List<TenantPermission>> GetAllByTenantIdWithFilterIgnoreAsync(int tenantId)
+        {
+
+            var res = await _context.TenantsPermissions.IgnoreQueryFilters().Where(e => e.TenantId == tenantId).ToListAsync();
+            return res;
+
         }
 
     }
