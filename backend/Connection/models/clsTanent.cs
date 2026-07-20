@@ -16,6 +16,8 @@ namespace Connection.models
         public string Name { get; set; }=null!;
         public string? Description { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool HaveUsedTheFreeTry { get; set; }=false;
+
         public string CreatedAt { get; set; }=null!;
         public string? PasswordHash { get; set; }
         public string? UpdatedAt { get; set; }
@@ -33,7 +35,7 @@ namespace Connection.models
         public Task<Tenant?> GetByNameAsync(string name);
 
     }
-    public class clsTenantRepo :  ITenantRepo
+    public class clsTenantRepo : ITenantRepo
     {
         private readonly IPersonRepository _person;
         private readonly ILogger<clsTenantRepo> _logger;
@@ -109,7 +111,7 @@ namespace Connection.models
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching User by Email {Name}", name);
+                _logger.LogError(ex, "Error fetching User by Name {Name}", name);
                 throw;
             }
         }
@@ -223,6 +225,45 @@ namespace Connection.models
                 throw;
             }
         }
+   
+
+        public async Task<bool> AddRangeAsync(IEnumerable<Tenant>list)
+        {
+            try
+            {
+
+                await _context.AddRangeAsync(list);
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "faild to add Range");
+                return false;
+            }
+
+
+        }
+        public async Task<bool> UpdateRangeAsync(IEnumerable<Tenant> list)
+        {
+            try
+            {
+
+                 _context.UpdateRange(list);
+                await _context.SaveChangesAsync();
+                return true;
+
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "faild to Update Range");
+                return false;
+
+            }
+
+        }
+
+    
     }
 
 

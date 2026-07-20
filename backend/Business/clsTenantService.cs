@@ -41,7 +41,9 @@ namespace Business
                 Name = entity.Name,
                 Description = entity.Description,
                 PasswordHash=entity.PasswordHash,
+                
                 IsActive = entity.IsActive,
+                HaveUsedTheFreeTry=entity.HaveUsedTheFreeTry,
                 CreatedAt = entity.CreatedAt.ToLongDateString(),
                 UpdatedAt = entity.UpdatedAt?.ToLongDateString(),
                 Role=entity.Role,
@@ -74,6 +76,7 @@ namespace Business
                 Name = dto.Name,
                 Description = dto.Description,
                 PasswordHash = dto.PasswordHash,
+                HaveUsedTheFreeTry=dto.HaveUsedTheFreeTry,
                 IsActive = dto.IsActive,
                 CreatedAt = DateTime.Parse(dto.CreatedAt).ToUniversalTime(),
                 UpdatedAt = DateTime.TryParse(dto.UpdatedAt, out DateTime updatedDate) ? updatedDate.ToUniversalTime() : null,
