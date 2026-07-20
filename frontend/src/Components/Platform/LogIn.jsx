@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {useDispatch} from 'react-redux';
 import {setAccessToken} from '../../globalStates/AccessToken.js';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 
 export default function Login() {
@@ -25,7 +26,7 @@ export default function Login() {
       //alert(result.message);
      }else{
       Dispatch(setAccessToken(result.data));
-      Navigate("/user");
+      Navigate("/dashboard");
      }
     
      
@@ -39,6 +40,21 @@ export default function Login() {
  "http://localhost:7073/api/auth/tenant/google/login";
   }
 
+    useEffect(() => {
+  
+      const message =
+          localStorage.getItem("authMessage");
+  
+      if (message) {
+  
+          alert(message);
+  
+          localStorage.removeItem(
+              "authMessage"
+          );
+      }
+  
+  }, []);
   return (
     <div className="min-h-screen flex bg-white font-body">
       {/* Left Side: Form */}

@@ -3,10 +3,15 @@ import Navbar from './NavBar'
 import Links from "../../assets/Data/Platform/PagesLinks.js"
 import {footerContent as contact}  from '../../assets/Data/Platform/Content.js'
 
+
 function PlatformLayout() {
+
+
+  
   return (
     <div>
-      <Navbar Links={Links}  />
+      <Navbar Links={  [
+    { title: "Contact", value:"/contact" }, { title: "Dashboard", value:"/dashboard" },   ]}  />
       <Outlet />
    <footer className="border-t border-slate-100 py-12 px-8 bg-white mt-auto">
       <div className="max-w-7xl mx-auto">

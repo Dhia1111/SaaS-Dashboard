@@ -6,7 +6,7 @@ import { SendInvitationAsync } from '../../APIs/UserAuth.js';
 export default function AddUser() {
     const { AllAthorization, AllRoles } = useLoaderData();
     
-    // Form State
+     // Form State
     const [email, setEmail] = useState("");
     const [selectedRole, setSelectedRole] = useState(null);
     const [selectedAuths, setSelectedAuths] = useState(0); 

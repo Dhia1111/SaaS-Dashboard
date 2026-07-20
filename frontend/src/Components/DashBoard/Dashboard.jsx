@@ -4,7 +4,6 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 export default function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-
   const navigationItems = [
     {
       path: "/dashboard/user",
@@ -53,6 +52,27 @@ export default function DashboardLayout() {
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8a2.5 2.5 0 00-2 4l-1 3.5h6l-1-3.5a2.5 2.5 0 00-2-4z" />
   </svg>
 ),
+    },
+     {
+      path: "/dashboard/pricing-cycles",
+      label: "Pricing Cycles",
+    icon: (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    {/* Recurring Cycle Arrows */}
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5" />
+    {/* Pricing Signifier (Centered Dollar Sign) */}
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12M15 8.5H10.5a2 2 0 000 4h3a2 2 0 010 4H9" />
+  </svg>
+),
+    }, {
+      path: "/dashboard/employees-managment",
+      label: "Employee Managment",
+   icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ),
     },
   ];
 

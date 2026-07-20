@@ -1,9 +1,8 @@
 
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 export default function NavBar({Links=[{title:"",value:""}]}){
-
-
+ const navigate =useNavigate()
 return(
      <nav className="px-6 py-4 bg-white/80 backdrop-blur-md fixed w-full z-10 border-b border-gray-100">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -25,15 +24,22 @@ return(
             ))}
           </ul>
           <div className="flex items-center gap-4">
-            <button className="px-4 py-2 text-gray-600 hover:text-primary transition">
+            <button className="px-4 py-2 text-gray-600 hover:text-primary transition"onClick={()=>{
+       var store=localStorage.getItem("userInfo");
+        if(!store){
+             store=localStorage.getItem("tenantInfo");
+           }
+      const isLogedIn= store!=null;
+          var ref= !isLogedIn? "/signin-options":"/dashboard"   
+       return   navigate(ref);
 
-          <a href="/signin-options" className="hover:text-primary transition">
-                  Sign In
-                </a>
+          }}>
+
+          <span  className="hover:text-primary transition px-20"  >
+                   Acount
+                </span>
             </button>
-            <button className="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all">
-              Start Free Trial
-            </button>
+          
           </div>
         </div>
       </nav>

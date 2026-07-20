@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import {  LoginUserAsync } from "../../Apis/UserAuth"; // Assume your login API exists here
 import { setAccessToken } from "../../globalStates/AccessToken";
 import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+
 
 export default function TenantLogin() {
   const [formData, setFormData] = useState({
@@ -42,6 +44,21 @@ export default function TenantLogin() {
    
   };
 
+  useEffect(() => {
+
+    const message =
+        localStorage.getItem("authMessage");
+
+    if (message) {
+
+        alert(message);
+
+        localStorage.removeItem(
+            "authMessage"
+        );
+    }
+
+}, []);
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">

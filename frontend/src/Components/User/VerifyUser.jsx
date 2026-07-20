@@ -54,6 +54,8 @@ if (formData.email==null || formData.email==""){
                 email: formData.email,
                 password: formData.password 
             });
+                    setLoading(false);
+
             if (response.success) {
                 setSuccess(true);
                 // Optional: Redirect to login or dashboard after 2 seconds

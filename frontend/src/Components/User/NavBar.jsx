@@ -28,7 +28,7 @@ return(
           <div className="flex items-center gap-4">
             <button className="px-4 py-2 text-gray-600 hover:text-primary transition">
 
-          <a href="/login" className="hover:text-primary transition">
+          <a href="/signin-options" className="hover:text-primary transition">
                   Sign In
                 </a>
             </button>
