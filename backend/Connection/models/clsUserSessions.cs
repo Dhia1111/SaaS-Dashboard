@@ -12,7 +12,7 @@ namespace Connection.models
 {
     public class DtoUserSession
     {
-        public int SessionId { get; set; }
+        public int Id { get; set; }
         public int UserId { get; set; }
         public int TenantId { get; set; }
         public string GraceUntil { get; set; } = null!;
