@@ -24,6 +24,8 @@ namespace Connection.models.Entites
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; }
+
+        public Tenant? Tenant { get; set; } 
     }
 
 }

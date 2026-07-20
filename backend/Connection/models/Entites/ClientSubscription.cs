@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
-    public class UserPayment : IEntityWithTenantId,IEntity
+    public class ClientSubscription :IEntity,IEntityWithTenantId
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,28 +17,22 @@ namespace Connection.models
 
         [Required]
         public int TenantId { get; set; }
-        
 
         [Required]
-        public string UserReferenceId { get; set; } = null!;
+        public bool IsFree { get; set; }// free, paid
+        [Required]
+        public int GradeStatus { get; set; } // Downgrade, Upgrade, Renewal,MoveToPaid, MoveToFree
+        public string? Discription { get; set; }
+
+        public Tenant? Tenant { get; set; }
 
         [Required]
-        public decimal Amount { get; set; }
+        public DateTime CreatedAt { get; set; }
+
 
         [Required]
-        public string Currency { get; set; } = null!;
+        public string TenantClientIdentifier { get; set; } = null!;
 
-        [Required]
-        public string Status { get; set; } = null!;
 
-        [Required]
-        public string StripePaymentIntentId { get; set; } = null!;
-
-        [Required]
-        public DateTime PaidAt { get; set; }
-
-        /* Navigation */
-        public Tenant Tenant { get; set; } = null!;
     }
-
 }

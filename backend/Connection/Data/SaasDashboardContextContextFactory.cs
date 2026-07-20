@@ -2,6 +2,8 @@
 using Connection.models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using AppAny.Quartz.EntityFrameworkCore;
+using AppAny.Quartz.EntityFrameworkCore.Migrations;
 
 namespace Connection.Data
 {
@@ -22,6 +24,11 @@ namespace Connection.Data
                 .UseNpgsql(
                 ConnectionString
                 );
+
+              
+
+            
+
 
             return new SaasDashboardContext(optionsBuilder.Options,datakeyObj );
         }

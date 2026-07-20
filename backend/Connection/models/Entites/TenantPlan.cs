@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Connection.models
 {
-    public class TenantPlan : IEntityWithTenantId,IEntity
+    public class TenantPlan : IEntityWithTenantId, IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,25 +19,35 @@ namespace Connection.models
         public int TenantId { get; set; }
 
         [Required]
- 
-         public string Name { get; set; } = null!;
+
+        public string Name { get; set; } = null!;
 
         public string? Description { get; set; }
 
-        [Required]
-        public decimal Price { get; set; }
 
         [Required]
-         public int BillingInterval { get; set; } //enum{monthly ,year}
 
-        [Required]
-        public string StripePriceId { get; set; } = null!;
-
-        [Required]
         public bool IsActive { get; set; }
 
+        [Required]
+        public bool HasFreeTryOption { get; set; } = false;
         /* Navigation */
-        public Tenant Tenant { get; set; } = null!;
+        public Tenant? Tenant { get; set; }
+
+        public ICollection<TenantPlanPermission> Permissions { get; set; }
+            = new List<TenantPlanPermission>();
+
+        public ICollection<TenantPlanBenefit> Benefits { get; set; }
+            = new List<TenantPlanBenefit>();
+
+        public ICollection<TenantPlanPricingOption> PricingOptions { get; set; }
+            = new List<TenantPlanPricingOption>();
+        public TenantFreePlan? TenantFreePlan { get; set; }
+
+        [Required]
+        public int GradeLevel { get; set; } = 0;
+
+
     }
 
 }

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Connection.models
 {
-    public class PlatformSubscription : IEntity, IEntityWithTenantId
+    public class PlatformSubscription : IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -16,21 +16,20 @@ namespace Connection.models
 
 
         [Required]
-        public int PlatformPlanId { get; set; }
-
-        [Required]
-        public int Status { get; set; }//enum={inProgress,Secsess,Failer}
-        [Required]
-        public string StripeSubscriptionId { get; set; } = null!;
+        public int TenantPlanPricingOptionId { get; set; }
 
         [Required]
         public DateTime StartedAt { get; set; }
 
         public DateTime? EndsAt { get; set; }
 
-        /* Navigation */
-        public Tenant Tenant { get; set; } = null!;
-        public PlatformPlan PlatformPlan { get; set; } = null!;
- 
+        public TenantPlanPricingOption? TenantPlanPricingOption { get; set; }
+        public Tenant? Tenant { get; set; }
+        public bool IsActive { get; set; } = false;
+        public bool IsItFree{get;set;} = false;
+        public bool IsRegisterdToClientSubscription { get; set; } = false;
+
+
+
     }
 }

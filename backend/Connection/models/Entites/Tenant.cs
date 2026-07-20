@@ -22,6 +22,7 @@ namespace Connection.models
         [MaxLength(500)]
         public string? Description { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool HaveUsedTheFreeTry {  get; set; }
         public string? PasswordHash { get; set; } 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

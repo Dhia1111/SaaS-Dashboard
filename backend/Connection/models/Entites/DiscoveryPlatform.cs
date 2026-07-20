@@ -8,24 +8,22 @@ using System.Threading.Tasks;
 
 namespace Connection.models.Entites
 {
-    public class PlatformPlan :IEntity, IEntityWithTenantId
+    // how did the client haired about the tenant platform 
+    public class DiscoveryPlatform:IEntityWithTenantId,IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required]  
         public int TenantId { get; set; }
-
+       
+        [Required]
+        public string TenantClientIdentifier {  get; set; }=null!;
 
         [Required]
-        public string Name { get; set; } = null!;
+        public int MarkettingPlatform {  get; set; }
 
-        [Required]
-        public decimal Price { get; set; }
-
-        [Required]
-        public int BillingInterval { get; set; } //enum { monthly , year }
 
     }
 }
