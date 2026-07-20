@@ -34,83 +34,120 @@
         baseDelayMs: 300
     },
 
-    WriteNormal: {
+    Write: {
         maxRetries: 3,
         baseDelayMs: 250
     },
 
     Critical: {
-        maxRetries: 5,
-        baseDelayMs: 1000
+        maxRetries: 2,
+        baseDelayMs: 100
     }
  };
 
- export async function executeWithRetry(
-    operation,
-    {
-        maxRetries = 0,
-        baseDelayMs = 0
-    } = {}
-) {
+  let currentController = null;
 
-    let attempt = 0;
+function createRetryExecutor() {
 
-    while (true) {
+    return async function executeWithRetry(
+        operation,
+        {
+            maxRetries = 0,
+            baseDelayMs = 0
+        } = {}
+    ) {
 
-        try {
+        // Cancel previous request
+        currentController?.abort();
 
-            return await operation();
+        const controller = new AbortController();
+        currentController = controller;
 
-        } catch (error) {
+        let attempt = 0;
 
-            const status = error?.response?.status;
+        while (true) {
 
-            // Client errors (except 408 and 429)
-            if (
-                status >= 400 &&
-                status < 500 &&
-                status !== 408 &&
-                status !== 429
-            )
-             {
-                throw error;
-            }
+            try {
 
-            if (!isRetryableStatus(status)) {
-                throw error;
-            }
+                return await operation(controller.signal);
 
-            if (attempt >= maxRetries) {
-                throw error;
-            }
+            } catch (error) {
 
-            attempt++;
+                // Request was intentionally cancelled
+                if (
+                    error.name === "AbortError" ||
+                    error.code === "ERR_CANCELED"
+                ) {
+                    throw error;
+                }
+                const isNetworkError = !error?.response ||error.code === "ERR_NETWORK";
+if (isNetworkError) {
 
-            let delay;
-
-            // Handle Retry-After header for 429
-            if (status === 429) {
-
-                const retryAfterHeader =
-                    error.response?.headers?.["retry-after"];
-
-                const retryAfterSeconds =
-                    Number(retryAfterHeader);
-
-                delay =
-                    Number.isFinite(retryAfterSeconds)
-                        ? retryAfterSeconds * 1000
-                        : baseDelayMs * Math.pow(2, attempt - 1);
-
-            } else {
-
-                delay =
-                    baseDelayMs *
-                    Math.pow(2, attempt - 1);
-            }
-
-            await sleep(delay);
-        }
+    if (attempt >= 1) {
+        throw error;
     }
- }
+
+    attempt++;
+
+    await sleep(1000);
+
+    continue;
+}
+
+                const status = error?.response?.status;
+
+                if (
+                    status >= 400 &&
+                    status < 500 &&
+                    status !== 408 &&
+                    status !== 429
+                ) {
+                    throw error;
+                }
+
+                if (!isRetryableStatus(status)) {
+                    throw error;
+                }
+
+                if (attempt >= maxRetries) {
+                    throw error;
+                }
+
+                attempt++;
+
+                let delay;
+
+                if (status === 429) {
+
+                    const retryAfterHeader =
+                        error.response?.headers?.["retry-after"];
+
+                    const retryAfterSeconds =
+                        Number(retryAfterHeader);
+
+                    delay =
+                        Number.isFinite(retryAfterSeconds)
+                            ? retryAfterSeconds * 1000
+                            : baseDelayMs * Math.pow(2, attempt - 1);
+
+                } else {
+
+                    delay =
+                        baseDelayMs *
+                        Math.pow(2, attempt - 1);
+                }
+
+                // Add jitter (0-30%)
+                const jitter =
+                    delay * (Math.random() * 0.3);
+
+                delay += jitter;
+
+                await sleep(delay);
+            }
+        }
+    };
+}
+
+export const executeWithRetry = createRetryExecutor();
  
