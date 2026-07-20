@@ -1,8 +1,10 @@
 import axios from "axios";
 import { store } from "../store";
-import { refreshUserToken } from "./UserAuth";
+import { refreshToken } from "./GenralAuth.js";
 import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
+import { Redirect } from "./RedirectPolicy/RedirectPolicy.js";
 
+var Redirecting=false;
 const User = axios.create({
   baseURL: "http://localhost:7073/api/user",
   withCredentials: true,
@@ -10,23 +12,36 @@ const User = axios.create({
     "Content-Type": "application/json"
   }
 });
-
 User.interceptors.request.use(async (config) => {
 
   let token = store.getState().auth.accessToken;
 
   if (!token) {
-    try {
-      token = await refreshUserToken();
-    }
-    catch {
-      token = null;
-    }
+      const res = await refreshToken();
+      if(res.success){
+        token=res.data;
+                console.log('token :',res.data);
+
+      }
+      else{
+        token=null;
+        Redirect(res.status,Redirecting);
+        Redirecting=true;
+
+
+
+        
+      }
+
+    
   }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+        console.log('AUTH HEADER:', config.headers.Authorization);
+
   }
+  
 
   return config;
 });
@@ -87,7 +102,7 @@ export const DeleteUserAsync = async (id) => {
 
 export const GetUserRolesAsync = async () => {
   try {
-    const res = await executeWithRetry(() => User.get(`/roles`), RetryPolicies.ReadFast)    ;
+    const res = await executeWithRetry(() => User.get(`/roles`), RetryPolicies.None)    ;
     return { data: res.data.data, message: "User roles retrieved successfully.", success: true };
   } catch {
     return {
@@ -100,7 +115,21 @@ export const GetUserRolesAsync = async () => {
 
 export const GetAuthorizationOptionsAsync = async () => {
   try {
-    const res = await executeWithRetry(() => User.get(`/authorization-options`), RetryPolicies.ReadFast)    ;
+    const res = await executeWithRetry(() => User.get(`/authorization-options`), RetryPolicies.None)    ;
+    return { data: res.data.data, message: "Authorization options retrieved successfully.", success: true };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to get authorization options.",
+      data: null
+    };
+  }
+};  
+
+
+export const GetUserInfoAsnc = async (id) => {
+  try {
+    const res = await executeWithRetry(() => User.get(`/user`,{params:{UserId:id}}), RetryPolicies.None)    ;
     return { data: res.data.data, message: "Authorization options retrieved successfully.", success: true };
   } catch {
     return {

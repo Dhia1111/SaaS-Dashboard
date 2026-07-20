@@ -1,7 +1,9 @@
 import axios from "axios";
 import { store } from "../store";
 import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
-
+import { refreshToken } from "./GenralAuth.js";
+import {Redirect} from './RedirectPolicy/RedirectPolicy.js'
+var Redirecting=false;
 const TenantPermissionAuth = axios.create({
   baseURL: "http://localhost:7073/api/tenant/permission",
   withCredentials: true,
@@ -9,9 +11,29 @@ const TenantPermissionAuth = axios.create({
     "Content-Type": "application/json"
   }
 });
-TenantPermissionAuth.interceptors.request.use((config) => {
-  const token = store.getState().auth.accessToken;
+TenantPermissionAuth.interceptors.request.use(async(config) => {
+  let token = store.getState().auth.accessToken;
 
+   if (!token) {
+
+      const res = await refreshToken();
+      if(res.success){
+        token=res.data;
+      }  
+      else{ 
+        
+  
+        token=null;
+                Redirect(res.status,Redirecting);
+        Redirecting=true;
+
+
+
+        
+          
+      }
+    
+  }
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

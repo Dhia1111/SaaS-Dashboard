@@ -1,7 +1,9 @@
 import axios from "axios";
 import { store } from "../store";
 import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
-
+import { refreshToken } from "./GenralAuth.js";
+import {Redirect}from './RedirectPolicy/RedirectPolicy.js'
+var Redirecting=false;
 const pricingCycleApi = axios.create({
     baseURL: "http://localhost:7073/api/tenant/pricingcycle",
     withCredentials: true,
@@ -11,13 +13,33 @@ const pricingCycleApi = axios.create({
 });
 
 pricingCycleApi.interceptors.request.use(async (config) => {
-    const token = store.getState().auth.accessToken;
+   let token = store.getState().auth.accessToken;
 
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
+   if (!token) {
 
-    return config;
+      const res = await refreshToken();
+      if(res.success){
+        token=res.data;
+      }  
+      else{ 
+        
+  
+        token=null;
+        Redirect(res.status,Redirecting);
+        Redirecting=true;
+
+
+
+        
+          
+      }
+    
+  }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
 });
 
 
@@ -51,7 +73,7 @@ export async function AddPricingCycleAsync(data) {
             data: res.data.data,
             message: "Pricing cycle added successfully."
         };
-    }
+    }    
     catch (error) {
         return {
             success: false,
@@ -61,6 +83,7 @@ export async function AddPricingCycleAsync(data) {
                 "Failed to add pricing cycle."
         };
     }
+
 }
 
 export async function UpdatePricingCycleAsync(data) {
