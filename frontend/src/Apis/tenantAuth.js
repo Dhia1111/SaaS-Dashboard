@@ -1,6 +1,5 @@
 import axios from "axios";
 //import { store } from "../store";
-import {refreshToken as GenralRefreshToken } from "./GenralAuth";
 import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
  const tenantAuth = axios.create({
   baseURL: "http://localhost:7073/api/auth/tenant",
@@ -9,17 +8,7 @@ import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
     "Content-Type": "application/json"
   }
 });
- // the method to inject the token
  
-/*tenantAuth.interceptors.request.use((config) => {
-  const token = store.getState().auth.accessToken;
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});*/
 
 // 🔹 SignUp
  export const signUp = async (data) => {
@@ -49,10 +38,7 @@ export const logIn = async (data) => {
 }
 };
 
-// 🔹 Refresh Token
-export const refreshToken = async () => {
-  return await GenralRefreshToken();
-};
+
 
 // 🔹 LogOut
 export const logOut = async () => {
@@ -107,3 +93,7 @@ export const resendCode = async (data) => {
     };
   }
 };
+
+
+
+

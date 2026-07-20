@@ -1,7 +1,6 @@
 import axios from "axios";
 import { store } from "../store";
-import { refreshToken } from "./GenralAuth";
-import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
+ import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
 const UserAuth = axios.create({
   baseURL: "http://localhost:7073/api/user/auth",
   withCredentials: true,
@@ -9,12 +8,16 @@ const UserAuth = axios.create({
     "Content-Type": "application/json"
   }
 });
-UserAuth.interceptors.request.use((config) => {
-  const token = store.getState().auth.accessToken;
+UserAuth.interceptors.request.use( (config)  => {
+  let token = store.getState().auth.accessToken;
 
+   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+      
+  
+  
 
   return config;
 });
@@ -53,13 +56,7 @@ export const VerifyUserAsync = async (data) => {
   }
 };
 
-export const refreshUserToken = async () => {
 
- const res = await refreshToken();
-
- return res;
-
-}
 
 export const LogoutUserAsync = async () => {
 
