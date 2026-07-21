@@ -92,7 +92,6 @@ namespace Connection.Data
         .HasIndex(u => new { u.Name, u.TenantId })
         .IsUnique();
             // constraint 
-
             modelBuilder.Entity<Payment>()
 .HasIndex(p => new { p.TenantId, p.ProviderPaymentId })
 .IsUnique();
@@ -160,12 +159,12 @@ namespace Connection.Data
 .HasForeignKey<PlatformAdmine>(x => x.TenantId)
 .OnDelete(DeleteBehavior.Cascade);
 
-
             modelBuilder.Entity<PlatformSubscription>()
-.HasOne(x => x.TenantPlanPricingOption)
-.WithOne()
-.HasForeignKey<PlatformSubscription>(x => x.TenantPlanPricingOptionId)
-.OnDelete(DeleteBehavior.Restrict);
+                .HasOne(x => x.TenantPlanPricingOption)
+                .WithMany()
+                .HasForeignKey(x => x.TenantPlanPricingOptionId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TenantFreePlan>()
 .HasOne(x => x.TenantPlan)
