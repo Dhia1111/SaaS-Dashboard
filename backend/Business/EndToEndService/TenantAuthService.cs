@@ -99,8 +99,10 @@ namespace Business.EndToEndService
         private readonly IPlatformSubscriptionRepo _platformSubscriptionRepo;
         private readonly ITenantPlanRepository _tenantPlanRepo;
         private readonly ITenantPermissionRepository _tenantPermissionRepository;
+        private readonly PlatformInfo _platformInfo;
         
-        public TenantAuthService(ITenantService tenant, IEmailTemplateHandler emailTemplateHandler,
+        public TenantAuthService(ITenantService tenant,
+            IEmailTemplateHandler emailTemplateHandler,
             ILogger<TenantAuthService> logger,
             IOptions<EmailSettings> options,
             IPasswordHashService passwordHash,
@@ -114,7 +116,8 @@ namespace Business.EndToEndService
 , IPlatformAdmineService platformOwnerService,
             IPlatformSubscriptionRepo platformSubscriptionRepo,
             ITenantPlanRepository tenantPlanRepo,
-            ITenantPermissionRepository tenantPermissionRepository
+            ITenantPermissionRepository tenantPermissionRepository,
+            IOptions<PlatformInfo>platformInfo
 
              )
         {
@@ -134,6 +137,7 @@ namespace Business.EndToEndService
             _platformSubscriptionRepo = platformSubscriptionRepo;
             _tenantPlanRepo = tenantPlanRepo;
             _tenantPermissionRepository = tenantPermissionRepository;
+            _platformInfo = platformInfo.Value;
         }
 
         // constructor unchanged...
@@ -235,31 +239,39 @@ namespace Business.EndToEndService
         }
         private async Task<long> GetTenantAuthorizations(DtoTenant tenant)
         {
+            DtoTenant? Platform = await _tenantService.GetByNameAsync(_platformInfo.TenantName);
+
+            if (Platform == null)
+            {
+                _logger.LogError("Could not read platfom info");
+                throw new Exception("Could not read platform info");
+            }
+
             PlatformSubscription ActiveSubscription = await _platformSubscriptionRepo.GetActiveByTenantIdAsync(tenant.TenantId);
             if (ActiveSubscription != null)
             {
-                TenantPlan plan = await _tenantPlanRepo.GetSingleWithDependenciesIgnoreQuerryAsync(tenant.TenantId, ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+                TenantPlan plan = await _tenantPlanRepo.GetSingleWithDependenciesIgnoreQuerryAsync(Platform.TenantId, ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
                 if (plan == null)
                 {
-                    _logger.LogError("we could not find plan with and Id {Id} and tenantId {tenantId}",tenant.TenantId,ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+                    _logger.LogError("we could not find plan with and Id {Id} and tenantId {tenantId}",Platform.TenantId,ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
 
                     throw new Exception(" this subscription is not related to any plan (can't fetch the plan )");
 
                 }
                 else
                 {
-                    IReadOnlyList<TenantPermission> TenantPermissions = await _tenantPermissionRepository.GetAllAsync();
-                  if(TenantPermissions != null || TenantPermissions?.Count == 0)
+                    IReadOnlyList<TenantPermission> PlatFormPermissions = await _tenantPermissionRepository.GetAllByTenantIdWithFilterIgnoreAsync(Platform.TenantId);
+                  if(PlatFormPermissions == null || PlatFormPermissions?.Count == 0)
                     {
-                        _logger.LogError("we could not fetch Permission for plan with an id {Id} and tenantId {tenantId}", tenant.TenantId, ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+                        _logger.LogError("we could not fetch Permission for plan with an id {Id} and tenantId {tenantId}", Platform.TenantId, ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
 
                         throw new Exception("Could not fetch Permissions for plan ");
 
                     }
                     else
                     {
-                        Dictionary<int, long> PermissionsMap = TenantPermissions.ToDictionary(e => e.Id, e => e.BitValue);
-                        long tenantAuthorizations = plan.Permissions.Sum(e => PermissionsMap[e.PermissionId]);
+                        Dictionary<int, long> PermissionsMap = PlatFormPermissions.ToDictionary(e => e.Id, e => e.BitValue);
+                        long tenantAuthorizations = plan.Permissions.Sum(e =>  PermissionsMap[e.PermissionId]);
                         return tenantAuthorizations;
                     }
                 }

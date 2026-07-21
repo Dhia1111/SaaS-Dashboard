@@ -1,11 +1,16 @@
-﻿using Connection.models;
+﻿using Business.Config;
+using Connection.models;
+using Connection.models.Entites;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Business
 {
     public interface IUserService : IGenericService<DtoUser>
     {
         Task<DtoUser?> GetByEmailAsync(string email);
+        Task<List<KeyValuePair<long,string>>> GetTenantPermissionForUsers();
     }
 
     public class clsUserService
@@ -14,16 +19,33 @@ namespace Business
     {
         private readonly IUserRepo _userRepo;
         private readonly ILogger<clsUserService> _logger;
-
+        private readonly ITenantIdProvider _tenantIdProvider;
+        private readonly ITenantRepo _tenantRepo;
+        private readonly IPlatformSubscriptionRepo _platformSubscriptionRepo;
+        private readonly ITenantPlanRepository _tenantPlanRepo;
+        private readonly ITenantPermissionRepository _tenantPermissionRepo;
+        private readonly PlatformInfo _platformInfo;
         public clsUserService
         (
             IUserRepo userRepo,
-            ILogger<clsUserService> logger
+            ILogger<clsUserService> logger,
+            ITenantIdProvider tenantIdProvider,
+            IPlatformSubscriptionRepo platformSubscriptionRepo,
+            ITenantRepo tenantRepo,
+            ITenantPlanRepository tenantPlanRepository,
+            ITenantPermissionRepository tenantPermissionRepository,
+            IOptions<PlatformInfo>platformInfo
         )
             : base(userRepo, logger)
         {
             _userRepo = userRepo;
             _logger = logger;
+            _tenantIdProvider = tenantIdProvider;
+            _tenantRepo = tenantRepo;
+            _platformSubscriptionRepo= platformSubscriptionRepo;
+            _tenantPlanRepo = tenantPlanRepository;
+            _tenantPermissionRepo= tenantPermissionRepository;
+            _platformInfo = platformInfo.Value;
         }
 
         protected override DtoUser ToDto(User user)
@@ -137,5 +159,61 @@ namespace Business
 
             return await _userRepo.DeleteAsync(user);
         }
+
+
+        public async Task<List<KeyValuePair<long,string>>> GetTenantPermissionForUsers()
+        {
+
+            List<KeyValuePair<long, string>> List = new();
+
+            PlatformSubscription? ActiveSubscription = await _platformSubscriptionRepo.GetActiveByTenantIdAsync(_tenantIdProvider.TenantId);
+            if(ActiveSubscription == null||ActiveSubscription.TenantPlanPricingOption==null)
+            {
+                return [];
+            }
+            var Plataform = await _tenantRepo.GetByNameAsync(_platformInfo.TenantName);
+            if (Plataform == null)
+            {
+                _logger.LogError("could not read platform information ");
+                throw new Exception("Could not read env");
+            }
+
+            TenantPlan? plan = await _tenantPlanRepo.GetSingleWithDependenciesIgnoreQuerryAsync(Plataform,ActiveSubscription.TenantPlanPricingOption.TenantPlanId);
+
+
+            if (plan == null ||plan.Permissions==null||plan.Permissions.Count==0) {
+                return []
+                ;
+            }
+
+
+           
+            var PlatformPermissions = await _tenantPermissionRepo.GetAllByTenantIdWithFilterIgnoreAsync(Plataform.TenantId);
+
+ 
+            Dictionary<int, TenantPermission> map = new();
+
+            foreach (var permission in PlatformPermissions) {
+
+                map.Add(permission.Id,permission);
+            
+            }
+
+            foreach(var permission in plan.Permissions)
+            {
+
+                var platformPermission = map[permission.PermissionId];
+                List.Add(new KeyValuePair<long, string>(platformPermission.BitValue, platformPermission.PermissionKey));
+                
+
+            }
+
+            return List;
+
+           
+
+
+        }
+
     }
 }

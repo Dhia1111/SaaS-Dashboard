@@ -2,6 +2,8 @@
 using Business;
 using Connection.models;
 using Microsoft.AspNetCore.Mvc;
+using SharedDto_Enum;
+using System.Threading.Tasks;
 
 namespace APIs.Controllers
 {
@@ -68,8 +70,8 @@ namespace APIs.Controllers
         [HttpGet("roles")]
         public ActionResult GetRoles()
         {
-            var roles = Enum.GetValues(typeof(Roles))
-                .Cast<Roles>()
+            var roles = Enum.GetValues(typeof(enRoles))
+                .Cast<enRoles>()
                 .Select(x => new KeyValuePair<int, string>((int)x, x.ToString()))
                 .ToList();
 
@@ -79,16 +81,12 @@ namespace APIs.Controllers
 
         // GET: api/user/authorization-options
         [HttpGet("authorization-options")]
-        public ActionResult GetAuthorizationOptions()
+        public async Task<ActionResult<List<KeyValuePair<long,string>>>> GetAuthorizationOptions()
         {
-            var list = Enum.GetValues(typeof(TenantAccountManangerAutherization))
-                .Cast<TenantAccountManangerAutherization>()
-                .Select(x => new KeyValuePair<int, string>(
-                    (int)x,
-                    x.ToString().Replace("__", " ")))
-                .ToList();
+            // you recive the platform 
 
-            return Ok(ApiResult<object>
+            var list =await _userService.GetTenantPermissionForUsers(); ;
+            return Ok(ApiResult<List<KeyValuePair<long, string>>>
                 .Ok(list, "Authorization options fetched successfully"));
         }
     }

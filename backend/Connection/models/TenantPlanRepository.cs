@@ -53,6 +53,9 @@ public interface ITenantPlanRepository : IGenericRepo<TenantPlan>
     public  Task<IEnumerable<TenantPlan>> GetAllWithDependenciesIgnoreQuerryAsync(Tenant Tenant);
     public  Task<TenantPlan?> GetSingleWithDependenciesIgnoreQuerryAsync(Tenant Tenant, string PlanName);
     public Task<TenantPlan?> GetSingleWithDependenciesIgnoreQuerryAsync(int Tenant, int PlanId);
+    public Task<TenantPlan?> GetSingleWithDependenciesAsync( string PlanName);
+    public Task<TenantPlan?> GetSingleWithDependenciesAsync( int PlanId);
+
 
     public Task<TenantPlan?> GetSingleWithDependenciesIgnoreQuerryAsync(Tenant Tenant, int PlanId);
 
@@ -174,10 +177,22 @@ namespace Connection
                 }
                 await _context.TenantsPlansPermissions.Where(p=>p.TenantPlanId==tenantPlan.Id).ExecuteDeleteAsync();
                 await  _context.TenantsPlansBenifests.Where(p => p.TenantPlanId == tenantPlan.Id).ExecuteDeleteAsync();
-                await  _context.TenantsPricingOptions.Where(p => p.TenantPlanId == tenantPlan.Id).ExecuteDeleteAsync();
 
-                await  _context.TenantsPlansPermissions.AddRangeAsync(planPermission);
+                var CurpriceOptions = _context.TenantsPricingOptions.Where(e => e.TenantPlanId == tenantPlan.Id).ToDictionary(e=>e.Id,e=>e);
+
+                foreach(var op in pricingOptions)
+                {
+                    if(CurpriceOptions.TryGetValue(op.Id,out TenantPlanPricingOption? priceOp ))
+                    {
+                        continue;
+                    }
+                    _context.TenantsPricingOptions.Add(op);
+                }
+
+                await _context.TenantsPlansPermissions.AddRangeAsync(planPermission);
                 await  _context.TenantsPlansBenifests.AddRangeAsync(PlanBenefits);
+                
+                
                 await  _context.TenantsPricingOptions.AddRangeAsync(pricingOptions);
                 await  _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -252,6 +267,34 @@ namespace Connection
                 .Include(x => x.PricingOptions)
                 .Include(x => x.Permissions)
          .SingleOrDefaultAsync(p => p.TenantId == TenantId && p.Id == PlanId);
+
+            return plan;
+
+        }
+
+        public async Task<TenantPlan?> GetSingleWithDependenciesAsync(int PlanId)
+        {
+
+            var plan = await _context.TenantPlans.AsNoTracking().
+                Include(x => x.Benefits)
+                .Include(x => x.TenantFreePlan)
+                .Include(x => x.PricingOptions)
+                .Include(x => x.Permissions)
+         .SingleOrDefaultAsync(p =>  p.Id == PlanId);
+
+            return plan;
+
+        }
+
+        public async Task<TenantPlan?> GetSingleWithDependenciesAsync( string PlanName)
+        {
+
+            var plan = await _context.TenantPlans.AsNoTracking().
+                Include(x => x.Benefits)
+                .Include(x => x.TenantFreePlan)
+                .Include(x => x.PricingOptions)
+                .Include(x => x.Permissions)
+         .SingleOrDefaultAsync(p =>  p.Name ==PlanName );
 
             return plan;
 
