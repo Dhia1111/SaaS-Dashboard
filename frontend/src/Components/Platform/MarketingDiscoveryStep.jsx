@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {  GetMarkettingPlatformsAsync, SetDescoveryPlatform as ConfirmMarkettingPlatformAsync } from "../../Apis/Platform";
-import { jsx } from "react/jsx-runtime";
 
 export default function MarketingDiscoveryStep({ onNextStep, buttonText = "Confirm" }) {
   // Store dictionary data in its native backend layout: Map<int, string> array style
@@ -57,10 +56,16 @@ export default function MarketingDiscoveryStep({ onNextStep, buttonText = "Confi
         }
       } else {
         setErrorMessage(res?.message || "Failed to submit choice validation metrics.");
+          if (typeof onNextStep === "function") {
+          onNextStep();
+        }
       }
     } catch (err) {
       console.error("Server synchronization error during step submission:", err);
       setErrorMessage("Network error occurred validating attribution parameters.");
+        if (typeof onNextStep === "function") {
+          onNextStep();
+        }
     } finally {
       setIsSubmitting(false);
     }
