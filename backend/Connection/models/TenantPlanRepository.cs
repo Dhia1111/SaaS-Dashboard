@@ -45,7 +45,7 @@ public interface ITenantPlanRepository : IGenericRepo<TenantPlan>
     Task<bool> UpdateTenantPlan(TenantPlan tenantPlan,
       IEnumerable<TenantPlanPermission> planPermission,
       IEnumerable<TenantPlanBenefit> planBenifest,
-      IEnumerable<TenantPlanPricingOption> pricingOption,TenantFreePlan tenantFreePlan=null);
+      TenantFreePlan tenantFreePlan=null);
 
     Task<TenantPlan?> FindByNameAsync(string name);
 
@@ -155,7 +155,7 @@ namespace Connection
         public async Task<bool> UpdateTenantPlan(TenantPlan tenantPlan,
         IEnumerable<TenantPlanPermission> planPermission,
         IEnumerable<TenantPlanBenefit> PlanBenefits,
-        IEnumerable<TenantPlanPricingOption> pricingOptions,TenantFreePlan? tenantFreePlan=null)
+        TenantFreePlan? tenantFreePlan=null)
         {
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -180,21 +180,12 @@ namespace Connection
 
                 var CurpriceOptions = _context.TenantsPricingOptions.Where(e => e.TenantPlanId == tenantPlan.Id).ToDictionary(e=>e.Id,e=>e);
 
-                foreach(var op in pricingOptions)
-                {
-                    if(CurpriceOptions.TryGetValue(op.Id,out TenantPlanPricingOption? priceOp ))
-                    {
-                        continue;
-                    }
-                    _context.TenantsPricingOptions.Add(op);
-                }
 
                 await _context.TenantsPlansPermissions.AddRangeAsync(planPermission);
                 await  _context.TenantsPlansBenifests.AddRangeAsync(PlanBenefits);
                 
                 
-                await  _context.TenantsPricingOptions.AddRangeAsync(pricingOptions);
-                await  _context.SaveChangesAsync();
+                 await  _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return true;
 

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 public interface ITenantPricingOptionRepository : IGenericRepo<TenantPlanPricingOption>
 {
     public Task<IEnumerable<TenantPlanPricingOption>> GetAllPlanPricingOptionsWithFilterIgnoreAsync(int TenatId);
+    Task<List<TenantPlanPricingOption>> GetPricingOptionThatIsUsedBySubscription();
 
 }
 public class DtoTenantPricingOption
@@ -32,7 +33,6 @@ public class DtoTenantPricingOption
 namespace Connection
 {
   
-
     public class TenantPricingOptionRepository
         : GenericRepo<TenantPlanPricingOption>,
           ITenantPricingOptionRepository
@@ -54,6 +54,17 @@ namespace Connection
 
          }
 
+
+        public async Task<List<TenantPlanPricingOption>>GetPricingOptionThatIsUsedBySubscription( )
+        {
+            var usedPricingOptions = await _context.TenantsPricingOptions
+                .Where(p => _context.PlatformSubscriptions
+                    .Select(s => s.TenantPlanPricingOptionId)
+                    .Distinct()
+                    .Contains(p.Id))
+                .ToListAsync();
+            return usedPricingOptions;
+        }
 
     }
 }
