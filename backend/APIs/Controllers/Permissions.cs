@@ -1,12 +1,15 @@
-﻿using APIs.Responses;
+﻿using APIs.ConfigClasses;
+using APIs.Responses;
 using Business;
 using Business.Exceptions;
 using Connection.models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security;
 namespace APIs.Controllers
 {
 
+    [Authorize]
 [Route("api/tenant/permission")]
     [ApiController]
 
@@ -21,6 +24,7 @@ namespace APIs.Controllers
             _tenantIdProvider = tenantIdProvider;
         }
 
+        [RequiersdClaim("ReadForSubscription", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("GetPermissions")]
             public async Task<ActionResult> GetPermissions()
             {
@@ -29,7 +33,8 @@ namespace APIs.Controllers
     
                 return Ok(ApiResult<IReadOnlyList<DtoTenantPermission>>.Ok(permissions));
         }
-       
+
+        [RequiersdClaim("WriteForSubscription", SharedDto_Enum.enPlaformRoles.User)]
         [HttpPost("AddPermission")]
         public async Task<ActionResult> AddPermission([FromBody] DtoTenantPermission request)
         {
@@ -45,12 +50,15 @@ namespace APIs.Controllers
             int newId = await _permissionsService.AddAsync(request);
             return Ok(ApiResult<int>.Ok(newId));
         }
-         [HttpPut("UpdatePermission")]
+
+        [RequiersdClaim("WriteForSubscription", SharedDto_Enum.enPlaformRoles.User)]
+        [HttpPut("UpdatePermission")]
          public async Task<ActionResult> UpdatePermission([FromBody] DtoTenantPermission request)
         {   bool result = await _permissionsService.UpdateAsync(request);
             return Ok(ApiResult<bool>.Ok(result));
         }
 
+        [RequiersdClaim("WriteForSubscription", SharedDto_Enum.enPlaformRoles.User)]
         [HttpDelete("DeletePermission/{id}")]
         public async Task<ActionResult> DeletePermission(int id)
         {

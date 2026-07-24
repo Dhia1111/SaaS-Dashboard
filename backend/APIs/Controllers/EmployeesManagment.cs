@@ -1,7 +1,9 @@
-﻿using APIs.Responses;
+﻿using APIs.ConfigClasses;
+using APIs.Responses;
 using Business;
 using Business.Config;
 using Connection.models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SharedDto_Enum;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace APIs.Controllers
 {
+    [Authorize]
     [Route("api/employee")]
     [ApiController]
 
@@ -41,6 +44,7 @@ namespace APIs.Controllers
         }
 
         // GET: api/user/{id}
+        [RequiersdClaim("ReadForEmployees",enPlaformRoles.Employee)]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResult<DtoEmployee>>> GetById(int id)
         {
@@ -50,7 +54,8 @@ namespace APIs.Controllers
                 .Ok(user, "User fetched successfully"));
         }
 
-         [HttpPut("{id:int}")]
+        [RequiersdClaim("WriteForEmployees", enPlaformRoles.Employee)]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult<ApiResult<bool>>> Update(int id, [FromBody] DtoEmployee dto)
         {
             if (id != dto.Id)
@@ -62,7 +67,10 @@ namespace APIs.Controllers
                 .Ok(result, "User updated successfully"));
         }
 
-         [HttpDelete("{id:int}")]
+        
+        [RequiersdClaim("WriteForEmployees", enPlaformRoles.Employee)]
+
+        [HttpDelete("{id:int}")]
         public async Task<ActionResult<ApiResult<bool>>> Delete(int id)
         {
             var result = await _employeeService.DeleteAsync(id);
@@ -70,6 +78,9 @@ namespace APIs.Controllers
             return Ok(ApiResult<bool>
                 .Ok(result, "User deleted successfully"));
         }
+
+       
+        [RequiersdClaim("WriteForEmployees", enPlaformRoles.Employee)]
 
         [HttpPost("add")]
         public async Task<ActionResult<ApiResult<int>>> Add([FromBody] DtoEmployee platformUser)
@@ -80,7 +91,9 @@ namespace APIs.Controllers
             return Ok(ApiResult<int>.Ok(res));
         }
 
-         [HttpGet("roles")]
+        [RequiersdClaim("ReadForEmployees", enPlaformRoles.Employee)]
+
+        [HttpGet("roles")]
         public ActionResult GetRoles()
         {
             var roles = Enum.GetValues(typeof(enPlaformRoles))
@@ -92,7 +105,10 @@ namespace APIs.Controllers
                 .Ok(roles, "Roles fetched successfully"));
         }
 
-         [HttpGet("authorization-options")]
+
+        [RequiersdClaim("ReadForEmployees", enPlaformRoles.Employee)]
+
+        [HttpGet("authorization-options")]
         public async Task<ActionResult> GetAuthorizationOptions()
         {
             List<DtoTenantPermission> list = await _tenantPermissionServices.GetAllByTenantNameWithFilterIgnoreAsync(_platformInfo.TenantName);

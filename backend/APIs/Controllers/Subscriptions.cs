@@ -1,7 +1,9 @@
-﻿using APIs.Responses;
+﻿using APIs.ConfigClasses;
+using APIs.Responses;
 using Business;
 using Business.Exceptions;
 using Connection.models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIs.Controllers
@@ -20,6 +22,8 @@ namespace APIs.Controllers
             _tenantIdProvider = tenantIdProvider;
         }
 
+        [Authorize]
+        [RequiersdClaim("ReadForPlan", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("GetTenantPlans")]
         public async Task<ActionResult> GetTenantPlans()
         {
@@ -27,7 +31,9 @@ namespace APIs.Controllers
 
             return Ok(ApiResult<IReadOnlyList<DtoTenantPlan>>.Ok(tenantPlans ));
         }
-
+     
+        [Authorize]
+        [RequiersdClaim("WriteForPlan", SharedDto_Enum.enPlaformRoles.User)]
         [HttpPost("AddNewSubscription")]
         public async Task<ActionResult> AddSubscription([FromBody] DtoAddNewTenantPlan request)
         {
@@ -41,6 +47,10 @@ namespace APIs.Controllers
             int newId = await _tenantPlanService.AddNewTenantPlanWithDependancies(request);
             return Ok(ApiResult<int>.Ok(newId));
         }
+
+
+        [Authorize]
+        [RequiersdClaim("WriteForPlan", SharedDto_Enum.enPlaformRoles.User)]
         [HttpPut("UpdateTenantSubscription")]
         public async Task<ActionResult> UpdateSubscription([FromBody] DtoAddNewTenantPlan request)
         {
@@ -48,6 +58,9 @@ namespace APIs.Controllers
             return Ok(ApiResult<bool>.Ok(result));
         }
 
+
+        [Authorize]
+        [RequiersdClaim("WriteForPlan", SharedDto_Enum.enPlaformRoles.User)]
         [HttpDelete("Delete/{id}")]
         public async Task<ActionResult> Delete(int id)
         {
@@ -55,6 +68,8 @@ namespace APIs.Controllers
             return Ok(ApiResult<bool>.Ok(res));
         }
 
+        [Authorize]
+        [RequiersdClaim("ReadForPlan", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("GetSubscriptionList")]
         public async Task<ActionResult<IEnumerable<DtoTenantPlan>>> GetSubscriptionListAsync()
         {

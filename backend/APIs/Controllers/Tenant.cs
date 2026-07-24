@@ -1,6 +1,8 @@
-﻿using APIs.Responses;
+﻿using APIs.ConfigClasses;
+using APIs.Responses;
 using Business;
 using Connection.models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit.Tnef;
 
@@ -21,6 +23,8 @@ namespace APIs.Controllers
             _tenantIdProvider = tenantIdProvider;
         }
 
+       [Authorize]
+        [RequiersdClaim("ReadForTenantInfo",SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("tenant")]
         public async Task<ActionResult<ApiResult<DtoTenant>>> GetById ([FromQuery] int TenantId)
         {
@@ -29,6 +33,7 @@ namespace APIs.Controllers
             tenant.PasswordHash = null;
             return Ok(ApiResult<DtoTenant>.Ok(tenant, "Tenant fetched successfully"));
         }
+   
      
 
     }

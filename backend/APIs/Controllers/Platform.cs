@@ -55,8 +55,7 @@ namespace APIs.Controllers
 
 
         [HttpGet("subscriptions-options")]
-       
-         public async Task<ActionResult<IEnumerable<DtoTenantPlan>>> GetSubscriptionListAsync()
+            public async Task<ActionResult<IEnumerable<DtoTenantPlan>>> GetSubscriptionListAsync()
         {
             string PlatformTenantName = _platformInfo.TenantName;
             var res = await _tenantPlanService.GetAllWithDependenciesIgnoreQuerryAsync(PlatformTenantName);
@@ -73,8 +72,9 @@ namespace APIs.Controllers
 
             return Ok(ApiResult<IEnumerable<DtoTenantPricingCycle>>.Ok(res));
         }
-
-
+      
+        [Authorize]
+        [RequiersdClaim("WriteForSubscription", SharedDto_Enum.enPlaformRoles.User)]
         [HttpPost("subscribe")]
         public async Task<ActionResult<ApiResult<DtoSubscriptionResult>>> Subscribe([FromBody] DtoSubscribe request)
         {
@@ -130,7 +130,8 @@ namespace APIs.Controllers
             }
         }
 
-
+        [Authorize]
+        [RequiersdClaim("WriteForSubscription", SharedDto_Enum.enPlaformRoles.User)]
         [HttpPost("upgrade-subscription")]
         public async Task<ActionResult<ApiResult<DtoSubscriptionResult>>> UpgradeSubscription([FromBody] DtoSubscribe request)
         {
@@ -170,6 +171,9 @@ namespace APIs.Controllers
             } 
         }
 
+        [Authorize]
+        [RequiersdClaim("ReadForSubscription", SharedDto_Enum.enPlaformRoles.User)]
+
         [HttpGet("tenantUsedFreeTry")]
         public async Task<ActionResult<ApiResult<bool>>> GetIfTenantUsedHisFreeTry([FromQuery] int TenantId)
         {
@@ -179,6 +183,9 @@ namespace APIs.Controllers
             
             return Ok(ApiResult<bool>.Ok(tenant.HaveUsedTheFreeTry));
     }
+
+        [Authorize]
+        [RequiersdClaim("ReadForSubscription", SharedDto_Enum.enPlaformRoles.User)]
 
         [HttpGet("active-subscription")]
         public async Task<ActionResult<ApiResult<DtoPlatformSubscription?>>> GetActiveSubscription([FromQuery] int TenantId)
@@ -235,6 +242,7 @@ namespace APIs.Controllers
 
 
         }
+
 
         [HttpPost("subscription-descovery")]
         public async Task<ActionResult<ApiResult<bool>>>SubscriptionDescovery(enMarkettingPlatforms MarkettingPlatform)
