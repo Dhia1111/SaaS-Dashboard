@@ -33,8 +33,7 @@
     public enum enRoles
     {
 
-        Tenant__Admine = 1,// full access to the account
-        Account__Manager, // alowd to have access to the tenant data with constraints
+        Account__Manager=1, // alowd to have access to the tenant data with constraints
                           // 
 
     }
