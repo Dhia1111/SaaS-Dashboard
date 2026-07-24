@@ -44,16 +44,16 @@ namespace APIs.ConfigClasses
 
             var user = httpContext.User;
 
-            if(user.HasClaim("IsTheOwner", "true"))
+            if(user.HasClaim("IsTheOwner", "True"))
             {
              
                  return;
 
             }
            
-            if (!user.HasClaim("IsActive", "true"))
+            if (!user.HasClaim("IsActive", "True"))
             {
-                throw new UnauthorizedAccessException("Account is Not Active");
+                throw new UnauthorizedAccessException("User is Not Active");
 
             }
 
@@ -63,7 +63,12 @@ namespace APIs.ConfigClasses
 
                     case enPlaformRoles.User:
 
-                    if(user.HasClaim("IsATenant", "true"))
+                    if (!user.HasClaim("IsAccountActive", "True"))
+                    {
+                        throw new UnauthorizedAccessException("Account is Not Active");
+
+                    }
+                    if (user.HasClaim("IsATenant", "True"))
                     {
                         var Tenantauth = user.Claims.SingleOrDefault(e => e.Type == "TenantAuthorizations").Value;
                         long.TryParse(Tenantauth, out long TenantAuthLong);
@@ -101,10 +106,10 @@ namespace APIs.ConfigClasses
 
                     case enPlaformRoles.Tenant:
 
-                    if (user.HasClaim("IsATenant", "true"))
+                    if (user.HasClaim("IsATenant", "True"))
                     {
 
-                        if (user.HasClaim("Actvie", "true"))
+                        if (user.HasClaim("Actvie", "True"))
                         {
 
                             var Tenantauth = user.Claims.SingleOrDefault(e => e.Type == "TenantAuthorizations").Value;
@@ -136,13 +141,14 @@ namespace APIs.ConfigClasses
 
 
                     case enPlaformRoles.Employee:
-                  
-                    if (user.HasClaim("IsATenant", "true"))
+
+                   
+                    if (user.HasClaim("IsATenant", "True"))
                     {
                         return;
 
                     }
-                    else if (user.HasClaim("IsAnEmployee", "true"))
+                    else if (user.HasClaim("IsAnEmployee", "True"))
                     {
                        authorization = user.Claims.SingleOrDefault(e => e.Type == "Authorization")?.Value;
 
