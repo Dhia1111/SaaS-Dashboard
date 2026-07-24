@@ -14,13 +14,16 @@ namespace APIs.Controllers
     {
         private readonly ITenantService _tenantService;
         private readonly ITenantIdProvider _tenantIdProvider;
+        private readonly IClientSubscriptionService _clientSubscriptionService;
 
         public TenantController(
             ITenantService tenantervice,
-            ITenantIdProvider tenantIdProvider)
+            ITenantIdProvider tenantIdProvider,
+            IClientSubscriptionService clientSubscriptionService)
         {
             _tenantService = tenantervice;
             _tenantIdProvider = tenantIdProvider;
+            _clientSubscriptionService = clientSubscriptionService;
         }
 
        [Authorize]
@@ -33,6 +36,20 @@ namespace APIs.Controllers
             tenant.PasswordHash = null;
             return Ok(ApiResult<DtoTenant>.Ok(tenant, "Tenant fetched successfully"));
         }
+
+        [Authorize]
+        [RequiersdClaim("ReadForClientSubscriptionInfo", SharedDto_Enum.enPlaformRoles.User)]
+        [HttpGet("clients-subscriptions")]
+        public async Task<ActionResult<ApiResult<IReadOnlyList<DtoClientSubscription>>>>ClientSubscriptionList()
+        {
+
+            var res= await _clientSubscriptionService.GetAllAsync();
+
+            return Ok(ApiResult<IReadOnlyList<DtoClientSubscription>>.Ok(res));
+
+
+        }
+ 
    
      
 

@@ -54,3 +54,16 @@ export const GetTenatInfoAsync = async (id) => {
     };
   }
 };
+
+export const ClientSubscriptionAsync = async () => {
+  try {
+    const res = await executeWithRetry(() => Tenant.get(`/clients-subscriptions`), RetryPolicies.ReadFast);
+    return { data: res.data.data, message: "User found successfully.", success: true };
+  } catch {
+    return {
+      success: false,
+      message: "Failed to find user.",
+      data: null
+    };
+  }
+};
