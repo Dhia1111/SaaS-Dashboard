@@ -140,6 +140,7 @@ export default function AddNewPlanWizard() {
         tenant: null
       })),
       tenantPricingOptions: pricingOptions.map(option => ({
+        id:option.id,
         tenantPricingCycleId: option.tenantPricingCycleId,
         amount: Number(option.amount),
         currency: option.currency,
@@ -394,6 +395,7 @@ export default function AddNewPlanWizard() {
                     if (selected) {
                       setNewPrice({ 
                         ...newPrice, 
+                        
                         cycleName: selected.cycleName, 
                         period: selected.period, 
                         periodUnit: selected.periodUnit,

@@ -1,11 +1,30 @@
-import React, { useState } from "react";
+import React, {  useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 export default function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const [userInfoClaims] = useState(() => {
+      try {
+        const stored = localStorage.getItem("userInfo");
+              console.log("user",JSON.parse(stored))
+        return stored ? JSON.parse(stored) : null;
+      } catch { return null; }
+    });
+  
+    const [tenantInfoClaims] = useState(() => {
+      try {
+        const stored = localStorage.getItem("tenantInfo");
+              console.log("tenantInfo",JSON.parse(stored))
+  
+        return stored ? JSON.parse(stored) : null;
+      } catch { return null; }
+    });
+   
+    
+
   const location = useLocation();
   const navigationItems = [
-    {
+   (!(tenantInfoClaims?.isTheOwner||userInfoClaims?.IsAnEmployee))&& {
       path: "/dashboard/user",
       label: "Users Management",
       icon: (
@@ -13,8 +32,7 @@ export default function DashboardLayout() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
-    },
-    {
+    },{
       path: "/dashboard/analytics",
       label: "Business Analysis",
       icon: (
@@ -25,7 +43,7 @@ export default function DashboardLayout() {
     },
     {
       path: "/dashboard/payments",
-      label: "Tenant Payments",
+      label: "Client Subscription",
       icon: (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -65,7 +83,8 @@ export default function DashboardLayout() {
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12M15 8.5H10.5a2 2 0 000 4h3a2 2 0 010 4H9" />
   </svg>
 ),
-    }, {
+    },
+     (tenantInfoClaims?.isTheOwner||userInfoClaims?.IsAnEmployee)&&{ 
       path: "/dashboard/employees-managment",
       label: "Employee Managment",
    icon: (
@@ -120,8 +139,8 @@ export default function DashboardLayout() {
             </span>
             {navigationItems.map((item) => {
               // Validates if the current route matches the button path
-              const isSelected = location.pathname.startsWith(item.path);
-              return (
+              const isSelected = location.pathname.startsWith(item?.path);
+           { return item  ? (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -137,8 +156,8 @@ export default function DashboardLayout() {
                   </span>
                   {item.label}
                 </Link>
-              );
-            })}
+              ):<></>;
+            }})}
           </nav>
         </div>
 

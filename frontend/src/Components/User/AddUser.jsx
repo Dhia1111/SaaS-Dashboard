@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import { GetAuthorizationOptionsAsync, GetUserRolesAsync } from '../../APIs/Users.js';
 import { SendInvitationAsync } from '../../APIs/UserAuth.js';
+import {GetActiveSubscriptionAsync} from '../../Apis/Subscriotions.js'
 
 export default function AddUser() {
     const { AllAthorization, AllRoles } = useLoaderData();
@@ -154,13 +155,15 @@ export default function AddUser() {
 }
 
 export async function Loader() {
-    const [authRes, rolesRes] = await Promise.all([
+    const [authRes, rolesRes,ActiveSubscriotion] = await Promise.all([
         GetAuthorizationOptionsAsync(),
-        GetUserRolesAsync()
+        GetUserRolesAsync(),
+        GetActiveSubscriptionAsync()
     ]);
 
     return {
         AllAthorization: authRes.data || [],
-        AllRoles: rolesRes.data || []
+        AllRoles: rolesRes.data || [],
+        ActiveSubscriotion:ActiveSubscriotion.data
     };
 }

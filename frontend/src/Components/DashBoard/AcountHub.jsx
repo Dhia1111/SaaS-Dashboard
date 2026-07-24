@@ -128,6 +128,7 @@ export default function AccountProfileHub() {
   const resolvedEmail = user?.person?.email || tenant?.person?.email || "No email bound";
   const resolvedPhone = user?.person?.phone || tenant?.person?.phone || "No metadata";
   const resolvedTenantName = tenant?.name || "System Tenant Instance";
+  
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -150,7 +151,7 @@ export default function AccountProfileHub() {
         <div className="text-center sm:text-left space-y-2 flex-1 w-full min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h2 className="text-xl font-black text-slate-900 tracking-tight truncate">{resolvedFullName}</h2>
-            {tenantInfoClaims?.isTheOwner && (
+            {tenantInfoClaims?.isTheOwner  && (
               <span className="self-center sm:self-auto bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
                 Workspace Owner
               </span>
@@ -174,14 +175,15 @@ export default function AccountProfileHub() {
       </div>
 
       {/* SUBSCRIPTION PIPELINE DISPLAY MATRICES */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
+      {
+        !tenantInfoClaims?.isTheOwner&&!userInfoClaims?.isEmployee&& (<div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
         <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex justify-between items-center">
           <h3 className="text-[11px] font-black uppercase text-slate-500 tracking-wider">Workspace Subscription Matrix</h3>
           <span className={`h-2 w-2 rounded-full ${subscription ? 'bg-emerald-500' : 'bg-amber-400'}`} />
         </div>
 
         <div className="p-6">
-          {subscription ? (
+          {subscription?(
             /* CASE 1: Active database allocation parameters identified */
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-in fade-in duration-200">
               <div className="space-y-2">
@@ -230,8 +232,11 @@ export default function AccountProfileHub() {
               )  
                 }
                 
-                {
-              (  <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        
+            </div>
+          )}
+                  {
+              (  <div className="bg-slate-50 border border-slate-200 p-4 py-10 mt-10 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <p className="text-xs text-slate-500 font-medium leading-relaxed">
                     do not wait until your  trial expires, upgrade to a premium plan to unlock advanced features and ensure uninterrupted service,
                     you wont lose the time for the trial you have already used, 
@@ -247,10 +252,9 @@ export default function AccountProfileHub() {
                 </div>
               )
                 }
-            </div>
-          )}
         </div>
-      </div>
+      </div>)
+      }
 
     </div>
   );

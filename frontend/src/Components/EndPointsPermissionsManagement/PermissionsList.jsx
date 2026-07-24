@@ -97,7 +97,7 @@ export default function TenantPermissionsList() {
       </div>
 
       <div className="bg-white border border-slate-200/60 rounded-2xl shadow-sm p-4 overflow-hidden">
-        {TenantPermissionsList.length > 0 ? (
+        {TenantPermissionsList?.length > 0 ? (
           <GridComponent 
             dataSource={TenantPermissionsList} 
             allowPaging={true} 

@@ -9,16 +9,36 @@ import { ListUsersAsync } from '../../Apis/Users.js';
 export default function UsersList() {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
+  
+  const [userInfoClaims] = useState(() => {
+    try {
+      const stored = localStorage.getItem("userInfo");
+            console.log("user",JSON.parse(stored))
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
 
+  const [tenantInfoClaims] = useState(() => {
+    try {
+      const stored = localStorage.getItem("tenantInfo");
+            console.log("tenantInfo",JSON.parse(stored))
+
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
  
   useEffect(() => {
+       
+      if(userInfoClaims?.IsAnEmployee||tenantInfoClaims?.isTheOwner){
+        navigate("/dashboard/employees-managment");
+      }
      async function GetUsers() {
     const response = await ListUsersAsync();
     setUsers(response.data || []);
   }
 
     GetUsers();
-  }, []);
+  }, [tenantInfoClaims,userInfoClaims,navigate]);
 
   const actionTemplate = (props) => {
     return (

@@ -153,6 +153,7 @@ export default function UpdatePlan() {
         tenantPlanId: planDetails?.id,
       })),
       tenantPricingOptions: pricingOptions.map(option => ({
+        id:option.id,
         tenantPricingCycleId: option.tenantPricingCycleId,
         amount: Number(option.amount),
         currency: option.currency,
