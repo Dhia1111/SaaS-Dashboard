@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connection", "..\Connection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalAPI", "..\ExternalAPI\ExternalAPI.csproj", "{CF600BFE-5CBE-A28D-746B-1A2C600FA514}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedDto&Enum", "..\SharedDto&Enum\SharedDto&Enum.csproj", "{5D79726E-E42B-445B-8C10-936A316042B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedDtoAndEnum", "..\SharedDtoAndEnum\SharedDtoAndEnum.csproj", "{A5122C92-AE38-D242-C015-0AC073014751}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{CF600BFE-5CBE-A28D-746B-1A2C600FA514}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF600BFE-5CBE-A28D-746B-1A2C600FA514}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF600BFE-5CBE-A28D-746B-1A2C600FA514}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D79726E-E42B-445B-8C10-936A316042B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D79726E-E42B-445B-8C10-936A316042B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D79726E-E42B-445B-8C10-936A316042B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D79726E-E42B-445B-8C10-936A316042B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5122C92-AE38-D242-C015-0AC073014751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5122C92-AE38-D242-C015-0AC073014751}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5122C92-AE38-D242-C015-0AC073014751}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5122C92-AE38-D242-C015-0AC073014751}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

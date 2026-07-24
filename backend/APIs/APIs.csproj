@@ -40,6 +40,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Business\Business.csproj" />
     <ProjectReference Include="..\ExternalAPI\ExternalAPI.csproj" />
+    <ProjectReference Include="..\SharedDtoAndEnum\SharedDtoAndEnum.csproj" />
   </ItemGroup>
 
   <ItemGroup>

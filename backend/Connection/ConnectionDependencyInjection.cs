@@ -32,6 +32,8 @@ namespace Connection
 
             services.AddScoped<IClientSubscriptionRepo, clsClientSubscriptionRepo>();
 
+            services.AddScoped<ITenantAccessStateService, clsTenantAccessStateService>();
+
 
 
 
