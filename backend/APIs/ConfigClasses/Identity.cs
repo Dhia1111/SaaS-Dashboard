@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SharedDto_Enum;
 using Stripe.Identity;
+using System.Security;
 
 namespace APIs.ConfigClasses
 {
@@ -12,35 +13,50 @@ namespace APIs.ConfigClasses
     public class RequiersdClaimAttribute : Attribute,IAuthorizationFilter
     {
        
-        private readonly string _ClaimValue;
+        private readonly string _ClaimVKey;
         private readonly enPlaformRoles _DirectAutherizedRoles;
+        private readonly long _permissionValue;
 
      public  RequiersdClaimAttribute(string ClaimValue,enPlaformRoles role){
         
-         
-        _ClaimValue=ClaimValue;
+            _ClaimVKey=ClaimValue;
             _DirectAutherizedRoles=role;
 
 
 
-       }
 
-       public void OnAuthorization(AuthorizationFilterContext FilterContext)
+        }
+
+
+
+
+
+        public void OnAuthorization(AuthorizationFilterContext FilterContext )
         {
+
+    
+
             string? authorization;
             long auth;
-            long.TryParse(_ClaimValue, out long ClaimValueInt);
+            var httpContext = FilterContext.HttpContext;
+            var permissionLoader = httpContext.RequestServices.GetRequiredService<IPermissionLoader>();
+            permissionLoader.TryGetPermission(_ClaimVKey, out var permissionValue);
 
-           var httpContext = FilterContext.HttpContext;
-            var  user= httpContext.User;
+            var user = httpContext.User;
 
             if(user.HasClaim("IsTheOwner", "true"))
             {
              
-                FilterContext.Result= new OkResult();
-             
+                 return;
 
             }
+           
+            if (!user.HasClaim("IsActive", "true"))
+            {
+                throw new UnauthorizedAccessException("Account is Not Active");
+
+            }
+
 
 
             switch (_DirectAutherizedRoles) {
@@ -49,26 +65,39 @@ namespace APIs.ConfigClasses
 
                     if(user.HasClaim("IsATenant", "true"))
                     {
-                        
+                        var Tenantauth = user.Claims.SingleOrDefault(e => e.Type == "TenantAuthorizations").Value;
+                        long.TryParse(Tenantauth, out long TenantAuthLong);
 
-                        FilterContext.Result = new OkResult();
+                        if ((TenantAuthLong & permissionValue) == permissionValue)
+                        {
+                            return;
+                        }
 
+                        else
+                        {
+                            throw new UnauthorizedAccessException("Tenant does not have permission for this service ");
+                        }
                     
                     }
+   
                     authorization = user.Claims.SingleOrDefault(e => e.Type == "Authorization")?.Value;
                   
                     long.TryParse(authorization, out  auth);
 
-                    if ((auth & ClaimValueInt) == ClaimValueInt)
+                    if ((auth & permissionValue) == permissionValue)
                     {
                         
-                        FilterContext.Result = new OkResult();
+                         return;
 
+
+                    }
+                    else
+                    {
+                        throw new UnauthorizedAccessException();
 
                     }
 
 
-                    break;
 
                     case enPlaformRoles.Tenant:
 
@@ -81,41 +110,36 @@ namespace APIs.ConfigClasses
                             var Tenantauth = user.Claims.SingleOrDefault(e => e.Type == "TenantAuthorizations").Value;
                             long.TryParse(Tenantauth, out long TenantAuthLong);
 
-                            if ((TenantAuthLong & ClaimValueInt) == ClaimValueInt)
+                            if ((TenantAuthLong & permissionValue) == permissionValue)
                             {
-                                FilterContext.Result = new OkResult();
                                 return;
                             }
                             else
                             {
-                                FilterContext.Result = new ForbidResult();
+                                throw new UnauthorizedAccessException();
                             }
 
                         }
                         else
                         {
-                            FilterContext.Result = new ForbidResult();
-                            return;
+                            throw new UnauthorizedAccessException();
                         }
-                        
+
 
 
 
                     }
                     else
                     {
-                        FilterContext.Result = new ForbidResult();
-                        return;
+                        throw new UnauthorizedAccessException();
                     }
 
-                        break;
 
                     case enPlaformRoles.Employee:
                   
                     if (user.HasClaim("IsATenant", "true"))
                     {
-                        FilterContext.Result = new ForbidResult();
-
+                        return;
 
                     }
                     else if (user.HasClaim("IsAnEmployee", "true"))
@@ -125,14 +149,13 @@ namespace APIs.ConfigClasses
                         if (long.TryParse(authorization, out  auth))
                         {
 
-                            if ((auth&ClaimValueInt)==ClaimValueInt)
+                            if ((auth&permissionValue)==permissionValue)
                             {
-                                FilterContext.Result = new OkResult();
-
+                                return;
                             }
                             else
                             {
-                                FilterContext.Result = new ForbidResult();
+                                throw new UnauthorizedAccessException();
                             }
 
 
@@ -140,14 +163,14 @@ namespace APIs.ConfigClasses
 
 
                     }
-                        break;
-            
+                    throw new UnauthorizedAccessException();
+
             }
 
 
 
 
-       
+
         }
 
      

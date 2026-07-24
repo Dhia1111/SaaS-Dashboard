@@ -28,7 +28,7 @@ namespace Business {
         public string GenerateRefreshTokenToken(int tenantId);
 
         public ClaimsPrincipal? ValidateAccessToken();
-        public string GenerateAccessTokenForUsers(int UserId,int tenantId, int Roles,int UserAuthorization, bool IsActive ,bool IsAnEmployee,int? EmployeeRole, int? EmployeeAutherizations);
+        public string GenerateAccessTokenForUsers(int UserId,int tenantId, int Roles,int UserAuthorization, bool IsActive ,bool IsAnEmployee,int? EmployeeRole, int? EmployeeAutherizations,bool IsAccountActive);
         public ClaimsPrincipal? ValidateToken(string token);
 
 
@@ -111,7 +111,7 @@ namespace Business {
 
         public string GenerateAccessTokenForUsers( int UserId,int TenantId, int roles,int autherizations,
             bool IsActive, bool IsAnEmployee, 
-            int? EmployeeRole, int? EmployeeAutherizations)
+            int? EmployeeRole, int? EmployeeAutherizations,bool IsAccountActive)
         {
             var claims = new[]
             {
@@ -124,6 +124,7 @@ namespace Business {
             new Claim("EmployeeRole", EmployeeRole.ToString()),
             new Claim("IdentityType", "User"),
             new Claim("IsATenant", "false"),
+            new Claim("IsAccountActive", IsAccountActive.ToString()),
 
 
 

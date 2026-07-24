@@ -154,7 +154,7 @@ namespace Business.EndToEndService
 
             var tenant = new DtoTenant
             {
-                Role = (int)enRoles.Tenant__Admine,
+                Role = (int)enPlaformRoles.Tenant,
                 CreatedAt = DateTime.Now.ToString(),
                 PasswordHash = _passwordHashService.Hash(request.Password),
                 Name = request.TenantName,
@@ -334,7 +334,7 @@ namespace Business.EndToEndService
             var Owner = await _PlatformOwnerService.GetByTenantIdAsync(session.TenantId);
             var accessToken = _jwtService.GenerateAccessToken(
                 session.TenantId,
-                (int)enRoles.Tenant__Admine,
+                (int)enPlaformRoles.Tenant,
                 tenant.IsActive,
                 Owner!=null,
               (int)  (Owner != null ? enPlaformRoles.Owner : enPlaformRoles.Tenant),
@@ -541,7 +541,7 @@ namespace Business.EndToEndService
 
                 var newTenant = new DtoTenant
                 {
-                    Role = (int)enRoles.Tenant__Admine,
+                    Role = (int)enPlaformRoles.Tenant,
                     Name =dto.TenantName,
                     CreatedAt = DateTime.Now.ToString(),
                     Person = new DtoPerson

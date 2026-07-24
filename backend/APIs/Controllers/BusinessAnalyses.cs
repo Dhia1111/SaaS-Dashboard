@@ -1,12 +1,15 @@
 ﻿
+using APIs.ConfigClasses;
 using APIs.Responses;
 using Business;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIs.Controllers
 {
-
+    [Authorize]
+    [RequiersdClaim("UseLeadsAndConverssionAnalysisTools", SharedDto_Enum.enPlaformRoles.User)]
     [Route("api/dashboard/business-analyses")]
     [ApiController]
     public class BusinessAnalyses: ControllerBase
@@ -21,6 +24,7 @@ namespace APIs.Controllers
             _clientSubscriptionService = clientSubscriptionService;
         }
 
+      
         [HttpGet("platform-leads-counts")]
         public async Task<ActionResult<ApiResult<List<DtoPlatformCount>>>> PlatformLeadCount()
         {

@@ -1,6 +1,8 @@
-﻿using APIs.Responses;
+﻿using APIs.ConfigClasses;
+using APIs.Responses;
 using Business;
 using Connection.models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedDto_Enum;
 using System.Threading.Tasks;
@@ -23,6 +25,8 @@ namespace APIs.Controllers
         }
 
         // GET: api/user
+        [Authorize]
+        [RequiersdClaim("ReadForUsers", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet]
         public async Task<ActionResult<ApiResult<IReadOnlyList<DtoUser>>>> GetAll()
         {
@@ -33,6 +37,9 @@ namespace APIs.Controllers
         }
 
         // GET: api/user/{id}
+
+        [Authorize]
+        [RequiersdClaim("ReadForUsers", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResult<DtoUser>>> GetById(int id)
         {
@@ -42,6 +49,8 @@ namespace APIs.Controllers
                 .Ok(user, "User fetched successfully"));
         }
 
+        [Authorize]
+        [RequiersdClaim("WriteForUsers", SharedDto_Enum.enPlaformRoles.User)]
         // PUT: api/user/{id}
         [HttpPut("{id:int}")]
         public async Task<ActionResult<ApiResult<bool>>> Update(int id, [FromBody] DtoUser dto)
@@ -56,6 +65,8 @@ namespace APIs.Controllers
         }
 
         // DELETE: api/user/{id}
+        [Authorize]
+        [RequiersdClaim("WriteForUsers", SharedDto_Enum.enPlaformRoles.User)]
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ApiResult<bool>>> Delete(int id)
         {
@@ -65,14 +76,16 @@ namespace APIs.Controllers
                 .Ok(result, "User deleted successfully"));
         }
 
-   
+
         // GET: api/user/roles
+        [Authorize]
+        [RequiersdClaim("ReadForUsers", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("roles")]
         public ActionResult GetRoles()
         {
             var roles = Enum.GetValues(typeof(enRoles))
                 .Cast<enRoles>()
-                .Select(x => new KeyValuePair<int, string>((int)x, x.ToString()))
+                .Select(x => new KeyValuePair<int, string>((int)x, x.ToString().Replace("__"," ")))
                 .ToList();
 
             return Ok(ApiResult<object>
@@ -80,6 +93,8 @@ namespace APIs.Controllers
         }
 
         // GET: api/user/authorization-options
+        [Authorize]
+        [RequiersdClaim("ReadForUsers", SharedDto_Enum.enPlaformRoles.User)]
         [HttpGet("authorization-options")]
         public async Task<ActionResult<List<KeyValuePair<long,string>>>> GetAuthorizationOptions()
         {

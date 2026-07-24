@@ -272,6 +272,7 @@ namespace Business
             session.Id = await _userSessionRepo.AddAsync(session);
 
             var Employee=await _platformUserService.GetByUserIdAsync(user.Id);
+            var tenant = await _tenantService.GetByIdAsync(tenantId);
             var AccessToken =
                 _jwtService.GenerateAccessTokenForUsers
                 (
@@ -280,10 +281,12 @@ namespace Business
                      user.Role,
                     user.Authorization,
                     user.IsActive
-                    ,Employee!=null,Employee!=null?(int)Employee.PlatformRole:null,
-                    Employee!=null?Employee.AdminstrationAuth:null
-                    
-                   
+                    , Employee != null, Employee != null ? (int)Employee.PlatformRole : null,
+                    Employee != null ? Employee.AdminstrationAuth : null,
+                    tenant.IsActive
+
+
+
                 );
             
             return new DtoTokens
@@ -353,6 +356,7 @@ namespace Business
                 throw new ArgumentException("Email not verified");
 
             var Employee = await _platformUserService.GetByUserIdAsync(user.Id);
+
             string accessToken =
                 _jwtService.GenerateAccessTokenForUsers
                 (
@@ -363,7 +367,8 @@ namespace Business
                     user.IsActive
                     ,Employee!=null,
                     Employee != null ? (int)Employee.PlatformRole : null, 
-                    Employee != null ? Employee.AdminstrationAuth : null
+                    Employee != null ? Employee.AdminstrationAuth : null,
+                    tenant.IsActive
                 );
 
             string refreshToken =
@@ -439,7 +444,7 @@ namespace Business
             if (user == null) throw new AuthenticationFailedException();
 
             var Employee = await _platformUserService.GetByUserIdAsync(user.Id);
-                
+            var tenant=await _tenantService.GetByIdAsync(session.TenantId);    
             var accessToken = _jwtService.GenerateAccessTokenForUsers(
                 user.Id,
                 session.TenantId,
@@ -448,7 +453,8 @@ namespace Business
                 user.IsActive,
                 Employee!=null,
                    Employee != null ? (int)Employee.PlatformRole : null,
-                    Employee != null ? Employee.AdminstrationAuth : null
+                    Employee != null ? Employee.AdminstrationAuth : null,
+                    tenant.IsActive
 
 
             );
