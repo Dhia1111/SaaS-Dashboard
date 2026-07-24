@@ -33,6 +33,10 @@ namespace Connection.models
         Task<bool> DisActivateSubscriptionWithQueryFiltersIgnoreAsync(int paymentId, enGeneralState status);
         Task<bool> ConfirmUpGradeWithQueryFiltersIgnoreAsync(int paymentId);
         Task<List<PlatformSubscription>> GetAllWhereIsNotRegisterdAsync();
+        Task<bool> setToExpireAllEndEdSubscription();
+
+
+
 
     }
 
@@ -40,11 +44,14 @@ namespace Connection.models
     public class clsPlatformSubscriptionRepo
         : GenericRepo<PlatformSubscription>, IPlatformSubscriptionRepo
     {
+        private readonly ITenantAccessStateService _tenantAccessState;
         public clsPlatformSubscriptionRepo(
             SaasDashboardContext context,
-            ILogger<GenericRepo<PlatformSubscription>> logger)
+            ILogger<GenericRepo<PlatformSubscription>> logger,
+            ITenantAccessStateService tenantAccessState)
             : base(context, logger)
         {
+            _tenantAccessState = tenantAccessState;
         }
 
         public async Task<PlatformSubscription?> GetByTenantIdAsync(int tenantId)
@@ -101,7 +108,8 @@ namespace Connection.models
                 Payment.SubscriptionId = PlatformSubscription.Id;
                 await _context.PlatformPayments.AddAsync(Payment);
                 await _context.SaveChangesAsync();
-
+                await _tenantAccessState.RefreshTenantAccessStateAsync(PlatformSubscription.TenantId);
+                await _context.SaveChangesAsync();
                 await Transaction.CommitAsync();
 
 
@@ -150,7 +158,6 @@ namespace Connection.models
 
                 }
 
-                Tenant.IsActive = true;
 
 
                 if (payment.PaymentStatus ==
@@ -179,7 +186,8 @@ namespace Connection.models
                 subscription.IsActive = true;
 
                 await _context.SaveChangesAsync();
-
+                await _tenantAccessState.RefreshTenantAccessStateAsync(Tenant.TenantId);
+                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return true;
@@ -261,11 +269,11 @@ namespace Connection.models
 
                 if (tenant == null) throw new Exception("no tenant is associated with this payment");
 
-                tenant.IsActive = false;
-
+ 
 
                 await _context.SaveChangesAsync();
-
+                await _tenantAccessState.RefreshTenantAccessStateAsync(tenant.TenantId);
+                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return true;
@@ -287,6 +295,8 @@ namespace Connection.models
             {
                 _context.PlatformSubscriptions.Update(PlatformSubscription);
                 _context.PlatformPayments.Update(Payment);
+                await _context.SaveChangesAsync();
+                await _tenantAccessState.RefreshTenantAccessStateAsync(PlatformSubscription.TenantId);
                 await _context.SaveChangesAsync();
                 await Transaction.CommitAsync();
 
@@ -318,10 +328,11 @@ namespace Connection.models
                     throw new Exception($"Tenant with Id {PlatformSubscription.TenantId} does not exist.");
                 }
 
-                tenant.IsActive = true;
-                tenant.HaveUsedTheFreeTry = true;
+                 tenant.HaveUsedTheFreeTry = true;
                 _context.Tenants.Update(tenant);
                 await _context.PlatformSubscriptions.AddAsync(PlatformSubscription);
+                await _context.SaveChangesAsync();
+                await _tenantAccessState.RefreshTenantAccessStateAsync(tenant.TenantId);
                 await _context.SaveChangesAsync();
                 await Transaction.CommitAsync();
                 return PlatformSubscription.Id;
@@ -377,14 +388,18 @@ namespace Connection.models
                 }
                 subscription.IsActive = true;
                 Tenant? tenant=await _context.Tenants.SingleOrDefaultAsync(t=>t.TenantId==payment.TenantId);
-                if (tenant != null)
+                if (tenant == null)
                 {
-                    tenant.IsActive = true;
+                    _logger.LogError("tenant with an id {id} is not found ",subscription.TenantId);
+                    throw new ArgumentException("could not found ");
+
 
                 }
 
                 
 
+                await _context.SaveChangesAsync();
+                await _tenantAccessState.RefreshTenantAccessStateAsync(tenant.TenantId);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return true;
@@ -396,7 +411,7 @@ namespace Connection.models
                 return false;
             }
         }
-      public async  Task<List<PlatformSubscription>> GetAllWhereIsNotRegisterdAsync()
+        public async  Task<List<PlatformSubscription>> GetAllWhereIsNotRegisterdAsync()
         {
             try
             {
@@ -414,6 +429,43 @@ namespace Connection.models
            
 
         }
+
+        public async Task<bool> setToExpireAllEndEdSubscription()
+        {
+            using var Transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
+                var tenantIds = await _context.PlatformSubscriptions
+     .IgnoreQueryFilters()
+     .Where(s => s.IsActive && s.EndsAt <= DateTime.UtcNow)
+     .Select(s => s.TenantId)
+     .Distinct()
+     .ToListAsync();
+
+                await _context.PlatformSubscriptions
+                    .IgnoreQueryFilters()
+                    .Where(s => s.IsActive && s.EndsAt <= DateTime.UtcNow)
+                    .ExecuteUpdateAsync(x => x.SetProperty(s => s.IsActive, false));
+
+                await _context.SaveChangesAsync();
+                await _tenantAccessState.RefreshTenantAccessStateAsync(tenantIds);
+                await _context.SaveChangesAsync();
+
+                await Transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await Transaction.RollbackAsync();
+            }
+
+
+
+                return false;
+
+        }
+
 
     }
 }

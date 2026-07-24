@@ -3,13 +3,10 @@ using Business.Exceptions;
 using Connection.models;
 using Connection.models.Entites;
 using Microsoft.Extensions.Logging;
-using SharedDto_Enum;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
+using SharedDto_Enum;
+
+
 
 public class DtoSubscribe {
 
@@ -79,6 +76,10 @@ namespace Business
         Task<DtoSubscriptionResult> UpGradeSubscription(DtoSubscribe request);
 
         Task<List<DtoPlatformSubscription>> GetAllWhereIsNotRegisterdAsync();
+        Task<bool> setToExpireAllEndEdSubscription();
+
+
+
     }
 
     public class clsPlatformSubscriptionService : GenericService<DtoPlatformSubscription, PlatformSubscription>, IPlatformSubscriptionService
@@ -458,18 +459,19 @@ namespace Business
 
             return null;
         }
-
-
         public async Task<List<DtoPlatformSubscription>> GetAllWhereIsNotRegisterdAsync()
         {
             return (await _platformSubscriptionRepo.GetAllWhereIsNotRegisterdAsync()).Select(e=>ToDto(e)).ToList();
         }
-
         public async Task<bool>ConfirmUpGrade(int paymentId)
         {
             return await _platformSubscriptionRepo.ConfirmUpGradeWithQueryFiltersIgnoreAsync(paymentId);
         }
 
+        public async Task<bool> setToExpireAllEndEdSubscription()
+        {
+            return await _platformSubscriptionRepo.setToExpireAllEndEdSubscription();
+        }
 
     }
 }

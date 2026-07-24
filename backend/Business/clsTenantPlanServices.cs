@@ -146,6 +146,7 @@ namespace Business
             }
 
 
+
             var freeplan = plan.TenantFreePlan == null ? null : _tenantFreePlanService.GetEntity(plan.TenantFreePlan);
             if(freeplan!=null)    freeplan.StartAt = DateTime.UtcNow;
 
@@ -287,11 +288,16 @@ namespace Business
 
             var freeplan = plan.TenantFreePlan == null ? null : _tenantFreePlanService.GetEntity(plan.TenantFreePlan);
 
+            // handle price option 
+
+            await HandlePriceOptionManagmentAsync(plan.TenantPricingOptions.ToList());
+
+
+
 
             return await _tenantPlanRepository.UpdateTenantPlan(FromDto(plan.TenantPlan),
                    plan.TenantPlanPermissions.Select(d => _tenantPlanPermissionServices.GetEntity(d)),
                    plan.TenantPlanBenefits.Select(d => _tenantPlanBenifestServices.GetEntity(d)),
-                   plan.TenantPricingOptions.Select(d => _tenantPricingOptionServices.GetEntity(d)),
                    freeplan);
         }
         public async Task<bool> IsTenantPlanNameExist(string name)
@@ -353,7 +359,44 @@ namespace Business
             return res != null ? ToDto(res) : null;
         }
 
+        private async Task<bool> HandlePriceOptionManagmentAsync( List<DtoTenantPricingOption> ProvidedOptions)
+        {
+            var ProvidMapOfPrinceingOptions = ProvidedOptions.ToDictionary(e => e.Id, e => e);
+            var CurUsedMapOfPrinceingOptions = (await _tenantPricingOptionServices.GetPricingOptionThatIsUsedBySubscription()).ToDictionary(e => e.Id, e => e);
+            List<DtoTenantPricingOption> AllPriceOptionForTenant = (await _tenantPricingOptionServices.GetAllAsync()).ToList();
+            var AllPriceOptionMap=AllPriceOptionForTenant.ToDictionary(e=>e.Id, e => e);        
+          // delete no used Options
+            foreach (var op in AllPriceOptionForTenant)
+            {
+                if (op == null) continue;
+                if (!CurUsedMapOfPrinceingOptions.TryGetValue(op.Id, out var option) && !CurUsedMapOfPrinceingOptions.TryGetValue(op.Id, out  option)) 
+                {
+                    await _tenantPricingOptionServices.DeleteAsync(op.Id);
+                   }
 
+
+            }
+            // add and Update options
+            foreach( var op in ProvidedOptions)
+            {
+                if (op == null) continue;
+
+                  if (!CurUsedMapOfPrinceingOptions.TryGetValue(op.Id, out var  option) && CurUsedMapOfPrinceingOptions.TryGetValue(op.Id, out option))
+                {
+                    await _tenantPricingOptionServices.UpdateAsync(op);
+
+                }
+
+                else if (!CurUsedMapOfPrinceingOptions.TryGetValue(op.Id, out option))
+                {
+                    await _tenantPricingOptionServices.AddAsync(op);
+
+                }
+
+            }
+
+            return true;
+        }
 
     }
 

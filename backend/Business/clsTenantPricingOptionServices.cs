@@ -18,6 +18,7 @@ namespace Business
         public TenantPlanPricingOption GetEntity(DtoTenantPricingOption dto);
         public DtoTenantPricingOption GetDto(TenantPlanPricingOption Entity);
         public Task< List<DtoTenantPricingOption> > GetAllPlatformPlanPricingOptionsAsync();
+        Task<List<TenantPlanPricingOption>> GetPricingOptionThatIsUsedBySubscription();
 
 
 
@@ -32,16 +33,16 @@ namespace Business
         private readonly ILogger<clsTenantPricingOptionServices> _logger;
         private readonly PlatformInfo _platformInfo;
         private readonly ITenantService _tenantService;
-      
-        
-        public clsTenantPricingOptionServices(ILogger<clsTenantPricingOptionServices> logger, 
+
+
+        public clsTenantPricingOptionServices(ILogger<clsTenantPricingOptionServices> logger,
             ITenantPricingOptionRepository repo,
-            IOptions<PlatformInfo>platformInfo,
-            ITenantService tenantService) 
+            IOptions<PlatformInfo> platformInfo,
+            ITenantService tenantService)
                : base(repo, logger)
-        {        
-             _tenantPricingOptionRepository = repo;
-                _logger = logger;
+        {
+            _tenantPricingOptionRepository = repo;
+            _logger = logger;
             _platformInfo = platformInfo.Value;
             _tenantService = tenantService;
         }
@@ -53,25 +54,25 @@ namespace Business
             var list = await _tenantPricingOptionRepository.GetAllPlanPricingOptionsWithFilterIgnoreAsync(tenant.TenantId);
             return list.Select(e => ToDto(e)).ToList();
 
-;        }
+            ; }
 
         protected override TenantPlanPricingOption FromDto(DtoTenantPricingOption dto)
         {
-            return new TenantPlanPricingOption      
+            return new TenantPlanPricingOption
             {
                 Id = dto.Id,
                 TenantId = dto.TenantId,
                 Price = dto.Amount,
                 Currency = dto.Currency,
-                 IsActive = dto.IsActive,
+                IsActive = dto.IsActive,
                 TenantPlanId = dto.TenantPlanId,
                 TenantPricingCycleId = dto.TenantPricingCycleId,
-                
+
 
 
             }
             ;
-        }       
+        }
 
         protected override DtoTenantPricingOption ToDto(TenantPlanPricingOption entity)
         {
@@ -81,14 +82,14 @@ namespace Business
                 TenantId = entity.TenantId,
                 Amount = entity.Price,
                 Currency = entity.Currency,
-                 IsActive = entity.IsActive,
+                IsActive = entity.IsActive,
                 TenantPlanId = entity.TenantPlanId,
-                TenantPricingCycleId=entity.TenantPricingCycleId
-                
+                TenantPricingCycleId = entity.TenantPricingCycleId
+
             }
             ;
-        }              
-        
+        }
+
         public TenantPlanPricingOption GetEntity(DtoTenantPricingOption dto)
         {
             return this.FromDto(dto);
@@ -100,8 +101,13 @@ namespace Business
 
         }
 
-            }
             
+     public async Task<List<TenantPlanPricingOption>> GetPricingOptionThatIsUsedBySubscription()
+        {
+            return await _tenantPricingOptionRepository.GetPricingOptionThatIsUsedBySubscription();
+        }
+    }
+
         }
 
 

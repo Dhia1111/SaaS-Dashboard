@@ -264,6 +264,23 @@ builder.Services.AddQuartz(q =>
         .WithDescription("Triggers ManageClientSubscription processing every 1 minute")
     );
 
+    var SetSubscriptionToExpireJobKey = new JobKey("SetSubscriptionToExpire", "SetSubscriptionToExpireGroup");
+
+    q.AddJob<SetSubscriptionToExpire>(opts => opts
+        .WithIdentity(SetSubscriptionToExpireJobKey)
+        .StoreDurably()  // Job survives even with no triggers
+            .UsingJobData("ForceSend", "false")  // Add this line - set default value
+
+    );
+    //   TRIGGER EVERY 1 MINUTE using cron expression
+    q.AddTrigger(opts => opts
+        .ForJob(SetSubscriptionToExpireJobKey)
+        .WithIdentity("SetSubscriptionToExpireTrigger", "SetSubscriptionToExpireProcessing")
+        .WithCronSchedule("0 */1 * ? * *")  // Every 1 minute
+        .WithDescription("Triggers SetSubscriptionToExpire processing every 1 minute")
+    );
+
+
 });
 
 
