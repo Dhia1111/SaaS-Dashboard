@@ -12,39 +12,39 @@ const User = axios.create({
     "Content-Type": "application/json"
   }
 });
+let refreshPromise = null;
+
 User.interceptors.request.use(async (config) => {
 
-  let token = store.getState().auth.accessToken;
+    let token = store.getState().auth.accessToken;
 
-  if (!token) {
-      const res = await refreshToken();
-      if(res.success){
-        token=res.data;
-                console.log('token :',res.data);
+    if (!token) {
 
-      }
-      else{
-        token=null;
-        Redirect(res.status,Redirecting);
-        Redirecting=true;
+        if (!refreshPromise) {
+            refreshPromise = refreshToken();
+        }
 
+        const result = await refreshPromise;
 
+// Refresh is complete; clear the shared promise.
+        if (refreshPromise) {
+            refreshPromise = null;
+        }
 
-        
-      }
+        if (!result.success) {
+            Redirect(result.status, Redirecting);
+            Redirecting = true;
+            return Promise.reject(result);
+        }
 
-    
-  }
+        token = result.data;
+    }
 
-  if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-        console.log('AUTH HEADER:', config.headers.Authorization);
 
-  }
-  
-
-  return config;
+    return config;
 });
+
 
 export const ListUsersAsync = async () => {
  try{
@@ -139,3 +139,4 @@ export const GetUserInfoAsnc = async (id) => {
     };
   }
 };  
+

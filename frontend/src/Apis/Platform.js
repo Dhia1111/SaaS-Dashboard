@@ -1,6 +1,11 @@
 import axios from "axios";
 import { executeWithRetry,RetryPolicies } from "./RetryPolicy/RetryPolicy";
+import { store } from "../store";
+import { refreshToken } from "./GenralAuth";
+import { Redirect } from "./RedirectPolicy/RedirectPolicy";
 
+
+var Redirecting=false
 const PlatformSubscription = axios.create({
   baseURL: "http://localhost:7073/api/platform/subscription",
   withCredentials: true,
@@ -8,6 +13,39 @@ const PlatformSubscription = axios.create({
     "Content-Type": "application/json"
   }
 });
+let refreshPromise = null;
+
+PlatformSubscription.interceptors.request.use(async (config) => {
+
+    let token = store.getState().auth.accessToken;
+
+    if (!token) {
+
+        if (!refreshPromise) {
+            refreshPromise = refreshToken();
+        }
+
+        const result = await refreshPromise;
+
+// Refresh is complete; clear the shared promise.
+        if (refreshPromise) {
+            refreshPromise = null;
+        }
+
+        if (!result.success) {
+            Redirect(result.status, Redirecting);
+            Redirecting = true;
+            return Promise.reject(result);
+        }
+
+        token = result.data;
+    }
+
+    config.headers.Authorization = `Bearer ${token}`;
+
+    return config;
+});
+
 
  export async function PlatformSubscriptionsAsync(){
     try{

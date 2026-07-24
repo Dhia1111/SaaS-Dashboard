@@ -12,35 +12,39 @@ const Employee = axios.create({
     "Content-Type": "application/json"
   }
 });
+let refreshPromise = null;
+
 Employee.interceptors.request.use(async (config) => {
 
-  let token = store.getState().auth.accessToken;
+    let token = store.getState().auth.accessToken;
 
-  if (!token) {
-      const res = await refreshToken();
-      if(res.success){
-        token=res.data;
-      }
-      else{
-        token=null;
-        Redirect(res.status,Redirecting);
-        Redirecting=true;
+    if (!token) {
 
+        if (!refreshPromise) {
+            refreshPromise = refreshToken();
+        }
 
+        const result = await refreshPromise;
 
-        
-      }
+// Refresh is complete; clear the shared promise.
+        if (refreshPromise) {
+            refreshPromise = null;
+        }
 
-    
-  }
+        if (!result.success) {
+            Redirect(result.status, Redirecting);
+            Redirecting = true;
+            return Promise.reject(result);
+        }
 
-  if (token) {
+        token = result.data;
+    }
+
     config.headers.Authorization = `Bearer ${token}`;
-  }
-  
 
-  return config;
+    return config;
 });
+
 
 export const ListUsersAsync = async () => {
  try{

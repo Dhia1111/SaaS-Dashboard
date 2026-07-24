@@ -1,3 +1,6 @@
+import { store } from "../store.js";
+import { setAccessToken } from "../globalStates/AccessToken.js";
+
 import axios from "axios";
  import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
   const Auth = axios.create({
@@ -16,6 +19,7 @@ export const refreshToken = async () => {
   const res =  await  executeWithRetry(() => Auth.post(`/refreshToken`), RetryPolicies.Critical);
 const accessToken = String(res.data.data);
 
+  store.dispatch(setAccessToken(accessToken));
 
     const payload = decodeJwt(accessToken);
     
@@ -45,6 +49,7 @@ const accessToken = String(res.data.data);
       "tenantInfo",
       JSON.stringify(tenantInfo)
     );
+
   return { data:accessToken , message: "Token refreshed successfully.", success: true,status:200 };
 } catch (err) {
    return {

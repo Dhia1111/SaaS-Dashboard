@@ -1,6 +1,8 @@
 import axios from "axios";
 import { store } from "../store";
  import{RetryPolicies,executeWithRetry} from './RetryPolicy/RetryPolicy.js'
+ import { refreshToken } from "./GenralAuth.js";
+ import { Redirect } from "./RedirectPolicy/RedirectPolicy.js";
 const UserAuth = axios.create({
   baseURL: "http://localhost:7073/api/user/auth",
   withCredentials: true,
@@ -8,18 +10,37 @@ const UserAuth = axios.create({
     "Content-Type": "application/json"
   }
 });
-UserAuth.interceptors.request.use( (config)  => {
-  let token = store.getState().auth.accessToken;
+let refreshPromise = null;
+var Redirecting=false;
+UserAuth.interceptors.request.use(async (config) => {
 
-   
-  if (token) {
+    let token = store.getState().auth.accessToken;
+
+    if (!token) {
+
+        if (!refreshPromise) {
+            refreshPromise = refreshToken();
+        }
+
+        const result = await refreshPromise;
+
+// Refresh is complete; clear the shared promise.
+        if (refreshPromise) {
+            refreshPromise = null;
+        }
+
+        if (!result.success) {
+            Redirect(result.status, Redirecting);
+            Redirecting = true;
+            return Promise.reject(result);
+        }
+
+        token = result.data;
+    }
+
     config.headers.Authorization = `Bearer ${token}`;
-  }
-      
-  
-  
 
-  return config;
+    return config;
 });
 
 export const LoginUserAsync = async (data) => {

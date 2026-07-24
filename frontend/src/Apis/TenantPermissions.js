@@ -11,35 +11,41 @@ const TenantPermissionAuth = axios.create({
     "Content-Type": "application/json"
   }
 });
-TenantPermissionAuth.interceptors.request.use(async(config) => {
-  let token = store.getState().auth.accessToken;
-
-   if (!token) {
-
-      const res = await refreshToken();
-      if(res.success){
-        token=res.data;
-      }  
-      else{ 
-        
-  
-        token=null;
-                Redirect(res.status,Redirecting);
-        Redirecting=true;
 
 
+let refreshPromise = null;
 
-        
-          
-      }
-    
-  }
-  if (token) {
+TenantPermissionAuth.interceptors.request.use(async (config) => {
+
+    let token = store.getState().auth.accessToken;
+
+    if (!token) {
+
+        if (!refreshPromise) {
+            refreshPromise = refreshToken();
+        }
+
+        const result = await refreshPromise;
+
+// Refresh is complete; clear the shared promise.
+        if (refreshPromise) {
+            refreshPromise = null;
+        }
+
+        if (!result.success) {
+            Redirect(result.status, Redirecting);
+            Redirecting = true;
+            return Promise.reject(result);
+        }
+
+        token = result.data;
+    }
+
     config.headers.Authorization = `Bearer ${token}`;
-  }
 
-  return config;
+    return config;
 });
+
 
 export const TenantPermissionsListAsync = async () => {
   try { 
@@ -53,6 +59,7 @@ export const TenantPermissionsListAsync = async () => {
     };
   } 
 };
+
 
 export const AddTenantPermissionAsync = async (data) => {   
     try {
