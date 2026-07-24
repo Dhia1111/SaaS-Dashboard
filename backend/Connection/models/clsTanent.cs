@@ -28,6 +28,7 @@ namespace Connection.models
         public DtoTenant() { }
         
     }
+
     public interface ITenantRepo:IGenericRepo<Tenant>
     {
         public  Task<Tenant?> GetByEmailAsync(string email);
@@ -263,9 +264,80 @@ namespace Connection.models
 
         }
 
-    
+
     }
 
 
+    public interface ITenantAccessStateService {
+        Task RefreshTenantAccessStateAsync(int tenantId);
+        Task RefreshTenantAccessStateAsync(List<int> tenantId);
+
+
+    }
+
+    public class clsTenantAccessStateService : ITenantAccessStateService
+    {
+        private readonly SaasDashboardContext _context;
+
+        public clsTenantAccessStateService(SaasDashboardContext context)
+        {
+            _context = context;
+        }
+
+        public async Task RefreshTenantAccessStateAsync(int tenantId)
+        {
+            var tenant = await _context.Tenants
+                .SingleOrDefaultAsync(t => t.TenantId == tenantId);
+
+            if (tenant == null)
+                throw new ArgumentException($"Tenant {tenantId} was not found.");
+
+            bool subscriptionAllowsAccess = await _context.PlatformSubscriptions
+                .AnyAsync(s =>
+                    s.TenantId == tenantId &&
+                    s.IsActive == true &&
+                    s.EndsAt > DateTime.UtcNow);
+
+            // Future rules
+            bool isSuspended = false;
+            bool isDeleted = false;
+            bool verificationPassed = true;
+
+            bool shouldBeActive =
+                subscriptionAllowsAccess &&
+                !isSuspended &&
+                !isDeleted &&
+                verificationPassed;
+
+            
+                tenant.IsActive = shouldBeActive;
+            
+        }
+
+        public async Task RefreshTenantAccessStateAsync(List<int> tenantIds)
+        {
+            var tenants = await _context.Tenants
+      .Where(t => tenantIds.Contains(t.TenantId))
+      .ToListAsync();
+
+
+            var activeTenantIds =  _context.PlatformSubscriptions
+                .Where(s =>
+                    tenantIds.Contains(s.TenantId) &&
+                    s.IsActive &&
+                    s.EndsAt > DateTime.UtcNow)
+                .Select(s => s.TenantId)
+                .Distinct()
+                .ToHashSet();
+
+            foreach (var tenant in tenants)
+            {
+                tenant.IsActive = activeTenantIds.Contains(tenant.TenantId);
+            }
+
+        }
+
+
+    }
 }
 
