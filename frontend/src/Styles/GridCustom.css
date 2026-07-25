@@ -1,6 +1,6 @@
 /* src/styles/GridCustom.css */
 
-/* 1. Change the Grid Header color to match BillFlow Primary */
+/* 1. Change the Grid Header color to match SubFlow Primary */
 .e-grid .e-headercell {
     background-color: #f8fafc; /* slate-50 */
     color: #1e293b; /* slate-800 */
@@ -36,7 +36,7 @@
 }
 
 .e-grid .e-pager .e-currentitem {
-    background-color: #6366f1 !important; /* BillFlow Primary */
+    background-color: #6366f1 !important; /* SubFlow Primary */
     border-radius: 6px;
 }/* src/styles/GridCustom.css */
 

@@ -12,7 +12,7 @@ return(
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg"></div>
            <Link to="/" className="flex items-center gap-2"> 
            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              BillFlow
+               SubFlow
             </span>
             </Link>
           </div>

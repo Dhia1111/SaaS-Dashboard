@@ -102,9 +102,9 @@ export default function DashboardLayout() {
       <div className="md:hidden bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between shadow-sm z-50">
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 bg-indigo-600 rounded-lg flex items-center justify-center shadow-md shadow-indigo-100">
-            <span className="text-white font-black text-xl">B</span>
+            <span className="text-white font-black text-xl">S</span>
           </div>
-          <span className="font-bold text-slate-900 tracking-tight">BillFlow Admin</span>
+          <span className="font-bold text-slate-900 tracking-tight">SubFlow Admin</span>
         </div>
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -125,11 +125,11 @@ export default function DashboardLayout() {
         <div className="space-y-8">
           <div className="hidden md:flex items-center gap-3 px-2">
             <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
-              <span className="text-white font-black text-2xl">B</span>
+              <span className="text-white font-black text-2xl">S</span>
             </div>
             <div>
-              <h1 className="font-extrabold text-slate-900 tracking-tight leading-none">BillFlow</h1>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 block">SaaS Gateway</span>
+              <h1 className="font-extrabold text-slate-900 tracking-tight leading-none">SubFlow</h1>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 block">Subscription Platform</span>
             </div>
           </div>
 
