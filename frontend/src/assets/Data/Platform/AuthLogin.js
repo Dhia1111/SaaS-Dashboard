@@ -1,12 +1,12 @@
 export const authContent = {
   login: {
     title: "Welcome back",
-    subtitle: "Log in to manage your billing layers.",
+    subtitle: "Log in to manage your subscriptions.",
     forgotPassword: "Forgot password?",
     switchText: "Don't have an account?",
     switchLink: "/signup",
     testimonial: {
-      quote: "BillFlow saved us 3 months of engineering time. We launched Layer 2 billing in a weekend.",
+      quote: "SubFlow saved us months of engineering time. We launched subscription management in days.",
       author: "Alex Rivera",
       company: "SaaS Scale"
     }

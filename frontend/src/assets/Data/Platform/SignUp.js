@@ -14,7 +14,7 @@ export const signupContent = {
       name: 'Common',
       price: '$49',
       duration: 'per month',
-      features: ['Unlimited Tenants', 'Layer 2 Billing Engine', 'Custom Checkouts', 'Priority Support'],
+      features: ['Unlimited Tenants', 'Subscription Engine', 'Custom Checkouts', 'Priority Support'],
       buttonText: 'Get Started',
       highlight: true
     },

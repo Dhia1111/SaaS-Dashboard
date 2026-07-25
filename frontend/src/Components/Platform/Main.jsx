@@ -22,17 +22,17 @@ const MainPage = () => {
             <div>
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
                 <Zap size={16} />
-                <span className="text-sm font-medium">The Billing Engine for SaaS</span>
+                <span className="text-sm font-medium">The Subscription Engine for SaaS</span>
               </div>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
-                We help tenants bill{' '}
+                We help tenants manage{' '}
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  THEIR users
+                  THEIR subscriptions
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Stop being just a dashboard. Become the subscription & billing engine 
-                that SaaS founders build their business on.
+                Stop being just a dashboard. Become the subscription infrastructure 
+                that SaaS platforms build their business on.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button className="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/30 transition-all">
@@ -96,10 +96,10 @@ const MainPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Two billing layers. One powerful platform.
+              Subscription infrastructure. One powerful platform.
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Not just a dashboard. A complete subscription & billing engine 
+              Not just a dashboard. A complete subscription engine 
               that handles the complexity your tenants don't want.
             </p>
           </div>
@@ -111,9 +111,9 @@ const MainPage = () => {
                 <Shield className="text-primary" size={24} />
               </div>
               <h3 className="text-2xl font-bold mb-3">Layer 1: You → Tenant</h3>
-              <p className="text-gray-600 mb-4 text-lg">Simple. Optional. Your subscription.</p>
+              <p className="text-gray-600 mb-4 text-lg">Simple. Optional. Your platform subscription.</p>
               <ul className="space-y-3">
-                {['Flat or usage-based pricing', 'Simple SaaS subscription', 'Can be faked in MVP'].map((item, i) => (
+                {['Flat or usage-based pricing', 'Simple recurring subscription', 'Can be faked in MVP'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-gray-600">
                     <CheckCircle size={16} className="text-primary" />
                     {item}
@@ -128,12 +128,12 @@ const MainPage = () => {
                 <Users className="text-white" size={24} />
               </div>
               <h3 className="text-2xl font-bold mb-3">Layer 2: Tenant → End Users</h3>
-              <p className="text-gray-600 mb-4 text-lg">The real value. The core pain.</p>
+              <p className="text-gray-600 mb-4 text-lg">The real value. The core need.</p>
               <ul className="space-y-3">
                 {[
-                  'Define plans: Free → Common → Enterprise → Enterprise+',
+                  'Define plans: Free → Pro → Enterprise → Enterprise+',
                   'Attach features & limits to plans',
-                  'Create checkout sessions',
+                  'Hosted checkout & billing portals',
                   'Handle webhooks & sync subscription state',
                   'Enforce entitlements automatically'
                 ].map((item, i) => (
@@ -153,10 +153,10 @@ const MainPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything your tenants need
+              Everything your tenants need to manage subscriptions
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              APIs, hosted checkout, and optional admin UI. 
+              APIs, hosted portals, and an optional admin UI. 
               Let your tenants focus on their product.
             </p>
           </div>
@@ -170,8 +170,8 @@ const MainPage = () => {
               },
               {
                 icon: <BarChart3 className="text-primary" size={24} />,
-                title: "Hosted Checkout",
-                desc: "Beautiful, customizable checkout pages that convert"
+                title: "Hosted Portals",
+                desc: "Beautiful, customizable subscription portals that convert"
               },
               {
                 icon: <Shield className="text-primary" size={24} />,
@@ -197,13 +197,13 @@ const MainPage = () => {
           <div className="bg-gradient-to-br from-primary to-secondary p-1 rounded-3xl">
             <div className="bg-white rounded-3xl p-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to become a real platform?
+                Ready to become a subscription platform?
               </h2>
               <p className="text-xl text-gray-600 mb-8">
-                Stop being a nice internal tool. Start being worth integrating.
+                Stop building billing logic. Start building your product.
               </p>
               <button className="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium flex items-center gap-2 mx-auto hover:shadow-xl hover:shadow-primary/30 transition-all">
-                Start building your billing engine
+                Start building your subscription engine
                 <ArrowRight size={18} />
               </button>
             </div>
@@ -214,7 +214,7 @@ const MainPage = () => {
       {/* Footer */}
       <footer className="border-t border-gray-100 py-8 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <div>© 2024 BillFlow. The subscription engine for SaaS founders.</div>
+          <div>© 2024 SubFlow. The subscription infrastructure for SaaS platforms.</div>
           <div className="flex gap-6">
             <a href="#" className="hover:text-primary transition">Terms</a>
             <a href="#" className="hover:text-primary transition">Privacy</a>

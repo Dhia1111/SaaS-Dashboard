@@ -1,8 +1,8 @@
 export const footerContent = {
-  copyright: `© ${new Date().getFullYear()} BillFlow. The subscription engine for SaaS founders.`,
+  copyright: `© ${new Date().getFullYear()} SubFlow. The subscription infrastructure for SaaS platforms.`,
   contact: {
-    email: "hello@billflow.io",
-    phone: "+1 (555) 000-BILL",
+    email: "hello@subflow.io",
+    phone: "+1 (555) 000-SUBF",
     address: "123 Dev Lane, San Francisco, CA"
   },
   links: [
@@ -11,8 +11,8 @@ export const footerContent = {
     { label: "Contact", href: "/contact" }
   ],
   socials: [
-    { label: "Twitter", href: "https://twitter.com/billflow" },
-    { label: "GitHub", href: "https://github.com/billflow" }
+    { label: "Twitter", href: "https://twitter.com/subflow" },
+    { label: "GitHub", href: "https://github.com/subflow" }
   ]
 };
 
@@ -22,7 +22,7 @@ export const termsContent = {
   sections: [
     {
       title: "1. The Service",
-      content: "BillFlow provides subscription infrastructure (the 'Service'). You (the 'Tenant') use the Service to manage your own billing and enable billing for your end-users ('End-Users')."
+      content: "SubFlow provides subscription infrastructure (the 'Service'). You (the 'Tenant') use the Service to manage subscriptions and enable recurring billing for your end-users ('End-Users')."
     },
     {
       title: "2. Usage & Limits",
@@ -36,7 +36,7 @@ export const privacyContent = {
   sections: [
     {
       title: "Data Collection",
-      content: "We collect Tenant information (email, payment details) and End-User metadata (subscription status, feature access) necessary to provide the Service."
+      content: "We collect Tenant information (email, account details) and End-User metadata (subscription status, feature access) necessary to provide the Service."
     },
     {
       title: "Third-Party Processing",

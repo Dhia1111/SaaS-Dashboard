@@ -75,7 +75,7 @@ if (formData.email==null || formData.email==""){
                     Verify Your Account
                 </h2>
                 <p className="mt-2 text-center text-sm text-slate-600">
-                    Set your password to activate your BillFlow access.
+                    Set your password to activate your SubFlow access.
                 </p>
             </div>
 

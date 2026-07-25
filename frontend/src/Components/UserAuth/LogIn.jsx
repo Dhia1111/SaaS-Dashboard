@@ -63,9 +63,8 @@ export default function TenantLogin() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
-          {/* BillFlow Logo Placeholder */}
           <div className="h-12 w-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-            <span className="text-white font-bold text-2xl">B</span>
+            <span className="text-white font-bold text-2xl">S</span>
           </div>
         </div>
         <h2 className="text-center text-3xl font-extrabold text-slate-900 tracking-tight">

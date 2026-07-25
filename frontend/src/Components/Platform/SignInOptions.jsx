@@ -9,10 +9,10 @@ export default function AuthGateway() {
       {/* Header / Branding */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-10">
         <div className="inline-flex h-14 w-14 bg-indigo-600 rounded-2xl items-center justify-center shadow-xl shadow-indigo-200 mb-4">
-          <span className="text-white font-black text-3xl">B</span>
+          <span className="text-white font-black text-3xl">S</span>
         </div>
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Welcome to BillFlow
+          Welcome to SubFlow
         </h2>
         <p className="mt-2 text-sm text-slate-500">
           Please select your access type to continue to your workspace.
@@ -86,7 +86,7 @@ export default function AuthGateway() {
 
       {/* Footer Branding */}
       <p className="mt-12 text-center text-xs text-slate-400 uppercase tracking-widest font-bold">
-        Secure Multi-Tenant Gateway &bull; BillFlow
+        Secure Multi-Tenant Gateway &bull; SubFlow
       </p>
     </div>
   );

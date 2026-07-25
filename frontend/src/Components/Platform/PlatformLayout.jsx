@@ -19,10 +19,10 @@ function PlatformLayout() {
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <div className="space-y-4">
             <div className="text-xl font-bold tracking-tighter text-primary font-heading">
-              BillFlow<span className="text-slate-400">.io</span>
+              SubFlow<span className="text-slate-400">.io</span>
             </div>
             <p className="text-secondary max-w-xs text-sm leading-relaxed">
-              Simplifying Layer 2 billing so you can focus on building features, not subscription logic.
+              Simplifying subscription infrastructure so you can focus on building features, not billing logic.
             </p>
           </div>
           

@@ -62,7 +62,7 @@ export default function Login() {
         <div className="max-w-md w-full mx-auto">
           {/* Logo */}
           <div className="mb-10 text-2xl font-bold tracking-tighter text-primary font-heading">
-            BillFlow<span className="text-slate-400">.io</span>
+            SubFlow<span className="text-slate-400">.io</span>
           </div>
 
           <h1 className="text-3xl font-extrabold font-heading text-slate-900 mb-2">
