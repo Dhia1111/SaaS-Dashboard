@@ -44,7 +44,7 @@ The system registers three JWT bearer schemes with a dynamic forwarder:
 
 
 
-All three schemes currently use **identical validation parameters** (same issuer, audience, and symmetric signing key from `JwtSettings`).
+All tow schemes currently use **identical validation parameters** (same issuer, audience, and symmetric signing key from `JwtSettings`).
 
 ## Google OAuth
 
