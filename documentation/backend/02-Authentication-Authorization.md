@@ -18,11 +18,11 @@ The platform implements a multi-scheme JWT authentication system with Google OAu
                     │   JwtSchemeSelector      │
                     └──────────┬──────────────┘
                                │
-              ┌────────────────┼────────────────┐
-              ▼                ▼                ▼
-        ┌──────────┐   ┌──────────┐   ┌──────────┐
-        │ UserJwt  │   │TenantJwt │   │    D     │
-        └──────────┘   └──────────┘   └──────────┘
+              ┌────────────────┼───────────────┐
+              ▼                                ▼
+        ┌──────────┐                    ┌──────────┐  
+        │ UserJwt  │                    │TenantJwt │   
+        └──────────┘                    └──────────┘   
 ```
 
 ## JWT Authentication Schemes
@@ -42,9 +42,7 @@ The system registers three JWT bearer schemes with a dynamic forwarder:
 - Intended for tenant (business) authentication
 - Validates: issuer, audience, signing key, lifetime
 
-### D (Dashboard)
-- Intended for dashboard/UI access
-- Validates: issuer, audience, signing key, lifetime
+
 
 All three schemes currently use **identical validation parameters** (same issuer, audience, and symmetric signing key from `JwtSettings`).
 
