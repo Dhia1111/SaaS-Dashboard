@@ -24,7 +24,7 @@ namespace ExternalAPI
             services.AddSingleton<IGenralHashService, GenralHashService>();
             services.AddScoped<IPasswordHasher<object>, PasswordHasher<object>>();
             services.AddScoped<ITokenHandler, TokenHandler>();
-            services.AddTransient<EmailBackgroundJob>();
+            services.AddScoped<EmailBackgroundJob>();
             services.AddHttpContextAccessor();
             services.AddScoped<ITenantIdProvider, APIs.ConfigClasses.TenantIdProvider>();
             services.AddScoped<IPaymentProvider, Stripe>();

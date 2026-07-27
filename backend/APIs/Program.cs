@@ -151,7 +151,7 @@ var _jwtSettings = builder.Configuration
  
 
 
-builder.Services.AddDbContextFactory<SaasDashboardContext>(options =>
+builder.Services.AddDbContextPool<SaasDashboardContext>(options =>
 {
     options.UseNpgsql(connString);
     
@@ -161,8 +161,7 @@ builder.Services.AddAPIDependencies();
 builder.Services.AddConnectionDependencies();
 builder.Services.AddExternalAPIDependencies();
 builder.Services.AddBusinessDependencies();
-// Register your job as a scoped service (required for DbContext)
-builder.Services.AddScoped<EmailBackgroundJob>();
+ 
 // Add Quartz services
 //Add Quartz EmailJob
 builder.Services.AddQuartz(q =>
