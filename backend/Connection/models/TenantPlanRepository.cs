@@ -113,22 +113,18 @@ namespace Connection
                 foreach (var permission in planPermission)
                 {
                     permission.TenantPlanId = tenantPlan.Id;
-                    Console.WriteLine($"tpId {permission.TenantPlanId}");
 
                 }
                 foreach (var benfit in PlanBenefits)
                 {
                     benfit.TenantPlanId = tenantPlan.Id;
-                    Console.WriteLine($"tpId {benfit.TenantPlanId}");
 
 
                 }
-                Console.WriteLine(
-    PlanBenefits.First().GetType().FullName);
+            
                 foreach (var priceOption in pricingOptions)
                 {
                     priceOption.TenantPlanId = tenantPlan.Id;
-                    Console.WriteLine($"tpId {priceOption.TenantPlanId}");
 
                 }
 
