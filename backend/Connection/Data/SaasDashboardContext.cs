@@ -42,7 +42,10 @@ namespace Connection.Data
         public virtual DbSet<TenantFreePlan> TenantsFreePlans { get; set; } = null!;
         public virtual DbSet<DiscoveryPlatform> DiscoveriesPlatforms { get; set; } = null!;
 
-        public virtual DbSet<ClientSubscription>ClientSubscriptions { get; set; } = null!;
+        public virtual DbSet<ClientSubscription> ClientSubscriptions { get; set; } = null!;
+
+        public virtual DbSet<Domain> Domains { get; set; } = null!;
+
         public SaasDashboardContext(DbContextOptions<SaasDashboardContext> options, ITenantIdProvider dataKeyProvider) :base(options) {
 
                 _TenantID = dataKeyProvider.TenantId;
