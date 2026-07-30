@@ -78,6 +78,14 @@ namespace Connection.Data
             modelBuilder.Entity<Tenant>()
        .HasIndex(u => u.Name)
        .IsUnique();
+            
+            modelBuilder.Entity<Domain>()
+ .HasIndex(u => u.Name)
+ .IsUnique();
+
+            modelBuilder.Entity<Domain>()
+ .HasIndex(u => u.TenantId)
+ .IsUnique();
 
             modelBuilder.Entity<User>()
   .HasIndex(u => new { u.TenantId, u.Id })
