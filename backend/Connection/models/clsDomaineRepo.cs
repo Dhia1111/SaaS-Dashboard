@@ -1,4 +1,5 @@
 ﻿using Connection.Data;
+using Connection.models;
 using Connection.models.Entites;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,17 +9,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public interface IDomainRepo {
+public class DtoDomain
+{
+
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+
+    public int TenantId { get; set; }
+
+
+}
+public interface IDomainRepo :IGenericRepo<Domain> {
 
 
 
-    Task<IReadOnlyList<Domain>> AllAsync();
 
-    Task<int> AddAsync(Domain entity);
-
-    Task<bool> UpdateAsync(Domain entity);
-
-    Task<bool> DeleteAsync(Domain entity);
+  
     Task<Domain?> FindAsync(int id);
 
     Task<Domain?> FindAsync(string Name);
@@ -31,20 +37,17 @@ public interface IDomainRepo {
 namespace Connection.models
 {
 
-    public class clsDomaineRepo:IDomainRepo
+    public class clsDomaineRepo: GenericRepo<Domain>, IDomainRepo
 
     {
-        private readonly SaasDashboardContext _context;
-        private readonly ILogger<clsDomaineRepo> _logger;
-        public clsDomaineRepo(SaasDashboardContext cotext,ILogger<clsDomaineRepo> logger) { 
-        
-            _context = cotext;
-            _logger= logger;
+      
+        public clsDomaineRepo(SaasDashboardContext context,ILogger<clsDomaineRepo> logger):base(context,logger) { 
+     
 
         
         }
 
-        public async Task<IReadOnlyList<Domain>> AllAsync()
+        public new async Task<IReadOnlyList<Domain>> GetAllAsync()
         {
 
             try
@@ -61,7 +64,7 @@ namespace Connection.models
 
         }
 
-        public async Task<int>AddAsync(Domain entity)
+        public new async Task<int>AddAsync(Domain entity)
         {
 
             try
@@ -81,7 +84,7 @@ namespace Connection.models
 
         }
 
-        public async Task<bool> UpdateAsync(Domain entity)
+        public new async Task<bool> UpdateAsync(Domain entity)
         {
             try{  
                 
@@ -96,7 +99,7 @@ namespace Connection.models
             }
         }
 
-        public async Task<bool> DeleteAsync(Domain entity)
+        public new  async Task<bool> DeleteAsync(Domain entity)
         {
             try{   _context.Domains.Remove(entity);
             await _context.SaveChangesAsync();
