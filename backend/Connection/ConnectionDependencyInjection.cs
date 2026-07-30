@@ -22,6 +22,7 @@ namespace Connection
             services.AddScoped<ITenantPricingCycleRepository, TenantPricingCycleRepository>();
             services.AddScoped<IEmployeeRepo, clsEmployeeRepo>();
             services.AddScoped<IPlatformAdmineRepo, clsPlatformAdmineRepo>();
+            services.AddScoped<IDomainRepo,clsDomaineRepo>();
        
             services.AddScoped<IPaymentRepo, clsPaymentRepo>();
             services.AddScoped<IPlatformSubscriptionRepo, clsPlatformSubscriptionRepo>();
