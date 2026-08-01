@@ -30,7 +30,8 @@ namespace ExternalAPI
             services.AddScoped<IPaymentProvider, Stripe>();
             services.AddScoped<IAccessTokenReader ,AccessTokenReader>();
             services.AddSingleton<IJwtSchemeSelector, JwtSchemeSelector>();
-            services.AddScoped<IPermissionLoader,PermissionsLoader>();
+            services.AddScoped<IPermissionLoader, PermissionsLoader>();
+            services.AddScoped<IDomainsLoader, DomainLoader>();
 
             return services;
         }

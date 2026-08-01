@@ -40,7 +40,7 @@ namespace Business
             services.AddScoped<ITenantTokenReader, TenantTokenReader>();
             services.AddScoped<IUserTokenReader, UserTokenReader>();
             services.AddScoped<IClientSubscriptionService, clsClientSubscriptionService>();
-
+            services.AddScoped<IDomainService, clsDomainService>();
 
 
 

@@ -332,9 +332,12 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var loader = scope.ServiceProvider.GetRequiredService<IPermissionLoader>();
+    var DomainLoder= scope.ServiceProvider.GetRequiredService<IDomainsLoader>();
 
+    await DomainLoder.ReloadAsync();
     await loader.ReloadAsync();
 }
+
 // 1. Exception handling must be FIRST to catch errors in all subsequent steps
 app.UseMiddleware<ExceptionMiddleware>();
 
