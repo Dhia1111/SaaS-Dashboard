@@ -45,9 +45,9 @@ namespace APIs.Controllers
             _tenantIdProvider = tenantIdProvider;
             _PricingCycleService = tenantPricingCycle;
             _extermalPaymentServices = ExternalPaymentSerivces.ToDictionary(x => x.ProviderName, x => x);
-            _platformSubscriptionService=platformSubscriptionService;
+            _platformSubscriptionService = platformSubscriptionService;
             _tenantService = tenantService;
-            _marketService= marketService;
+            _marketService = marketService;
             _paymerService = paymentService;
 
         }
@@ -55,7 +55,7 @@ namespace APIs.Controllers
 
 
         [HttpGet("subscriptions-options")]
-            public async Task<ActionResult<IEnumerable<DtoTenantPlan>>> GetSubscriptionListAsync()
+        public async Task<ActionResult<IEnumerable<DtoTenantPlan>>> GetSubscriptionListAsync()
         {
             string PlatformTenantName = _platformInfo.TenantName;
             var res = await _tenantPlanService.GetAllWithDependenciesIgnoreQuerryAsync(PlatformTenantName);
@@ -72,7 +72,7 @@ namespace APIs.Controllers
 
             return Ok(ApiResult<IEnumerable<DtoTenantPricingCycle>>.Ok(res));
         }
-      
+
         [Authorize]
         [RequiersdClaim("WriteForSubscription", SharedDto_Enum.enPlaformRoles.User)]
         [HttpPost("subscribe")]
@@ -87,45 +87,45 @@ namespace APIs.Controllers
 
                 if (SubscriptionResult.paymentId == null)
                     throw new Exception("Service Error , platformSubscriptionService faild to create a valid subscription ");
-                
+
                 var paymentInfo = await _paymerService.GetByIdAsync(SubscriptionResult.paymentId.Value);
 
                 ExternalAPI.DtoPayment ExternalPayment = new ExternalAPI.DtoPayment
                 {
                     Id = SubscriptionResult.paymentId.Value,
-                    ProviderPaymentId =SubscriptionResult.ProviderpaymentId ,
-                    Currency=paymentInfo.Currency,
-                    Amount=(long)(paymentInfo.Amount*100),
-                    
+                    ProviderPaymentId = SubscriptionResult.ProviderpaymentId,
+                    Currency = paymentInfo.Currency,
+                    Amount = (long)(paymentInfo.Amount * 100),
+
                 };
 
                 string ClientSecret = await service.PayAsync(ExternalPayment);
 
                 return Ok(ApiResult<DtoSubscriptionResult>.Ok(
-                    new DtoSubscriptionResult{
-                        ClientSecret= ClientSecret,
-                        SubscriptionId=SubscriptionResult.SubscriptionId,
-                        Success=SubscriptionResult.Success,
-                        paymentId=SubscriptionResult.paymentId,
-                        ProviderpaymentId=SubscriptionResult.ProviderpaymentId,
-                        RequiresPayment=SubscriptionResult.RequiresPayment,
+                    new DtoSubscriptionResult {
+                        ClientSecret = ClientSecret,
+                        SubscriptionId = SubscriptionResult.SubscriptionId,
+                        Success = SubscriptionResult.Success,
+                        paymentId = SubscriptionResult.paymentId,
+                        ProviderpaymentId = SubscriptionResult.ProviderpaymentId,
+                        RequiresPayment = SubscriptionResult.RequiresPayment,
 
-                    
+
                     }
-                    
+
                     ));
 
             }
-        
+
             else
             {
                 DtoSubscriptionResult subscriptionResult = await _platformSubscriptionService.Subscribe(request);
 
                 return Ok(ApiResult<DtoSubscriptionResult>.Ok(
                     new DtoSubscriptionResult {
-                        SubscriptionId=subscriptionResult.SubscriptionId,
-                        RequiresPayment=subscriptionResult.RequiresPayment
-                        ,Success=subscriptionResult.Success }));
+                        SubscriptionId = subscriptionResult.SubscriptionId,
+                        RequiresPayment = subscriptionResult.RequiresPayment
+                        , Success = subscriptionResult.Success }));
 
             }
         }
@@ -147,7 +147,7 @@ namespace APIs.Controllers
                 if (SubscriptionResult.paymentId == null)
                     throw new Exception("Service Error , platformSubscriptionService faild to create a valid subscription ");
                 var paymentInfo = await _paymerService.GetByIdAsync(SubscriptionResult.paymentId.Value);
-             
+
                 ExternalAPI.DtoPayment ExternalPayment = new ExternalAPI.DtoPayment
                 {
                     Id = SubscriptionResult.paymentId.Value,
@@ -168,7 +168,7 @@ namespace APIs.Controllers
                     }));
 
 
-            } 
+            }
         }
 
         [Authorize]
@@ -179,10 +179,10 @@ namespace APIs.Controllers
         {
             int tenantId = _tenantIdProvider.TenantId;
             if (tenantId != TenantId) throw new ArgumentException("TenantId does not match any Tenant ");
-            var tenant  =await _tenantService.GetByIdAsync(tenantId);
-            
+            var tenant = await _tenantService.GetByIdAsync(tenantId);
+
             return Ok(ApiResult<bool>.Ok(tenant.HaveUsedTheFreeTry));
-    }
+        }
 
         [Authorize]
         [RequiersdClaim("ReadForSubscription", SharedDto_Enum.enPlaformRoles.User)]
@@ -200,22 +200,22 @@ namespace APIs.Controllers
 
 
         [HttpGet("marketting-platforms")]
-        public ActionResult<ApiResult<List<KeyValuePair<int,string>>>> MarkettingPlatforms()
+        public ActionResult<ApiResult<List<KeyValuePair<int, string>>>> MarkettingPlatforms()
         {
-          
+
 
             // atatch payment providers 
 
-               var map = Enum.GetValues(typeof(enMarkettingPlatforms))
-                 .Cast<enMarkettingPlatforms>()
-                 .Select(x => new KeyValuePair<int, string>(
-                     (int)x,
-                     x.ToString()))
-                 .ToList();
+            var map = Enum.GetValues(typeof(enMarkettingPlatforms))
+              .Cast<enMarkettingPlatforms>()
+              .Select(x => new KeyValuePair<int, string>(
+                  (int)x,
+                  x.ToString()))
+              .ToList();
 
 
 
-            return Ok(ApiResult< List<KeyValuePair<int, string>>>.Ok(map));
+            return Ok(ApiResult<List<KeyValuePair<int, string>>>.Ok(map));
 
 
         }
@@ -223,18 +223,18 @@ namespace APIs.Controllers
 
 
         [HttpGet("payment-providers")]
-        public ActionResult<ApiResult<List<KeyValuePair<int,string>>>> PaymentProviders()
+        public ActionResult<ApiResult<List<KeyValuePair<int, string>>>> PaymentProviders()
         {
 
 
             // atatch payment providers 
 
-          var  map = Enum.GetValues(typeof(enPaymentProviders))
-                 .Cast<enPaymentProviders>()
-                 .Select(x => new KeyValuePair<int, string>(
-                     (int)x,
-                     x.ToString()))
-                 .ToList();
+            var map = Enum.GetValues(typeof(enPaymentProviders))
+                   .Cast<enPaymentProviders>()
+                   .Select(x => new KeyValuePair<int, string>(
+                       (int)x,
+                       x.ToString()))
+                   .ToList();
 
 
 
@@ -245,7 +245,7 @@ namespace APIs.Controllers
 
 
         [HttpPost("subscription-descovery")]
-        public async Task<ActionResult<ApiResult<bool>>>SubscriptionDescovery(enMarkettingPlatforms MarkettingPlatform)
+        public async Task<ActionResult<ApiResult<bool>>> SubscriptionDescovery(enMarkettingPlatforms MarkettingPlatform)
         {
             var platform = await _tenantService.GetByNameAsync(_platformInfo.TenantName);
 
@@ -264,20 +264,20 @@ namespace APIs.Controllers
                 MarkettingPlatform = MarkettingPlatform,
                 TenantClientIdentifier = _tenantIdProvider.TenantId.ToString(),
                 TenantId = platform.TenantId,
-              
+
 
 
 
             };
-          var r= await _marketService.AddAsync(m);
+            var r = await _marketService.AddAsync(m);
 
             return Ok(ApiResult<bool>.Ok(r != 0));
 
-            }
+        }
 
 
         [HttpGet("subscription-status")]
-        public async Task<ActionResult<ApiResult<bool>>>SubscriptionStatus([FromQuery] int PaymentId)
+        public async Task<ActionResult<ApiResult<bool>>> SubscriptionStatus([FromQuery] int PaymentId)
         {
 
             if (_tenantIdProvider.TenantId == 0)
@@ -298,12 +298,12 @@ namespace APIs.Controllers
 
         }
 
-    
+
     }
-     
+
     [Route("api/platform/payment")]
     [ApiController]
-    public class PlatformPayment:ControllerBase
+    public class PlatformPayment : ControllerBase
     {
         private readonly IPaymentService _paymentService;
         private readonly IDictionary<enPaymentProviders, IPaymentProvider> _extermalPaymentServices;
@@ -321,7 +321,44 @@ namespace APIs.Controllers
     }
 
 
-}
+    [Route("api/platform/domain")]
+    [ApiController]
+    public class DomainNameManager : ControllerBase
+    {
+        private readonly IDomainService _domainService;
+        private readonly PlatformInfo _platformInfo;
+        private readonly IDomainsLoader _domainLoader;
+        public DomainNameManager(IDomainService domainService, IOptions<PlatformInfo> platformInfo,IDomainsLoader loader)
+        {
+            _domainService = domainService;
+            _platformInfo = platformInfo.Value;
+            _domainLoader = loader;
+        }
+        [HttpGet("allDomains")]
+        public async Task<ActionResult<ApiResult<IReadOnlyList<DtoDomain>>>> GetDomainsAsync()
+        {
+            var platform = await _domainService.GetAllAsync();
+            if (platform == null)
+            {
+                return NotFound(ApiResult<string>.Fail("NotFound", "No domain exist ."));
+            }
+            return Ok(ApiResult<IReadOnlyList<DtoDomain>>.Ok(platform));
+        }
+
+
+        [HttpGet("is-used")]
+        public  ActionResult<ApiResult<bool>> GetDomainName([FromQuery] string Name)
+        {
+            var res =  _domainLoader.TryGetTenantId(Name, out int TenantID);
+
+            return Ok(ApiResult<bool>.Ok(res));
+        }
+
+
+
+    }
+
+};
 
 
 

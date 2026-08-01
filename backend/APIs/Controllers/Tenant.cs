@@ -5,6 +5,7 @@ using Connection.models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit.Tnef;
+using System.Threading.Tasks;
 
 namespace APIs.Controllers
 {
@@ -13,18 +14,20 @@ namespace APIs.Controllers
     public class TenantController : ControllerBase
     {
         private readonly ITenantService _tenantService;
-        private readonly ITenantIdProvider _tenantIdProvider;
-        private readonly IClientSubscriptionService _clientSubscriptionService;
-
+         private readonly IClientSubscriptionService _clientSubscriptionService;
+        private readonly IDomainService _domainService;
+ 
         public TenantController(
             ITenantService tenantervice,
             ITenantIdProvider tenantIdProvider,
-            IClientSubscriptionService clientSubscriptionService)
+            IClientSubscriptionService clientSubscriptionService,
+            IDomainService domainService,
+            IDomainsLoader domainsLoader)
         {
             _tenantService = tenantervice;
-            _tenantIdProvider = tenantIdProvider;
-            _clientSubscriptionService = clientSubscriptionService;
-        }
+             _clientSubscriptionService = clientSubscriptionService;
+            _domainService = domainService;
+         }
 
        [Authorize]
         [RequiersdClaim("ReadForTenantInfo",SharedDto_Enum.enPlaformRoles.User)]
@@ -49,9 +52,46 @@ namespace APIs.Controllers
 
 
         }
+
+        [Authorize]
+        [RequiersdClaim("manage-account", SharedDto_Enum.enPlaformRoles.User)]
+        [HttpPost("create-subdomain")]
+        public async Task<ActionResult<ApiResult<int>>> Add([FromBody] DtoDomain request)
+        {
+            
+            var res=await  _domainService.AddAsync(request);
+
+            return Ok(ApiResult<int>.Ok(res));
+
  
-   
-     
+        }
+
+        [Authorize]
+        [RequiersdClaim("manage-account", SharedDto_Enum.enPlaformRoles.User)]
+        
+        [HttpPut("update-subdomain")]
+        public async Task<ActionResult<ApiResult<bool>>> Update([FromBody] DtoDomain request)
+        {
+
+            var res = await _domainService.UpdateAsync(request);
+            return Ok(ApiResult<bool>.Ok(res));
+
+
+        }
+       
+        [Authorize]
+        [RequiersdClaim("manage-account", SharedDto_Enum.enPlaformRoles.User)]
+
+        [HttpDelete("delete-subdomain")]
+        public async Task<ActionResult<ApiResult<bool>>> Delete([FromBody] int request)
+        {
+
+            var res = await _domainService.DeleteAsync(request);
+            return Ok(ApiResult<bool>.Ok(res));
+
+
+        }
+
 
     }
 }
