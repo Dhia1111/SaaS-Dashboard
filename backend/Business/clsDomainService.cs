@@ -1,4 +1,5 @@
 ﻿  using Business;
+using Connection.models;
 using Connection.models.Entites;
 using Microsoft.Extensions.Logging;
  
@@ -30,13 +31,15 @@ namespace Business
         private readonly IDomainRepo _repo;
         private readonly ILogger<clsDomainService> _logger;
         private readonly IDomainsLoader _domainLoader;
+        private readonly ITenantIdProvider _tenantIdProvider;
 
         public clsDomainService(IDomainRepo repo, ILogger<clsDomainService> logger, 
-            IDomainsLoader domainLoader) : base(repo, logger)
+            IDomainsLoader domainLoader,ITenantIdProvider tenantIdProvider) : base(repo, logger)
         {
             _repo = repo;
             _logger = logger;
             _domainLoader = domainLoader;
+            _tenantIdProvider = tenantIdProvider;
         }
 
         protected  override Domain FromDto(DtoDomain dto)
@@ -79,14 +82,20 @@ namespace Business
 
         public override async Task<int> AddAsync(DtoDomain dto)
         {
-
-           int id= await base.AddAsync(dto);
+            bool exists =  _domainLoader.TryGetTenantId(dto.Name, out int tenantId);
+            dto.TenantId = _tenantIdProvider.TenantId;
+            if (exists) { 
+          
+                throw new  Business.Exceptions.ResourceAlreadyExistsException($"Domain with name '{dto.Name}' already exists for tenant id {tenantId}.",dto.Name);
+            }
+            int id= await base.AddAsync(dto);
             await _domainLoader.ReloadAsync();
             return id;
         }
         
         public override async Task<bool> UpdateAsync(DtoDomain dto)
         {
+            dto.TenantId = _tenantIdProvider.TenantId;
             bool res= await base.UpdateAsync(dto);
             await _domainLoader.ReloadAsync();
             return res;
