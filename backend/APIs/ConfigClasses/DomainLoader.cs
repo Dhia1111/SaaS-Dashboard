@@ -11,7 +11,7 @@ namespace APIs.ConfigClasses
     {
 
         private DateTime _LastReloadTime;
-        private Dictionary<string, int> _Domains;
+        private static Dictionary<string, int> _Domains=new();
         private readonly IDomainRepo _domainRepo;
         private ILogger<DomainLoader> _logger;
         public DateTime LastReloadTime { get { return _LastReloadTime; } }
@@ -26,7 +26,6 @@ namespace APIs.ConfigClasses
 
             _logger = logger;
             _LastReloadTime = DateTime.UtcNow;
-            _Domains = new();
             _domainRepo = domainRepo;
 
         }
