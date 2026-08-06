@@ -11,7 +11,7 @@ namespace APIs.ConfigClasses
     {
 
         private DateTime _LastReloadTime;
-        private Dictionary<string, long> _permissions;
+        private static Dictionary<string, long> _permissions=new Dictionary<string, long>();
         private readonly PlatformInfo _platformInfo;
         private readonly ITenantPermissionRepository _tenantPermissionRepository;
         private readonly ITenantRepo _tenantRepo;
@@ -32,8 +32,7 @@ namespace APIs.ConfigClasses
             _LastReloadTime = DateTime.UtcNow;
             _tenantPermissionRepository = PlatformPermissionRepo;
             _platformInfo = platforminfo.Value;
-            _permissions = new();
-
+ 
 
         }
 
