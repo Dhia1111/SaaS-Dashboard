@@ -151,7 +151,7 @@ var _jwtSettings = builder.Configuration
  
 
 
-builder.Services.AddDbContextPool<SaasDashboardContext>(options =>
+builder.Services.AddDbContext<SaasDashboardContext>(options =>
 {
     options.UseNpgsql(connString);
     
@@ -329,6 +329,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 var app = builder.Build();
 
+
 using (var scope = app.Services.CreateScope())
 {
     var loader = scope.ServiceProvider.GetRequiredService<IPermissionLoader>();
@@ -337,6 +338,7 @@ using (var scope = app.Services.CreateScope())
     await DomainLoder.ReloadAsync();
     await loader.ReloadAsync();
 }
+
 
 // 1. Exception handling must be FIRST to catch errors in all subsequent steps
 app.UseMiddleware<ExceptionMiddleware>();
