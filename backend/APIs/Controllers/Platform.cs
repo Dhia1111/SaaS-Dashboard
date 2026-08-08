@@ -328,7 +328,7 @@ namespace APIs.Controllers
         private readonly IDomainService _domainService;
         private readonly PlatformInfo _platformInfo;
         private readonly IDomainsLoader _domainLoader;
-        public DomainNameManager(IDomainService domainService, IOptions<PlatformInfo> platformInfo,IDomainsLoader loader)
+        public DomainNameManager(IDomainService domainService, IOptions<PlatformInfo> platformInfo, IDomainsLoader loader)
         {
             _domainService = domainService;
             _platformInfo = platformInfo.Value;
@@ -347,15 +347,44 @@ namespace APIs.Controllers
 
 
         [HttpGet("is-used")]
-        public  ActionResult<ApiResult<bool>> GetDomainName([FromQuery] string Name)
+        public ActionResult<ApiResult<bool>> GetDomainName([FromQuery] string Name)
         {
-            var res =  _domainLoader.TryGetTenantId(Name, out int TenantID);
+            var res = _domainLoader.TryGetTenantId(Name, out int TenantID);
 
             return Ok(ApiResult<bool>.Ok(res));
         }
 
+        [HttpPost("domain")]
+        public async Task<ActionResult<ApiResult<int>>> AddDomain([FromBody] DtoDomain domain)
+        {
 
 
+            int DomainId = await _domainService.AddAsync(domain);
+
+            return Ok(ApiResult<int>.Ok(DomainId));
+
+
+
+        }
+       
+        [HttpDelete("domain")]
+        [Authorize]
+        [RequiersdClaim("ManageAccount", SharedDto_Enum.enPlaformRoles.User)]
+        public async Task<ActionResult<ApiResult<bool>>> DeleteDomain([FromQuery] int DomainId)
+        {
+            bool res = await _domainService.DeleteAsync(DomainId);
+            return Ok(ApiResult<bool>.Ok(res));
+        }
+
+
+        [HttpPut("domain")]
+        [Authorize]
+        [RequiersdClaim("ManageAccount", SharedDto_Enum.enPlaformRoles.User)]
+        public async Task<ActionResult<ApiResult<bool>>> UpdateDomain([FromBody] DtoDomain domain)
+        {
+            bool res = await _domainService.UpdateAsync(domain);
+            return Ok(ApiResult<bool>.Ok(res));
+        }
     }
 
 };
